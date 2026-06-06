@@ -5,6 +5,16 @@ Format pliku bazuje na standardzie [Keep a Changelog](https://keepachangelog.com
 
 ---
 
+## [0.13.0] - 2026-06-07
+### Dodane
+- **Short link w kreatorze:** Dodano panel "Short link" jako pierwszy krok w oknie tworzenia kodu QR. Generuje on automatycznie unikalny, 5-znakowy identyfikator i w locie weryfikuje jego dostępność w bazie danych (zapobiegając konfliktom). W trybie edycji krótki link jest zablokowany, chroniąc integralność danych.
+- **Interaktywne Statystyki Kodów QR:** Przebudowano statyczny licznik skanowań na liście kodów, zamieniając go w dynamiczny, interaktywny przycisk ("Pokaż więcej") prowadzący docelowo do zakładki Analityki. Wdrożono filtry graficzne CSS i efekty "glow".
+
+### Zmienione
+- **Rzeczywisty Podgląd na liście:** Zrezygnowano ze sztucznej ikony w widoku listy `QRList.jsx`. Aplikacja renderuje w locie prawdziwe, w pełni ostylowane wektory kodów QR w wysokiej bazowej rozdzielczości (1000x1000 px), skutecznie eliminując matematyczne odchyłki marginesów biblioteki generatora.
+- **Odnośniki zewnętrzne:** Udoskonalono obsługę klikalnych linków pod kodem – system automatycznie dokleja prefiks `https://` do linków bez protokołu HTTP, co zapobiega traktowaniu ich jako adresów podrzędnych względem uruchomionej strony.
+- **Wizualne Tweaki:** Skompresowano sztuczne paddingi na listach kodów, uzyskując czystszy, bardziej dopasowany układ.
+
 ## [0.12.0] - 2026-06-06
 ### Dodane
 - **Pełen Ekosystem Pracy Zespołowej (Zespoły & Zarządzanie):** Wdrożono całkowicie nowy, dedykowany panel Ustawień Zespołu (`WorkspaceSettings`). Właściciel zespołu ma prawo do zmiany nazwy, gradientu lub usunięcia całego zasobu, a pozostali Członkowie mogą go jedynie opuścić.

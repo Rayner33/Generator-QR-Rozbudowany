@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, MoreVertical, QrCode, Check, X, Wifi } from 'lucide-react';
+import { Download, MoreVertical, QrCode, Check, X, Wifi, Scan, ArrowRight } from 'lucide-react';
 import TagManagerModal from '../components/tags/TagManagerModal';
 import { getTagColorInfo } from '../utils/tagColors';
 import { Line } from 'react-chartjs-2';
@@ -293,13 +293,10 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
     ) : (
       <div className="space-y-4">
         {processedCodes.map(code => (
-        <div key={code.id} className="bg-card border border-border rounded-xl p-4 flex items-stretch justify-between hover:border-gray-600 transition-colors">
+        <div key={code.id} className="bg-card border border-border rounded-xl p-3 flex items-stretch justify-between hover:border-gray-600 transition-colors">
           <div className="flex items-center gap-5 flex-1 min-w-0 pr-4">
-            <div 
-              className="w-24 h-24 rounded-lg flex items-center justify-center shrink-0 border border-border overflow-hidden" 
-              style={{ backgroundColor: code.backgroundColor || '#ffffff' }}
-            >
-               <QrCode className="w-12 h-12" style={{ color: code.dotsColor || '#000000' }} />
+            <div className="w-28 h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white">
+              <QRPreviewItem code={code} />
             </div>
             
             <div className="flex flex-col flex-1 min-w-0">
@@ -312,14 +309,14 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigator.clipboard.writeText(`https://${window.location.host}/U${code.id.slice(0, 5)}v4S`);
+                  navigator.clipboard.writeText(`https://${window.location.host}/${code.id}`);
                   setCopiedLinkId(code.id);
                   setTimeout(() => setCopiedLinkId(null), 2000);
                 }}
                 className="text-sm text-gray-400 mt-1 hover:text-gray-300 transition-colors flex items-center gap-2 group w-max max-w-full text-left"
                 title="Skopiuj krótki link"
               >
-                <span className="truncate">{window.location.host}/U{code.id.slice(0, 5)}v4S</span>
+                <span className="truncate">{window.location.host}/{code.id}</span>
                 {copiedLinkId === code.id ? (
                   <span className="text-[#10b981] text-[10px] font-bold uppercase tracking-wider shrink-0 bg-[#10b981]/10 px-1.5 py-0.5 rounded">Skopiowano!</span>
                 ) : (
@@ -328,7 +325,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
               </button>
               <div className="flex items-center gap-2 text-sm text-white mt-1 min-w-0">
                 <span className="text-gray-500 shrink-0">↳</span>
-                <a href={code.contentType === 'email' ? `mailto:${code.emailData?.address || code.url}` : code.url} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate">
+                <a href={code.contentType === 'email' ? `mailto:${code.emailData?.address || code.url}` : (code.url?.startsWith('http://') || code.url?.startsWith('https://') ? code.url : `https://${code.url}`)} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate">
                   {code.contentType === 'email' ? (code.emailData?.address || code.url.replace('mailto:', '').split('?')[0]) : code.url}
                 </a>
               </div>
@@ -442,29 +439,45 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                </div>
              </div>
              
-             <div className="w-32 h-full min-h-[64px] bg-black rounded-lg border border-border p-2 flex flex-col justify-between relative overflow-hidden">
-               <div className="flex justify-between items-center z-10 relative">
-                 <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1">
-                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+             <button 
+               onClick={(e) => { e.stopPropagation(); onAnalytics && onAnalytics(code); }}
+               className="w-44 h-full min-h-[72px] bg-[#0a0a0b] hover:bg-[#18181b] rounded-xl border border-border p-3 flex flex-col justify-between relative overflow-hidden group transition-all text-left cursor-pointer shrink-0"
+             >
+               {/* Default View */}
+               <div className="flex flex-col justify-between h-full z-10 relative transition-opacity duration-300 group-hover:opacity-0">
+                 <span className="text-[13px] font-semibold text-white flex items-center gap-1.5">
+                   <Scan size={14} className="text-gray-300" />
                    Skan
                  </span>
-                 <span className="text-lg font-bold text-white">{code.scans}</span>
+                 <span className="text-xl font-bold text-white mt-2 leading-none">{code.scans || 0}</span>
                </div>
-               <div className="absolute bottom-0 left-0 w-full h-1/2 opacity-70">
+
+               {/* Hover View */}
+               <div className="absolute inset-3 z-10 flex flex-col justify-between transition-opacity duration-300 opacity-0 group-hover:opacity-100">
+                 <span className="text-[13px] font-semibold text-white">
+                   Pokaż więcej
+                 </span>
+                 <span className="text-white mt-2 leading-none">
+                   <ArrowRight size={18} />
+                 </span>
+               </div>
+               
+               {/* Chart */}
+               <div className="absolute -bottom-1 -right-1 w-[80%] h-[60%] opacity-80 transition-all duration-300 group-hover:opacity-100 group-hover:grayscale group-hover:brightness-[3] group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] pointer-events-none">
                  <Line 
                    data={{
-                     labels: ['1', '2', '3', '4', '5'],
+                     labels: ['1', '2', '3', '4', '5', '6'],
                      datasets: [{
-                       data: [0, 0, 0, 0, 0],
-                       borderColor: '#3b82f6',
-                       backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                       data: [1, 3, 2, 5, 3, 8],
+                       borderColor: '#0066FF',
+                       backgroundColor: 'rgba(0, 102, 255, 0.2)',
                        fill: true,
                      }]
                    }}
                    options={sparklineOptions} 
                  />
                </div>
-            </div>
+            </button>
           </div>
         </div>
       ))}
@@ -504,4 +517,45 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
       )}
     </>
   );
+}
+
+function QRPreviewItem({ code }) {
+  const qrRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!qrRef.current) return;
+    
+    const getQrDataToEncode = (code) => {
+      if (code.contentType === 'wifi') {
+        const { ssid, password, type } = code.wifiData || {};
+        const auth = type === 'nopass' ? '' : `T:${type};`;
+        return `WIFI:S:${ssid};${auth}P:${password};;`;
+      }
+      return `https://${window.location.host}/${code.id || 'xxxxx'}`;
+    };
+
+    const dotsColor = code.dotsColor || "#000000";
+    const eyeColor = code.eyeColor || dotsColor;
+    const backgroundColor = code.backgroundColor || "#ffffff";
+
+    const qrCode = new QRCodeStyling({
+      width: 1000,
+      height: 1000,
+      type: "svg",
+      data: getQrDataToEncode(code),
+      image: code.logoBase64 || undefined,
+      margin: 0,
+      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
+      imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 5, crossOrigin: "anonymous" },
+      dotsOptions: { color: dotsColor, type: code.styleType || "rounded" },
+      backgroundOptions: { color: backgroundColor },
+      cornersSquareOptions: { color: eyeColor, type: code.styleType === 'dots' ? 'dot' : (code.styleType === 'square' ? 'square' : 'extra-rounded') },
+      cornersDotOptions: { color: eyeColor, type: code.styleType === 'square' ? 'square' : 'dot' }
+    });
+
+    qrRef.current.innerHTML = '';
+    qrCode.append(qrRef.current);
+  }, [code]);
+
+  return <div ref={qrRef} className="w-full h-full flex items-center justify-center p-1.5 [&>*]:w-full [&>*]:h-full" style={{ backgroundColor: code.backgroundColor || '#ffffff' }} />;
 }
