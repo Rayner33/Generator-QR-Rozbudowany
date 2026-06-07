@@ -113,7 +113,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   };
 
   const getShortlink = () => {
-    return `https://${window.location.host}/${codeId || 'xxxxx'}`;
+    return `${window.location.origin}/${codeId || 'xxxxx'}`;
   };
 
   const getQrDataToEncode = () => {
@@ -292,15 +292,17 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
-      <div className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative">
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-sidebar">
           <div className="flex items-center gap-3">
              <div className="bg-card p-2 rounded-lg border border-border">
                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
              </div>
-             <h2 className="text-xl font-semibold">Nowy kod QR</h2>
+             <h2 className="text-xl font-semibold">
+               {mode === 'edit' ? 'Edytuj kod QR' : mode === 'duplicate' ? 'Duplikuj kod QR' : 'Nowy kod QR'}
+             </h2>
           </div>
           <div className="flex items-center gap-4">
              <button onClick={onClose} className="p-2 bg-white text-black rounded-full hover:bg-gray-200 transition-colors">
@@ -633,7 +635,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                <button 
                  onClick={handleSave} 
                  disabled={isSaving || !isFormValid}
-                 className={`px-6 py-2 rounded-lg font-semibold transition-colors text-white ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#FF4C00] hover:bg-[#CC3D00]'}`}
+                 className={`px-6 py-2 rounded-lg font-semibold transition-colors text-white ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#0066FF] hover:bg-blue-600'}`}
                >
                  {isSaving ? 'Zapisywanie...' : 'Zapisz kod QR'}
                </button>

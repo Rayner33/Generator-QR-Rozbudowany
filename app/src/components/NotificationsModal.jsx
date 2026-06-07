@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 export default function NotificationsModal({ isOpen, onClose, pendingInvites, currentUser, setActiveWorkspace }) {
   const [processingId, setProcessingId] = useState(null);
+  const navigate = useNavigate();
 
   if (!isOpen) return null;
 
@@ -33,6 +35,9 @@ export default function NotificationsModal({ isOpen, onClose, pendingInvites, cu
       if (pendingInvites.length <= 1) {
         onClose();
       }
+      
+      // Wymuś przekierowanie na stronę z kodami QR
+      navigate('/');
     } catch (error) {
       console.error("Błąd podczas akceptacji:", error);
     }

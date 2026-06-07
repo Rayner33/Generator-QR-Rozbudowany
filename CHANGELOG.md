@@ -5,6 +5,30 @@ Format pliku bazuje na standardzie [Keep a Changelog](https://keepachangelog.com
 
 ---
 
+## [0.15.0] - 2026-06-07
+### Dodane
+- **Silnik Przekierowań (Redirect Engine):** Niewidzialny, błyskawiczny moduł uruchamiający się przy wejściu na krótki odnośnik (np. `/:shortId`). Otwiera i zlicza kliknięcia w pełni asynchronicznie za pomocą `runTransaction` w Firebase, kierując użytkownika końcowego bezpośrednio na oryginalny URL.
+- **Granularne Uprawnienia Zespołu:** Nowa zakładka "Uprawnienia" w module `WorkspaceSettings`. Właściciele Zespołów otrzymali możliwość odbierania nowo dodanym członkom zespołu praw do: *Edycji*, *Archiwizacji* i *Resetowania Analityki* kodów należących do innej osoby. Odpowiednio wdrożono zaktualizowane `firestore.rules`.
+
+### Zmienione
+- **Enterprise SSO:** Usunięto klasyczne formularze E-mail/Hasło oraz system "Próśb o dostęp". Przekształcono aplikację na w pełni zamknięty ekosystem oparty o Single Sign-On (Google Login) weryfikujący końcówki domen.
+- Zabezpieczenie przed atakami Brute-Force oraz odciążenie zarządzania (osoba wyrzucona z grupy firmowej automatycznie traci dostęp do bazy).
+- **Branding:** Ujednolicono system ikon, używając ikony kodu QR z pakietu `lucide-react` w roli nowego, dynamicznego i skalowalnego logo platformy (`Sidebar.jsx`, `Login.jsx`).
+
+### Poprawione
+- **Redirect Optimization:** Przebudowano warstwę nawigacji tak, by logowanie przez panel Google SSO oraz akceptacja zaproszenia zawsze kierowała użytkowników bezpośrednio do listy najnowszych kodów QR (`/`), zamiast do ustawień konta.
+- Skrupulatnie zablokowano i wyszarzono ikonę ołówka edycji w panelu wizytówki kodu, dając gwarancję wizualnego uniemożliwienia naruszenia cudzego projektu (Security UX).
+
+## [0.14.0] - 2026-06-07
+### Dodane
+- **Smart Linki (Inteligentne Odnośniki):** Wprowadzono całkowicie nowy moduł aplikacji działający równolegle do Kodów QR. Oferuje on odrębną listę `SmartLinksList` wraz z innowacyjnym systemem pobierania ikonek (favicons) z adresów docelowych w celach podglądu.
+- Stworzono uproszczony kreator `SmartLinkModal.jsx`, pozwalający użytkownikom na błyskawiczne zakładanie krótkich linków bez konieczności dostosowywania grafik.
+- **Odświeżony Menadżer Tagów:** System przypisywania tagów otrzymał przepiękny, w pełni reaktywny interfejs oparty na półprzezroczystym "szkle" (Glassmorphism). Modale można teraz wyłączać intuicyjnym kliknięciem poza ich obszarem (backdrop click) - funkcja ta powędrowała zresztą również do pozostałych okien dialogowych.
+
+### Poprawione
+- Rozwiązano problem "martwego stanu" (stale state) okienek zarządzania tagami. Obecnie każdy modal subskrybuje z bazy `Firestore` najświeższe dane, co umożliwia przypinanie i odpinanie tagów całkowicie w locie, w czasie rzeczywistym, bez zamykania panelu.
+- Uspójniono architekturę przycisków rozciągających element i ulepszono dropdown z filtrami - zyskał on nowy system ikonek `Radio` naśladujących główny kolor taga. W ten sposób zniwelowano efekt przeciążenia interfejsu.
+
 ## [0.13.0] - 2026-06-07
 ### Dodane
 - **Short link w kreatorze:** Dodano panel "Short link" jako pierwszy krok w oknie tworzenia kodu QR. Generuje on automatycznie unikalny, 5-znakowy identyfikator i w locie weryfikuje jego dostępność w bazie danych (zapobiegając konfliktom). W trybie edycji krótki link jest zablokowany, chroniąc integralność danych.

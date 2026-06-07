@@ -186,6 +186,8 @@ export default function Account({ currentUser, workspaces }) {
         </div>
       </div>
 
+      </div>
+
     </div>
   );
 }

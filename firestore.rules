@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Uproszczona walidacja: Czy użytkownik to administrator/pracownik?
+    // Tymczasowo każda zalogowana (Z Google SSO) osoba uznawana jest za Admina, 
+    // ponieważ dostęp kontrolujemy na poziomie autoryzacji domenowej w aplikacji.
+    function isAppAdmin() {
+      return request.auth != null;
+    }
+
+    // Reguły dla kolekcji "qrcodes"
+    match /qrcodes/{docId} {
+      // Pracownicy mają pełen dostęp do całej bazy
+      allow list, create, delete: if isAppAdmin();
+      
+      // Klienci / Użytkownicy Publiczni:
+      // Zezwalamy na ODCZYT POJEDYNCZEGO KODU z ulicy, aby przekierowanie (RedirectEngine) mogło zadziałać.
+      allow get: if true;
+      
+      // Zezwalamy na UPDATE dla Klienta TYLKO w celu podbicia statystyki (clicks). 
+      // Zapobiega to włamaniu polegającemu np. na cichej zamianie 'url' na złośliwy link przez obcą osobę.
+      allow update: if isAppAdmin() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks', 'lastClickedAt']) &&
+        request.resource.data.clicks == resource.data.clicks + 1
+      );
+    }
+
+    // Reguły dla kolekcji "smartlinks" (analogiczne do QR Kodów)
+    match /smartlinks/{docId} {
+      allow list, create, delete: if isAppAdmin();
+      allow get: if true;
+      allow update: if isAppAdmin() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks', 'lastClickedAt']) &&
+        request.resource.data.clicks == resource.data.clicks + 1
+      );
+    }
+    
+    // Reguły dla wszystkich pozostałych kolekcji (użytkownicy, przestrzenie robocze, tagi, zaproszenia itp.)
+    match /{document=**} {
+      // Tylko zalogowani pracownicy mogą odczytywać i zapisywać.
+      // Użytkownik publiczny z ulicy skanujący kod ma tutaj ścianę.
+      allow read, write: if isAppAdmin();
+    }
+  }
+}

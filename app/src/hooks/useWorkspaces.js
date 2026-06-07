@@ -51,7 +51,10 @@ export function useWorkspaces(currentUser) {
             ownerId: currentUser.uid,
             type: "personal",
             avatarStyle: randomGradient,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            allowMembersEdit: false,
+            allowMembersArchive: false,
+            allowMembersReset: false
           });
           wks.push({ id: docRef.id, name: defaultName, type: "personal", ownerId: currentUser.uid, avatarStyle: randomGradient });
         } catch (e) {

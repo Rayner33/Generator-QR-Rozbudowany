@@ -48,7 +48,10 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
         ownerId: currentUser.uid,
         type: "team",
         avatarStyle,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
+        allowMembersEdit: false,
+        allowMembersArchive: false,
+        allowMembersReset: false
       });
       
       setActiveWorkspace({ 

@@ -22,6 +22,9 @@ Zarządza zespołami oraz przestrzenią personalną użytkowników.
 - `ownerId` (String): UID założyciela/właściciela
 - `members` (Array of Strings): Lista UID przypisanych współpracowników (użytkowników zespołu)
 - `type` (String): `personal` lub `team`
+- `allowMembersEdit` (Boolean): Uprawnienia członków do edycji (Team)
+- `allowMembersArchive` (Boolean): Uprawnienia członków do archiwizacji (Team)
+- `allowMembersReset` (Boolean): Uprawnienia członków do resetowania statystyk (Team)
 - `createdAt` (Timestamp): Data utworzenia
 
 ### 2. `qrcodes` (Kody QR)
@@ -38,22 +41,33 @@ Przechowuje wszystkie zapisane kampanie QR powiązane z danym obszarem roboczym.
 - `archived` (Boolean): Flaga ukrywająca kod w widoku głównym
 - `createdAt` (Timestamp): Data utworzenia
 
-### 3. `tags` (Tagi kodów QR)
-Globalne i uniwersalne etykiety dostępne w obrębie danej przestrzeni roboczej, służące do kategoryzacji kodów QR.
+### 3. `smartlinks` (Inteligentne Linki)
+Moduł alternatywny dla pełnych kampanii QR, skupiony włącznie na przekierowaniach URL z zaawansowaną analityką, wzbogacony o pobieranie Favicony strony docelowej.
+- `id` (String): ID dokumentu (tożsamy z aliasem / short kodem np. "Zyx23")
+- `workspaceId` (String): ID powiązanej przestrzeni
+- `title` (String): Tytuł/nazwa linku
+- `url` (String): URL docelowy
+- `tags` (Array of Strings): Lista identyfikatorów z kolekcji `tags`
+- `clicks` (Number): Liczba kliknięć
+- `archived` (Boolean): Flaga ukrywająca link w widoku głównym
+- `createdAt` (Timestamp): Data utworzenia
+
+### 4. `tags` (Tagi kodów QR)
+Globalne i uniwersalne etykiety dostępne w obrębie danej przestrzeni roboczej, służące do kategoryzacji kodów QR oraz Smart Linków.
 - `id` (String): ID dokumentu
 - `workspaceId` (String): ID przestrzeni, do której tag należy
 - `name` (String): Nazwa tagu, unikalna w obrębie przestrzeni roboczej
 - `color` (String): ID predefiniowanego koloru (np. `mint`, `orange`, `blue`) odpowiadający palecie zdefiniowanej w aplikacji
 - `createdAt` (Timestamp): Data utworzenia
 
-### 4. `users` (Globalny Rejestr Użytkowników)
+### 5. `users` (Globalny Rejestr Użytkowników)
 Kolekcja tworzona przy rejestracji, służąca wyszukiwaniu członków na poczet zespołów.
 - `id` (String): UID logowania
 - `email` (String): E-mail użytkownika
 - `name` (String): Wyświetlana nazwa (lub nazwa zastępcza)
 - `avatarStyle` (String): Prywatny gradient wybrany w profilu (np. dla awatara)
 
-### 5. `invites` (Zaproszenia do Zespołów)
+### 6. `invites` (Zaproszenia do Zespołów)
 Kolekcja nasłuchiwana u klientów w celu wypychania powiadomień.
 - `id` (String): ID dokumentu
 - `email` (String): Adres osoby zapraszanej
@@ -82,12 +96,13 @@ Aplikacja wykorzystuje `react-router-dom` (`<BrowserRouter>`, `<Routes>`) do obs
 ## Główne Komponenty Aplikacji (`app/src/components`)
 
 1. **`App.jsx`**: Serce aplikacji. Konfiguruje router aplikacji oraz system autoryzacji użytkownika.
-2. **`Auth.jsx`**: Moduł logowania. Obsługuje logowanie/rejestrację adresem email oraz logowanie przez Google za pomocą Firebase Auth.
-3. **`QRList.jsx`**: Moduł wyświetlający zapisane kody QR. Obejmuje wyszukiwanie, filtrowanie ("Ostatnio utworzone", "Najwięcej skanów", "Zarchiwizowane") oraz operacje menu kontekstowego. Ponadto **na żywo generuje rzeczywiste miniaturki kodów QR (SVG)** i posiada responsywny, wbudowany panel statystyczny płynnie reagujący na interakcję dzięki potężnym filtrom CSS. Posiada możliwość filtrowania wyników po konkretnym Tagu.
-4. **`QRModal.jsx`**: Ogromny moduł odpowiedzialny za kreator kodów QR. **Sprawdza w czasie rzeczywistym dostępność i duplikację nowo tworzonych aliasów (Short Linków) bezpośrednio w Firestore**. Generuje na żywo podgląd i ocenę skanowalności dla 3 trybów: create, edit i duplicate.
-5. **System Modali Tagów** (`TagManagerModal`, `TagEditModal`, `TagDeleteModal`): Wyspecjalizowane komponenty do kompleksowego zarządzania (CRUD) tagami w przestrzeni roboczej i ich błyskawicznego przypisywania do kodów QR.
+2. **`Login.jsx`**: Moduł autoryzacji Enterprise. Oparty w całości o Single Sign-On (SSO) od Google z mechanizmem filtrującym (tzw. whitelist) po domenach służbowych (np. `@parys.pl`). Całkowicie wycięto klasyczne metody logowania w celu zablokowania podatności typu Brute-Force.
+3. **`QRList.jsx` & `SmartLinksList.jsx`**: Moduły wyświetlające zapisane obiekty z bazy. Obejmują potężne wyszukiwanie, filtrowanie ("Ostatnio utworzone", "Zarchiwizowane") oraz pobieranie miniaturek favikon z zewnątrz. Wykorzystują innowacyjny interfejs do zaznaczania tagów oparty na wskaźnikach przypominających przyciski "radio" dla większej czytelności.
+4. **`QRModal.jsx` & `SmartLinkModal.jsx`**: Ogromne moduły odpowiedzialne za kreatory danych. **Sprawdzają w czasie rzeczywistym dostępność i duplikację nowo tworzonych aliasów (Short Linków) bezpośrednio w Firestore**. Wszystkie zamykane w sposób nowoczesny przez zrzucanie do tła (backdrop click).
+5. **System Modali Tagów** (`TagManagerModal`, `TagEditModal`, `TagDeleteModal`): Wyspecjalizowane, bardzo nowoczesne komponenty oparte na schematach Glassmorphism do zarządzania (CRUD) tagami. Co najważniejsze, działają natywnie z głównym stanem bazy danych, dzięki czemu operacje na nich są w 100% reaktywne na żywo z brakiem "martwych stanów".
 6. **`Analytics.jsx`**: Ekran dedykowany globalnym statystykom i szczegółowym danym odnośnie użycia poszczególnych kodów z przestrzeni roboczej.
-7. **Moduły Pracy Zespołowej** (`WorkspaceSettings.jsx`, `NotificationsModal.jsx`, `InviteMemberModal.jsx`): Nowoczesny system zarządzania danymi na żywo oparty o odpytywanie kolekcji po adresach E-mail. Właściciele mogą tu zapraszać członków (korzystając z opcji Live Search z bazy Global Users), podczas gdy potencjalni odbiorcy zgarniają dynamiczne powiadomienia na pasku Sidebar z bezpośrednim przełączeniem do projektu.
+7. **`RedirectEngine.jsx`**: Niewidzialny, inteligentny komponent działający poza głównym UI aplikacji. Odpowiada za przechwytywanie publicznego ruchu krótkich linków (`/:shortId`). Zlicza "na żywo" unikalne wizyty w tle i odsyła do fizycznych adresów końcowych.
+8. **Moduły Pracy Zespołowej i Uprawnień** (`WorkspaceSettings.jsx`, `NotificationsModal.jsx`, `InviteMemberModal.jsx`): Nowoczesny system zarządzania danymi na żywo oparty o odpytywanie kolekcji po adresach E-mail. Właściciele mogą zapraszać członków i definiować ich precyzyjne Uprawnienia. Potencjalni odbiorcy zgarniają dynamiczne powiadomienia na pasku Sidebar z bezpośrednim przełączeniem do projektu po akceptacji.
 
 ## Główne wzorce w projekcie (Design Patterns)
 - **Dynamic QR Routing:** Aplikacja rozróżnia surowe dane docelowe (zapisywane w bazie Firestore) od danych kodowanych graficznie (krótki link URL powiązany z ID dokumentu). Dzięki temu raz wygenerowany wzór wektorowy kropek pozostaje niezmienny, bez względu na modyfikacje treści przez użytkownika (z wyjątkiem sieci WiFi dla wymuszenia kompatybilności natywnej).

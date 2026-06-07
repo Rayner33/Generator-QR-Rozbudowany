@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Download, MoreVertical, QrCode, Check, X, Wifi, Scan, ArrowRight } from 'lucide-react';
+import { MoreVertical, Check, X, MousePointerClick, ArrowRight, Copy, Link as LinkIcon } from 'lucide-react';
 import TagManagerModal from '../components/tags/TagManagerModal';
 import { getTagColorInfo } from '../utils/tagColors';
 import { Line } from 'react-chartjs-2';
-import QRCodeStyling from 'qr-code-styling';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDocs } from 'firebase/firestore';
-import QRModal from '../components/QRModal';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -44,7 +42,7 @@ const sparklineOptions = {
   }
 };
 
-export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalytics }) {
+export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, onAnalytics }) {
   const { currentUser } = useAuth();
   const [codes, setCodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +65,6 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
   const [codeToArchive, setCodeToArchive] = useState(null);
   const [codeToReset, setCodeToReset] = useState(null);
 
-  // Zamykanie dropdowna przy kliknięciu gdziekolwiek
   useEffect(() => {
     const handleClick = () => {
       setOpenDropdownId(null);
@@ -82,7 +79,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
     if (!activeWorkspace) return;
     setLoading(true);
 
-    const q = query(collection(db, "qrcodes"), where("workspaceId", "==", activeWorkspace.id));
+    const q = query(collection(db, "smartlinks"), where("workspaceId", "==", activeWorkspace.id));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let codesData = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -116,48 +113,17 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
     }
   }, [activeWorkspace]);
 
-  const getQrDataToEncode = (code) => {
-    if (code.contentType === 'wifi') {
-      const { ssid, password, type } = code.wifiData || {};
-      const auth = type === 'nopass' ? '' : `T:${type};`;
-      return `WIFI:S:${ssid};${auth}P:${password};;`;
-    }
-    return `${window.location.origin}/U${code.id.slice(0, 5)}v4S`;
-  };
-
-  const handleDownload = (code, extension) => {
-    const dotsColor = code.dotsColor || "#000000";
-    const eyeColor = code.eyeColor || dotsColor;
-    const backgroundColor = code.backgroundColor || "#ffffff";
-    
-    const qrCode = new QRCodeStyling({
-      width: 1024,
-      height: 1024,
-      data: getQrDataToEncode(code),
-      image: code.logoBase64 || undefined,
-      margin: 10,
-      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
-      imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 10, crossOrigin: "anonymous" },
-      dotsOptions: { color: dotsColor, type: code.styleType || "rounded" },
-      backgroundOptions: { color: backgroundColor },
-      cornersSquareOptions: { color: eyeColor, type: code.styleType === 'dots' ? 'dot' : (code.styleType === 'square' ? 'square' : 'extra-rounded') },
-      cornersDotOptions: { color: eyeColor, type: code.styleType === 'square' ? 'square' : 'dot' }
-    });
-
-    qrCode.download({ name: `QR_${code.title || 'kod'}_${code.id}`, extension });
-  };
-
   const handleArchive = (code) => {
-    updateDoc(doc(db, "qrcodes", code.id), { archived: true });
+    updateDoc(doc(db, "smartlinks", code.id), { archived: true });
     setCodeToArchive(null);
   };
 
   const handleRestore = (code) => {
-    updateDoc(doc(db, "qrcodes", code.id), { archived: false });
+    updateDoc(doc(db, "smartlinks", code.id), { archived: false });
   };
 
   const handleResetAnalytics = (code) => {
-    updateDoc(doc(db, "qrcodes", code.id), { scans: 0 });
+    updateDoc(doc(db, "smartlinks", code.id), { clicks: 0 });
     setCodeToReset(null);
   };
 
@@ -169,12 +135,11 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
       const q = searchQuery.toLowerCase();
       const matchTitle = c.title?.toLowerCase().includes(q);
       const matchUrl = c.url?.toLowerCase().includes(q);
-      const matchEmail = c.emailData?.address?.toLowerCase().includes(q);
-      return matchTitle || matchUrl || matchEmail;
+      return matchTitle || matchUrl;
     })
     .sort((a, b) => {
-      if (sortFilter === 'scans') {
-        return (b.scans || 0) - (a.scans || 0);
+      if (sortFilter === 'clicks') {
+        return (b.clicks || 0) - (a.clicks || 0);
       }
       const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
       const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
@@ -182,13 +147,13 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
     });
 
   const getFilterLabel = () => {
-    if (sortFilter === 'scans') return 'Najwięcej skanów';
+    if (sortFilter === 'clicks') return 'Najwięcej kliknięć';
     if (sortFilter === 'archived') return 'Zarchiwizowane';
     return 'Ostatnio utworzone';
   };
 
   if (loading) {
-    return <div className="text-gray-400 p-4 text-center">Ładowanie kodów z bazy...</div>;
+    return <div className="text-gray-400 p-4 text-center">Ładowanie Smart Linków...</div>;
   }
 
   return (
@@ -200,7 +165,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
           </svg>
           <input 
             type="text" 
-            placeholder="Szukaj kodów QR..." 
+            placeholder="Szukaj Smart Linków..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-primary transition-colors"
@@ -276,9 +241,9 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                   <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg> Ostatnio utworzone</span>
                   {sortFilter === 'recent' && <Check size={16} className="text-red-500" />}
                 </button>
-                <button onClick={() => { setSortFilter('scans'); setIsFilterOpen(false); }} className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'scans' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}>
-                  <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> Najwięcej skanów</span>
-                  {sortFilter === 'scans' && <Check size={16} className="text-red-500" />}
+                <button onClick={() => { setSortFilter('clicks'); setIsFilterOpen(false); }} className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'clicks' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}>
+                  <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> Najwięcej kliknięć</span>
+                  {sortFilter === 'clicks' && <Check size={16} className="text-red-500" />}
                 </button>
                 <button onClick={() => { setSortFilter('archived'); setIsFilterOpen(false); }} className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'archived' ? 'text-red-500 bg-red-500/10' : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'}`}>
                   <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> Zarchiwizowane</span>
@@ -292,22 +257,21 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
 
     {processedCodes.length === 0 ? (
       <div className="text-gray-400 p-8 text-center bg-card border border-border rounded-xl mt-4">
-        {sortFilter === 'archived' ? 'Brak zarchiwizowanych kodów.' : 'Brak zapisanych kodów. Kliknij "Utwórz kod QR" aby zacząć.'}
+        {sortFilter === 'archived' ? 'Brak zarchiwizowanych Smart Linków.' : 'Brak zapisanych Smart Linków. Kliknij "Utwórz smart link" aby zacząć.'}
       </div>
     ) : (
       <div className="space-y-4">
         {processedCodes.map(code => (
         <div key={code.id} className="bg-card border border-border rounded-xl p-3 flex items-stretch justify-between hover:border-gray-600 transition-colors">
-          <div className="flex items-center gap-5 flex-1 min-w-0 pr-4">
-            <div className="w-28 h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white">
-              <QRPreviewItem code={code} />
+          <div className="flex items-center gap-5 flex-1 min-w-0 pr-4 pl-2 min-h-[112px]">
+            <div className="w-14 h-14 rounded-full shrink-0 border border-border overflow-hidden bg-white flex items-center justify-center shadow-inner">
+              <FaviconPreviewItem url={code.url} />
             </div>
             
             <div className="flex flex-col flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg truncate">{code.title || 'Brak tytułu'}</span>
+                <span className="font-bold text-lg truncate">{code.title}</span>
                 {(() => {
-                  const { currentUser } = useAuth();
                   const isOwner = activeWorkspace?.ownerId === currentUser.uid;
                   const isCreator = code.createdBy === currentUser.uid;
                   const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
@@ -337,8 +301,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
               </button>
               <div className="flex items-center gap-2 text-sm text-white mt-1 min-w-0">
                 <span className="text-gray-500 shrink-0">↳</span>
-                <a href={code.contentType === 'email' ? `mailto:${code.emailData?.address || code.url}` : (code.url?.startsWith('http://') || code.url?.startsWith('https://') ? code.url : `https://${code.url}`)} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate">
-                  {code.contentType === 'email' ? (code.emailData?.address || code.url.replace('mailto:', '').split('?')[0]) : code.url}
+                <a href={code.url} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate">
+                  {code.url}
                 </a>
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-3">
@@ -375,95 +339,101 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
           </div>
           <div className="flex items-stretch gap-6">
              <div className="flex flex-col items-end justify-between py-0.5">
-               <div className="flex items-center gap-2 relative">
-                 {sortFilter === 'archived' ? (
-                   <button 
-                     onClick={() => handleRestore(code)}
-                     className="flex items-center gap-2 bg-white text-black px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
-                   >
-                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
-                     Przywróć
-                   </button>
-                 ) : (
-                   <>
-                     <button 
-                       onClick={() => handleDownload(code, 'png')}
-                       className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-gray-200 transition-colors"
-                     >
-                       <Download size={14} /> PNG
-                     </button>
-                     <button 
-                       onClick={() => handleDownload(code, 'svg')}
-                       className="flex items-center gap-1 bg-transparent border border-white text-white px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-white/10 transition-colors"
-                     >
-                       <Download size={14} /> SVG
-                     </button>
-                     <button 
-                       onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === code.id ? null : code.id); setIsFilterOpen(false); }}
-                       className="p-1.5 hover:bg-border rounded-md text-gray-400 transition-colors"
-                     >
-                       <MoreVertical size={16} />
-                     </button>
+                <div className="flex items-center gap-2 relative">
+                  {sortFilter === 'archived' ? (() => {
+                    const isOwner = activeWorkspace?.ownerId === currentUser.uid;
+                    const isCreator = code.createdBy === currentUser.uid;
+                    const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
 
-                     {openDropdownId === code.id && (() => {
-                        const { currentUser } = useAuth();
-                        const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-                        const isCreator = code.createdBy === currentUser.uid;
-                        const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
-                        const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
-                        const canReset = isOwner || isCreator || activeWorkspace?.allowMembersReset;
+                    return canArchive ? (
+                      <button 
+                        onClick={() => handleRestore(code)}
+                        className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                        Przywróć
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-500 italic">Brak uprawnień do przywracania</span>
+                    );
+                  })() : (
+                    <>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(`${window.location.origin}/${code.id}`);
+                          setCopiedLinkId(code.id);
+                          setTimeout(() => setCopiedLinkId(null), 2000);
+                        }}
+                        className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-gray-200 transition-colors"
+                      >
+                        <Copy size={14} /> Kopiuj link
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === code.id ? null : code.id); setIsFilterOpen(false); }}
+                        className="p-1.5 hover:bg-border rounded-md text-gray-400 transition-colors relative"
+                      >
+                        <MoreVertical size={16} />
+                        
+                        {openDropdownId === code.id && (() => {
+                          const isOwner = activeWorkspace?.ownerId === currentUser.uid;
+                          const isCreator = code.createdBy === currentUser.uid;
+                          const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
+                          const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
+                          const canReset = isOwner || isCreator || activeWorkspace?.allowMembersReset;
 
-                        return (
-                          <div 
-                            onClick={e => e.stopPropagation()} 
-                            className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
-                          >
-                            <div className="p-1 flex flex-col">
-                              <button onClick={() => { onAnalytics && onAnalytics(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                Analityka
-                              </button>
-                              {canEdit && (
-                                <button onClick={() => { onEdit(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                  Edytuj
+                          return (
+                            <div 
+                              onClick={e => e.stopPropagation()} 
+                              className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+                            >
+                              <div className="p-1 flex flex-col">
+                                <button onClick={() => { onAnalytics && onAnalytics(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                  Analityka
                                 </button>
-                              )}
-                              <button onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors border-b border-border mb-1 pb-2">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                Duplikuj
-                              </button>
-                              {canArchive && (
-                                <button onClick={() => { setCodeToArchive(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                                  Archiwizuj
+                                {canEdit && (
+                                  <button onClick={() => { onEdit(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    Edytuj
+                                  </button>
+                                )}
+                                <button onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors border-b border-border mb-1 pb-2">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                  Duplikuj
                                 </button>
-                              )}
-                              {canReset && (
-                                <button onClick={() => { setCodeToReset(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                  Resetuj
-                                </button>
-                              )}
+                                {canArchive && (
+                                  <button onClick={() => { setCodeToArchive(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                                    Archiwizuj
+                                  </button>
+                                )}
+                                {canReset && (
+                                  <button onClick={() => { setCodeToReset(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Resetuj
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })()}
-                   </>
-                 )}
-               </div>
-               <div className="flex items-center gap-2">
-                 <span className="text-xs text-gray-500">{code.date}</span>
-                 {activeWorkspace?.type === 'team' && code.createdBy && teamMembers[code.createdBy] && (
-                   <div 
-                     className="w-5 h-5 flex items-center justify-center font-bold text-white shadow-sm shrink-0 cursor-help"
-                     style={{ background: teamMembers[code.createdBy].avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%', fontSize: '10px' }}
-                     title={teamMembers[code.createdBy].name || teamMembers[code.createdBy].email || 'Użytkownik'}
-                   >
-                     {teamMembers[code.createdBy].name ? teamMembers[code.createdBy].name.charAt(0).toUpperCase() : (teamMembers[code.createdBy].email ? teamMembers[code.createdBy].email.charAt(0).toUpperCase() : 'U')}
-                   </div>
-                 )}
-               </div>
+                          );
+                        })()}
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-gray-500">{code.date}</span>
+                  {activeWorkspace?.type === 'team' && code.createdBy && teamMembers[code.createdBy] && (
+                    <div 
+                      className="w-5 h-5 flex items-center justify-center font-bold text-white shadow-sm shrink-0 cursor-help"
+                      style={{ background: teamMembers[code.createdBy].avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%', fontSize: '10px' }}
+                      title={teamMembers[code.createdBy].name || teamMembers[code.createdBy].email || 'Użytkownik'}
+                    >
+                      {teamMembers[code.createdBy].name ? teamMembers[code.createdBy].name.charAt(0).toUpperCase() : (teamMembers[code.createdBy].email ? teamMembers[code.createdBy].email.charAt(0).toUpperCase() : 'U')}
+                    </div>
+                  )}
+                </div>
              </div>
              
              <button 
@@ -473,10 +443,10 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                {/* Default View */}
                <div className="flex flex-col justify-between h-full z-10 relative transition-opacity duration-300 group-hover:opacity-0">
                  <span className="text-[13px] font-semibold text-white flex items-center gap-1.5">
-                   <Scan size={14} className="text-gray-300" />
-                   Skan
+                   <MousePointerClick size={14} className="text-gray-300" />
+                   Kliknięcia
                  </span>
-                 <span className="text-xl font-bold text-white mt-2 leading-none">{code.scans || 0}</span>
+                 <span className="text-xl font-bold text-white mt-2 leading-none">{code.clicks || 0}</span>
                </div>
 
                {/* Hover View */}
@@ -496,8 +466,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                      labels: ['1', '2', '3', '4', '5', '6'],
                      datasets: [{
                        data: [1, 3, 2, 5, 3, 8],
-                       borderColor: '#0066FF',
-                       backgroundColor: 'rgba(0, 102, 255, 0.2)',
+                       borderColor: '#9333ea',
+                       backgroundColor: 'rgba(147, 51, 234, 0.2)',
                        fill: true,
                      }]
                    }}
@@ -514,8 +484,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
       {codeToArchive && (
         <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
           <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
-            <h3 className="text-red-500 font-bold mb-2 uppercase">Zarchiwizuj kod QR</h3>
-            <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz zarchiwizować ten kod QR? Nie będzie można go skanować.</p>
+            <h3 className="text-red-500 font-bold mb-2 uppercase">Zarchiwizuj Smart Link</h3>
+            <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz zarchiwizować ten link? Przekierowanie przestanie działać.</p>
             <button onClick={() => handleArchive(codeToArchive)} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mb-2 transition-colors">ZARCHIWIZUJ</button>
             <button onClick={() => setCodeToArchive(null)} className="w-full bg-[#18181b] hover:bg-[#27272a] text-gray-300 font-bold py-3 rounded-lg transition-colors border border-border">ANULUJ</button>
           </div>
@@ -526,7 +496,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
         <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
           <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
             <h3 className="text-red-500 font-bold mb-2 uppercase">Resetuj analitykę</h3>
-            <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz zresetować analitykę dla tego kodu QR? Tej operacji nie można cofnąć.</p>
+            <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz zresetować kliknięcia dla tego linku? Tej operacji nie można cofnąć.</p>
             <button onClick={() => handleResetAnalytics(codeToReset)} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mb-2 transition-colors">RESETUJ ANALITYKĘ</button>
             <button onClick={() => setCodeToReset(null)} className="w-full bg-[#18181b] hover:bg-[#27272a] text-gray-300 font-bold py-3 rounded-lg transition-colors border border-border">ANULUJ</button>
           </div>
@@ -540,49 +510,30 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
           assignedTagIds={codes.find(c => c.id === codeForTagManager.id)?.tags || []}
           allTags={allTags}
           onClose={() => setCodeForTagManager(null)}
+          collectionName="smartlinks"
         />
       )}
     </>
   );
 }
 
-function QRPreviewItem({ code }) {
-  const qrRef = React.useRef(null);
+function FaviconPreviewItem({ url }) {
+  const [error, setError] = useState(false);
+  
+  if (!url || error) {
+    return <LinkIcon size={24} className="text-gray-400" />;
+  }
 
-  React.useEffect(() => {
-    if (!qrRef.current) return;
-    
-    const getQrDataToEncode = (code) => {
-      if (code.contentType === 'wifi') {
-        const { ssid, password, type } = code.wifiData || {};
-        const auth = type === 'nopass' ? '' : `T:${type};`;
-        return `WIFI:S:${ssid};${auth}P:${password};;`;
-      }
-      return `${window.location.origin}/${code.id || 'xxxxx'}`;
-    };
+  // Google Favicon API
+  const domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+  const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
-    const dotsColor = code.dotsColor || "#000000";
-    const eyeColor = code.eyeColor || dotsColor;
-    const backgroundColor = code.backgroundColor || "#ffffff";
-
-    const qrCode = new QRCodeStyling({
-      width: 1000,
-      height: 1000,
-      type: "svg",
-      data: getQrDataToEncode(code),
-      image: code.logoBase64 || undefined,
-      margin: 0,
-      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
-      imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 5, crossOrigin: "anonymous" },
-      dotsOptions: { color: dotsColor, type: code.styleType || "rounded" },
-      backgroundOptions: { color: backgroundColor },
-      cornersSquareOptions: { color: eyeColor, type: code.styleType === 'dots' ? 'dot' : (code.styleType === 'square' ? 'square' : 'extra-rounded') },
-      cornersDotOptions: { color: eyeColor, type: code.styleType === 'square' ? 'square' : 'dot' }
-    });
-
-    qrRef.current.innerHTML = '';
-    qrCode.append(qrRef.current);
-  }, [code]);
-
-  return <div ref={qrRef} className="w-full h-full flex items-center justify-center p-1.5 [&>*]:w-full [&>*]:h-full" style={{ backgroundColor: code.backgroundColor || '#ffffff' }} />;
+  return (
+    <img 
+      src={faviconUrl} 
+      alt="Favicon" 
+      className="w-8 h-8 rounded-full object-cover" 
+      onError={() => setError(true)}
+    />
+  );
 }

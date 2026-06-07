@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { doc, getDoc, updateDoc, deleteDoc, arrayRemove, collection, query, where, getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { HexColorPicker } from "react-colorful";
-import { Check, X, Search, MoreVertical, Trash2 } from 'lucide-react';
+import { Check, X, Search, MoreVertical, Trash2, Shield } from 'lucide-react';
 import InviteMemberModal from '../components/InviteMemberModal';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 
@@ -21,6 +21,11 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   const [saveMessage, setSaveMessage] = useState('');
   const [memberToRemove, setMemberToRemove] = useState(null);
   const colorPickerRef = useRef(null);
+
+  // Uprawnienia
+  const [allowMembersEdit, setAllowMembersEdit] = useState(activeWorkspace?.allowMembersEdit || false);
+  const [allowMembersArchive, setAllowMembersArchive] = useState(activeWorkspace?.allowMembersArchive || false);
+  const [allowMembersReset, setAllowMembersReset] = useState(activeWorkspace?.allowMembersReset || false);
 
   // Członkowie
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,6 +58,9 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
     if (activeWorkspace) {
       setName(activeWorkspace.name);
       setAvatarStyle(activeWorkspace.avatarStyle || PREDEFINED_GRADIENTS[0]);
+      setAllowMembersEdit(activeWorkspace.allowMembersEdit || false);
+      setAllowMembersArchive(activeWorkspace.allowMembersArchive || false);
+      setAllowMembersReset(activeWorkspace.allowMembersReset || false);
     }
   }, [activeWorkspace]);
 
@@ -93,7 +101,10 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
     try {
       await updateDoc(doc(db, "workspaces", activeWorkspace.id), {
         name,
-        avatarStyle
+        avatarStyle,
+        allowMembersEdit,
+        allowMembersArchive,
+        allowMembersReset
       });
       setSaveMessage('Zaktualizowano pomyślnie!');
       setTimeout(() => setSaveMessage(''), 3000);
@@ -313,6 +324,81 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
     </div>
   );
 
+  const renderPermissionsTab = () => (
+    <div className="w-full">
+      <div className="bg-card border border-border rounded-xl p-8 mb-8">
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-[#FF4C00]" />
+            Uprawnienia Członków Zespołu
+          </h2>
+          <p className="text-gray-400 text-sm">
+            {isOwner 
+              ? 'Określ, jakie uprawnienia mają zaproszeni członkowie względem kodów i linków utworzonych przez innych współpracowników. Twoje uprawnienia jako właściciela są zawsze pełne.' 
+              : 'Jesteś zaproszonym członkiem. Poniższymi uprawnieniami zarządza wyłącznie właściciel zespołu.'}
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 max-w-2xl">
+          <div className="flex items-center justify-between p-5 bg-[#18181b] border border-border rounded-xl transition-colors hover:border-gray-700">
+            <div className="pr-4">
+              <h3 className="text-sm font-semibold text-white mb-1">Edycja cudzych kodów</h3>
+              <p className="text-xs text-gray-400 leading-relaxed">Pozwala członkom zmieniać adres docelowy i parametry w kodach stworzonych przez innych w zespole.</p>
+            </div>
+            <button
+              onClick={() => isOwner && setAllowMembersEdit(!allowMembersEdit)}
+              disabled={!isOwner}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersEdit ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!isOwner ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${allowMembersEdit ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between p-5 bg-[#18181b] border border-border rounded-xl transition-colors hover:border-gray-700">
+            <div className="pr-4">
+              <h3 className="text-sm font-semibold text-white mb-1">Archiwizacja cudzych kodów</h3>
+              <p className="text-xs text-gray-400 leading-relaxed">Zezwala członkom na ukrywanie i przywracanie nieswoich kodów z przestrzeni publicznej zespołu.</p>
+            </div>
+            <button
+              onClick={() => isOwner && setAllowMembersArchive(!allowMembersArchive)}
+              disabled={!isOwner}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersArchive ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!isOwner ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${allowMembersArchive ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between p-5 bg-[#18181b] border border-border rounded-xl transition-colors hover:border-gray-700">
+            <div className="pr-4">
+              <h3 className="text-sm font-semibold text-white mb-1">Resetowanie analityki</h3>
+              <p className="text-xs text-gray-400 leading-relaxed">Pozwala członkom na wyzerowanie licznika kliknięć (operacja jest bezpowrotna!).</p>
+            </div>
+            <button
+              onClick={() => isOwner && setAllowMembersReset(!allowMembersReset)}
+              disabled={!isOwner}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersReset ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!isOwner ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${allowMembersReset ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
+          </div>
+        </div>
+        
+        {isOwner && (
+          <div className="mt-8 pt-6 border-t border-border flex items-center">
+            <button 
+              onClick={handleSave}
+              disabled={isSaving}
+              className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              {isSaving ? 'Zapisywanie...' : 'Zapisz uprawnienia'}
+            </button>
+            {saveMessage && <span className={`ml-4 text-sm font-medium ${saveMessage.includes('błąd') ? 'text-red-400' : 'text-green-400'}`}>{saveMessage}</span>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full">
       <h1 className="text-3xl font-semibold mb-6">Ustawienia zespołu</h1>
@@ -330,11 +416,18 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         >
           Członkowie
         </button>
+        <button 
+          onClick={() => setActiveTab('Uprawnienia')}
+          className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'Uprawnienia' ? 'text-white border-white' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
+        >
+          Uprawnienia
+        </button>
       </div>
 
       <div className="w-full">
         {activeTab === 'Ogólne' && renderGeneralTab()}
         {activeTab === 'Członkowie' && renderMembersTab()}
+        {activeTab === 'Uprawnienia' && renderPermissionsTab()}
       </div>
 
       {isConfirmModalOpen && (
