@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, query, where, or, onSnapshot, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+
+let creationAttemptedForUid = null;
 
 export function useWorkspaces(currentUser) {
   const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [pendingInvites, setPendingInvites] = useState([]);
-  const hasAttemptedCreatePersonal = useRef(false);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -33,8 +34,8 @@ export function useWorkspaces(currentUser) {
       const hasPersonal = wks.some(w => w.type === "personal" || w.name === "Personal");
 
       // Automatyczne utworzenie nowej przestrzeni, jeśli nie istnieje
-      if (!hasPersonal && !hasAttemptedCreatePersonal.current) {
-        hasAttemptedCreatePersonal.current = true;
+      if (!hasPersonal && creationAttemptedForUid !== currentUser.uid) {
+        creationAttemptedForUid = currentUser.uid;
         
         const defaultGradients = [
           'linear-gradient(to top right, #FF4C00, #9333ea)',
