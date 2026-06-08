@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { TAG_COLORS, getTagColorInfo } from '../../utils/tagColors';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -27,8 +28,14 @@ export default function TagEditModal({ tag, onClose }) {
   const tagStyle = getTagColorInfo(selectedColor);
 
   return (
-    <div className="fixed inset-0 z-[120] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col shadow-2xl relative" onClick={e => e.stopPropagation()}>
+    <motion.div 
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-[120] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4" onClick={onClose}
+    >
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+        className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col shadow-2xl relative" onClick={e => e.stopPropagation()}
+      >
         <div className="flex justify-center mb-6">
            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-opacity-10 border ${tagStyle.bg.replace('bg-', 'bg-').replace(']', ']/10')} ${tagStyle.text} ${tagStyle.border}`}>
              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
@@ -72,10 +79,10 @@ export default function TagEditModal({ tag, onClose }) {
           {isSaving ? 'ZAPISYWANIE...' : 'ZAPISZ'}
         </button>
 
-      </div>
+      </motion.div>
       <button onClick={onClose} className="absolute bottom-10 left-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black hover:bg-gray-200 transition-colors">
         <X size={20} />
       </button>
-    </div>
+    </motion.div>
   );
 }

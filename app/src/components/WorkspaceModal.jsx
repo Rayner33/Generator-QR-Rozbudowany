@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -33,8 +34,6 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showColorPicker]);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,27 +70,32 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      {/* Backdrop ze strefą zamknięcia i rozmyciem */}
-      <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
-      
-      {/* Panel zjeżdżający z prawej */}
-      <div 
-        className="relative w-full max-w-md bg-background h-full shadow-2xl flex flex-col border-l border-border"
-        style={{ animation: 'slideInRight 0.3s ease-out forwards' }}
-      >
-        <div className="p-8 border-b border-border flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Utwórz zespół</h2>
-            <p className="text-sm text-gray-400 mt-1">Utwórz nowy workspace, aby współpracować z zespołem</p>
-          </div>
-          <button onClick={onClose} className="p-2 bg-card hover:bg-border rounded-full transition-colors">
-            <X size={20} />
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          key="workspace-modal"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[150] flex justify-end"
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+          
+          {/* Panel */}
+          <motion.div 
+            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            className="w-[480px] h-full bg-[#0a0a0b] border-l border-border shadow-2xl flex flex-col relative z-10"
+          >
+          <button 
+            onClick={onClose}
+            className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white text-black hover:bg-gray-200 transition-colors z-10"
+          >
+            <X size={18} />
           </button>
-        </div>
+
+          <div className="p-8 pb-4 border-b border-border">
+            <h2 className="text-2xl font-bold mb-1">Utwórz zespół</h2>
+            <p className="text-sm text-gray-400">Utwórz nowy workspace, aby współpracować z zespołem</p>
+          </div>
 
         <form onSubmit={handleSubmit} className="p-8 flex-1 flex flex-col">
           <div className="flex-1">
@@ -165,7 +169,9 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
              </button>
           </div>
         </form>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

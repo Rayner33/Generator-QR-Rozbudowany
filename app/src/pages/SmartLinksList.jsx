@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MoreVertical, Check, X, MousePointerClick, ArrowRight, Copy, Link as LinkIcon } from 'lucide-react';
 import TagManagerModal from '../components/tags/TagManagerModal';
 import { getTagColorInfo } from '../utils/tagColors';
@@ -6,6 +7,7 @@ import { Line } from 'react-chartjs-2';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { dropdownAnimation } from '../utils/animations';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -55,6 +57,9 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
   // Tagi
   const [allTags, setAllTags] = useState([]);
   const [activeTagFilters, setActiveTagFilters] = useState([]);
+  const [hoveredTagId, setHoveredTagId] = useState(null);
+  const [hoveredFilter, setHoveredFilter] = useState(null);
+  const [hoveredAction, setHoveredAction] = useState(null);
   const [isTagsDropdownOpen, setIsTagsDropdownOpen] = useState(false);
   const [tagSearchQuery, setTagSearchQuery] = useState('');
   const [codeForTagManager, setCodeForTagManager] = useState(null);
@@ -77,6 +82,7 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
 
   useEffect(() => {
     if (!activeWorkspace) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
 
     const q = query(collection(db, "smartlinks"), where("workspaceId", "==", activeWorkspace.id));
@@ -175,7 +181,7 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
         <div className="relative">
           <button 
             onClick={(e) => { e.stopPropagation(); setIsTagsDropdownOpen(!isTagsDropdownOpen); setIsFilterOpen(false); setOpenDropdownId(null); }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${activeTagFilters.length > 0 ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:bg-border'}`}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${activeTagFilters.length > 0 ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
             {activeTagFilters.length > 0 ? (activeTagFilters.length === 1 ? (allTags.find(t => t.id === activeTagFilters[0])?.name || 'Tagi') : `Tagi (${activeTagFilters.length})`) : 'Tagi'}
@@ -186,8 +192,14 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
             )}
           </button>
           
+          <AnimatePresence>
           {isTagsDropdownOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <motion.div 
+              key="tags-dropdown"
+              {...dropdownAnimation}
+              className="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top" 
+              onClick={e => e.stopPropagation()}
+            >
               <div className="p-2 border-b border-white/5">
                 <input 
                   type="text" 
@@ -197,22 +209,40 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
                   className="w-full bg-[#18181b] border border-border rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:border-blue-500 text-white"
                 />
               </div>
-              <div className="p-2 flex flex-col gap-0.5 max-h-56 overflow-y-auto custom-scrollbar">
+              <div 
+                onMouseLeave={() => setHoveredTagId(null)}
+                className="p-2 flex flex-col gap-0.5 max-h-56 overflow-y-auto custom-scrollbar"
+              >
                 {allTags.filter(t => t.name.toLowerCase().includes(tagSearchQuery.toLowerCase())).map(tag => {
                   const style = getTagColorInfo(tag.color);
                   const isSelected = activeTagFilters.includes(tag.id);
                   return (
-                    <button key={tag.id} onClick={() => { 
-                      setActiveTagFilters(prev => prev.includes(tag.id) ? prev.filter(id => id !== tag.id) : [...prev, tag.id]); 
-                    }} className={`flex items-center w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${style.text} ${isSelected ? 'bg-white/10' : 'hover:bg-white/5'}`}>
-                      {isSelected ? (
-                        <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center border-[2px] border-current shrink-0 mr-3">
-                          <div className="w-2 h-2 rounded-full bg-current"></div>
-                        </div>
-                      ) : (
-                        <div className="w-[18px] h-[18px] rounded-full border-[2px] border-current shrink-0 mr-3 opacity-80" />
+                    <button 
+                      key={tag.id} 
+                      onMouseEnter={() => setHoveredTagId(tag.id)}
+                      onClick={() => { 
+                        setActiveTagFilters(prev => prev.includes(tag.id) ? prev.filter(id => id !== tag.id) : [...prev, tag.id]); 
+                      }} 
+                      className={`relative flex items-center w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${style.text} ${isSelected ? 'bg-white/10' : ''}`}
+                    >
+                      {hoveredTagId === tag.id && !isSelected && (
+                        <motion.div 
+                          layoutId="smartlink-tags-hover"
+                          className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                          initial={false}
+                          transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                        />
                       )}
-                      <span className="font-semibold">{tag.name}</span>
+                      <div className="flex items-center w-full relative z-10 pointer-events-none">
+                        {isSelected ? (
+                          <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center border-[2px] border-current shrink-0 mr-3">
+                            <div className="w-2 h-2 rounded-full bg-current"></div>
+                          </div>
+                        ) : (
+                          <div className="w-[18px] h-[18px] rounded-full border-[2px] border-current shrink-0 mr-3 opacity-80" />
+                        )}
+                        <span className="font-semibold">{tag.name}</span>
+                      </div>
                     </button>
                   );
                 })}
@@ -220,38 +250,67 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
                   <div className="text-center text-xs text-gray-500 py-3">Brak wyników</div>
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
         
         <div className="relative">
           <button 
             onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); setIsTagsDropdownOpen(false); setOpenDropdownId(null); }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${sortFilter === 'archived' ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:bg-border'}`}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${sortFilter === 'archived' ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
             {getFilterLabel()}
             <svg className={`w-4 h-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </button>
           
-          {isFilterOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden" onClick={e => e.stopPropagation()}>
-              <div className="p-1 flex flex-col">
-                <button onClick={() => { setSortFilter('recent'); setIsFilterOpen(false); }} className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'recent' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}>
-                  <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg> Ostatnio utworzone</span>
-                  {sortFilter === 'recent' && <Check size={16} className="text-red-500" />}
+          <AnimatePresence>
+            {isFilterOpen && (
+              <motion.div 
+                key="filter-dropdown"
+                {...dropdownAnimation}
+                className="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top" 
+                onClick={e => e.stopPropagation()}
+              >
+              <div onMouseLeave={() => setHoveredFilter(null)} className="p-1 flex flex-col gap-0.5">
+                <button 
+                  onClick={() => { setSortFilter('recent'); setIsFilterOpen(false); }} 
+                  onMouseEnter={() => setHoveredFilter('recent')}
+                  className={`relative flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'recent' ? 'text-white bg-white/10' : 'text-gray-300'}`}
+                >
+                  {hoveredFilter === 'recent' && sortFilter !== 'recent' && (
+                    <motion.div layoutId="sl-filter-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                  )}
+                  <span className="flex items-center gap-2 relative z-10 pointer-events-none"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg> Ostatnio utworzone</span>
+                  {sortFilter === 'recent' && <Check size={16} className="text-red-500 relative z-10 pointer-events-none" />}
                 </button>
-                <button onClick={() => { setSortFilter('clicks'); setIsFilterOpen(false); }} className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'clicks' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}>
-                  <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> Najwięcej kliknięć</span>
-                  {sortFilter === 'clicks' && <Check size={16} className="text-red-500" />}
+                <button 
+                  onClick={() => { setSortFilter('clicks'); setIsFilterOpen(false); }} 
+                  onMouseEnter={() => setHoveredFilter('clicks')}
+                  className={`relative flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'clicks' ? 'text-white bg-white/10' : 'text-gray-300'}`}
+                >
+                  {hoveredFilter === 'clicks' && sortFilter !== 'clicks' && (
+                    <motion.div layoutId="sl-filter-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                  )}
+                  <span className="flex items-center gap-2 relative z-10 pointer-events-none"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> Najwięcej kliknięć</span>
+                  {sortFilter === 'clicks' && <Check size={16} className="text-red-500 relative z-10 pointer-events-none" />}
                 </button>
-                <button onClick={() => { setSortFilter('archived'); setIsFilterOpen(false); }} className={`flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'archived' ? 'text-red-500 bg-red-500/10' : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'}`}>
-                  <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> Zarchiwizowane</span>
-                  {sortFilter === 'archived' && <Check size={16} className="text-red-500" />}
+                <button 
+                  onClick={() => { setSortFilter('archived'); setIsFilterOpen(false); }} 
+                  onMouseEnter={() => setHoveredFilter('archived')}
+                  className={`relative flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'archived' ? 'text-red-500 bg-red-500/10' : 'text-red-400'}`}
+                >
+                  {hoveredFilter === 'archived' && sortFilter !== 'archived' && (
+                    <motion.div layoutId="sl-filter-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                  )}
+                  <span className="flex items-center gap-2 relative z-10 pointer-events-none"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> Zarchiwizowane</span>
+                  {sortFilter === 'archived' && <Check size={16} className="text-red-500 relative z-10 pointer-events-none" />}
                 </button>
               </div>
-            </div>
-          )}
+            </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -375,49 +434,58 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
                       >
                         <MoreVertical size={16} />
                         
+                        <AnimatePresence>
                         {openDropdownId === code.id && (() => {
-                          const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-                          const isCreator = code.createdBy === currentUser.uid;
-                          const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
-                          const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
-                          const canReset = isOwner || isCreator || activeWorkspace?.allowMembersReset;
-
-                          return (
-                            <div 
+                                  const isOwner = activeWorkspace?.ownerId === currentUser.uid;
+                                  const isCreator = code.createdBy === currentUser.uid;
+                                  const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
+                                  const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
+                                  const canReset = isOwner || isCreator || activeWorkspace?.allowMembersReset;
+                                  
+                                  return (
+                            <motion.div 
+                              key={`dropdown-${code.id}`}
+                              {...dropdownAnimation}
                               onClick={e => e.stopPropagation()} 
-                              className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+                              className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top"
                             >
-                              <div className="p-1 flex flex-col">
-                                <button onClick={() => { onAnalytics && onAnalytics(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                  Analityka
-                                </button>
-                                {canEdit && (
-                                  <button onClick={() => { onEdit(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                    Edytuj
-                                  </button>
-                                )}
-                                <button onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors border-b border-border mb-1 pb-2">
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                  Duplikuj
-                                </button>
-                                {canArchive && (
-                                  <button onClick={() => { setCodeToArchive(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                                    Archiwizuj
-                                  </button>
-                                )}
-                                {canReset && (
-                                  <button onClick={() => { setCodeToReset(code); setOpenDropdownId(null); }} className="flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    Resetuj
-                                  </button>
-                                )}
+                              <div className="p-1 flex flex-col" onMouseLeave={() => setHoveredAction(null)}>
+                                      <button onMouseEnter={() => setHoveredAction('analytics')} onClick={() => { onAnalytics && onAnalytics(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors">
+                                        {hoveredAction === 'analytics' && <motion.div layoutId="sl-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                        <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                        <span className="relative z-10 pointer-events-none">Analityka</span>
+                                      </button>
+                                      {canEdit && (
+                                        <button onMouseEnter={() => setHoveredAction('edit')} onClick={() => { onEdit(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors">
+                                          {hoveredAction === 'edit' && <motion.div layoutId="sl-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                          <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                          <span className="relative z-10 pointer-events-none">Edytuj</span>
+                                        </button>
+                                      )}
+                                      <button onMouseEnter={() => setHoveredAction('duplicate')} onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors border-b border-border mb-1 pb-2">
+                                        {hoveredAction === 'duplicate' && <motion.div layoutId="sl-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                        <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        <span className="relative z-10 pointer-events-none">Duplikuj</span>
+                                      </button>
+                                      {canArchive && (
+                                        <button onMouseEnter={() => setHoveredAction('archive')} onClick={() => { setCodeToArchive(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 transition-colors">
+                                          {hoveredAction === 'archive' && <motion.div layoutId="sl-action-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                          <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                                          <span className="relative z-10 pointer-events-none">Archiwizuj</span>
+                                        </button>
+                                      )}
+                                      {canReset && (
+                                        <button onMouseEnter={() => setHoveredAction('reset')} onClick={() => { setCodeToReset(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 transition-colors">
+                                          {hoveredAction === 'reset' && <motion.div layoutId="sl-action-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                          <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                          <span className="relative z-10 pointer-events-none">Resetuj</span>
+                                        </button>
+                                      )}
                               </div>
-                            </div>
-                          );
-                        })()}
+                            </motion.div>
+                                  );
+                                })()}
+                        </AnimatePresence>
                       </button>
                     </>
                   )}
@@ -481,28 +549,33 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
     </div>
     )}
 
+      <AnimatePresence>
       {codeToArchive && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
-          <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: "spring", duration: 0.4, bounce: 0.1 }} className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
             <h3 className="text-red-500 font-bold mb-2 uppercase">Zarchiwizuj Smart Link</h3>
             <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz zarchiwizować ten link? Przekierowanie przestanie działać.</p>
             <button onClick={() => handleArchive(codeToArchive)} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mb-2 transition-colors">ZARCHIWIZUJ</button>
             <button onClick={() => setCodeToArchive(null)} className="w-full bg-[#18181b] hover:bg-[#27272a] text-gray-300 font-bold py-3 rounded-lg transition-colors border border-border">ANULUJ</button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {codeToReset && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
-          <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: "spring", duration: 0.4, bounce: 0.1 }} className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
             <h3 className="text-red-500 font-bold mb-2 uppercase">Resetuj analitykę</h3>
             <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz zresetować kliknięcia dla tego linku? Tej operacji nie można cofnąć.</p>
             <button onClick={() => handleResetAnalytics(codeToReset)} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mb-2 transition-colors">RESETUJ ANALITYKĘ</button>
             <button onClick={() => setCodeToReset(null)} className="w-full bg-[#18181b] hover:bg-[#27272a] text-gray-300 font-bold py-3 rounded-lg transition-colors border border-border">ANULUJ</button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {codeForTagManager && (
         <TagManagerModal 
           activeWorkspace={activeWorkspace}
@@ -513,6 +586,7 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
           collectionName="smartlinks"
         />
       )}
+      </AnimatePresence>
     </>
   );
 }

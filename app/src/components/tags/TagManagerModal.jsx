@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Edit2, Trash2 } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -115,8 +116,14 @@ export default function TagManagerModal({ activeWorkspace, codeId, assignedTagId
 
   return (
     <>
-      <div className="fixed inset-0 z-[110] bg-black/60 flex flex-col gap-6 items-center justify-center backdrop-blur-sm p-4" onClick={onClose}>
-        <div className="bg-[#0a0a0b]/95 border border-white/10 rounded-2xl w-full max-w-[480px] shadow-2xl relative flex flex-col backdrop-blur-2xl" onClick={e => e.stopPropagation()}>
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-[110] bg-black/60 flex flex-col gap-6 items-center justify-center backdrop-blur-sm p-4" onClick={onClose}
+      >
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+          className="bg-[#0a0a0b]/95 border border-white/10 rounded-2xl w-full max-w-[480px] shadow-2xl relative flex flex-col backdrop-blur-2xl" onClick={e => e.stopPropagation()}
+        >
           
           <div className="p-4 flex flex-col gap-4">
             {assignedTags.length > 0 && (
@@ -163,15 +170,19 @@ export default function TagManagerModal({ activeWorkspace, codeId, assignedTagId
               <div className="p-4 text-center text-xs text-gray-500">Brak pasujących tagów</div>
             )}
           </div>
-        </div>
+        </motion.div>
         
         <button onClick={onClose} className="w-12 h-12 shrink-0 bg-white rounded-full flex items-center justify-center text-black hover:bg-gray-200 transition-colors shadow-lg">
           <X size={24} />
         </button>
-      </div>
+      </motion.div>
 
-      {editingTag && <TagEditModal tag={editingTag} onClose={() => setEditingTag(null)} />}
-      {deletingTag && <TagDeleteModal tag={deletingTag} workspaceId={activeWorkspace.id} onClose={() => setDeletingTag(null)} />}
+      <AnimatePresence>
+        {editingTag && <TagEditModal tag={editingTag} onClose={() => setEditingTag(null)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {deletingTag && <TagDeleteModal tag={deletingTag} workspaceId={activeWorkspace.id} onClose={() => setDeletingTag(null)} />}
+      </AnimatePresence>
     </>
   );
 }

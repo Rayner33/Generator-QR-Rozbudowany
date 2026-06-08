@@ -4,6 +4,7 @@ import { doc, getDoc, updateDoc, deleteDoc, arrayRemove, collection, query, wher
 import { useNavigate } from 'react-router-dom';
 import { HexColorPicker } from "react-colorful";
 import { Check, X, Search, MoreVertical, Trash2, Shield } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import InviteMemberModal from '../components/InviteMemberModal';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 
@@ -11,6 +12,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   const navigate = useNavigate();
   const [mountedWorkspaceId] = useState(activeWorkspace?.id);
   const [activeTab, setActiveTab] = useState('Ogólne');
+  const [hoveredTab, setHoveredTab] = useState(null);
   const [name, setName] = useState(activeWorkspace?.name || '');
   const [avatarStyle, setAvatarStyle] = useState(activeWorkspace?.avatarStyle || PREDEFINED_GRADIENTS[0]);
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -403,25 +405,34 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
     <div className="w-full">
       <h1 className="text-3xl font-semibold mb-6">Ustawienia zespołu</h1>
       
-      <div className="flex items-center gap-8 border-b border-border mb-8">
-        <button 
-          onClick={() => setActiveTab('Ogólne')}
-          className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'Ogólne' ? 'text-white border-white' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
-        >
-          Ogólne
-        </button>
-        <button 
-          onClick={() => setActiveTab('Członkowie')}
-          className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'Członkowie' ? 'text-white border-white' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
-        >
-          Członkowie
-        </button>
-        <button 
-          onClick={() => setActiveTab('Uprawnienia')}
-          className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'Uprawnienia' ? 'text-white border-white' : 'text-gray-500 border-transparent hover:text-gray-300'}`}
-        >
-          Uprawnienia
-        </button>
+      <div className="flex items-center gap-2 border-b border-border mb-8 pb-0">
+        {['Ogólne', 'Członkowie', 'Uprawnienia'].map((tab) => (
+          <button 
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            onMouseEnter={() => setHoveredTab(tab)}
+            onMouseLeave={() => setHoveredTab(null)}
+            className={`relative pb-4 pt-2 font-medium px-4 transition-colors ${activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            {hoveredTab === tab && (
+              <motion.div 
+                layoutId="workspace-tab-hover"
+                className="absolute inset-0 bg-white/5 rounded-t-lg -z-10"
+                initial={false}
+                transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+              />
+            )}
+            {activeTab === tab && (
+              <motion.div 
+                layoutId="workspace-tab-active"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-white z-10"
+                initial={false}
+                transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+              />
+            )}
+            <span className="relative z-10">{tab}</span>
+          </button>
+        ))}
       </div>
 
       <div className="w-full">
@@ -468,13 +479,11 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         </div>
       )}
 
-      {isInviteModalOpen && (
-        <InviteMemberModal 
-          isOpen={isInviteModalOpen}
-          onClose={() => setIsInviteModalOpen(false)}
-          activeWorkspace={activeWorkspace}
-        />
-      )}
+      <InviteMemberModal 
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        activeWorkspace={activeWorkspace}
+      />
     </div>
   );
 }

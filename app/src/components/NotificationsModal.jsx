@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -7,8 +8,6 @@ import { useNavigate } from 'react-router-dom';
 export default function NotificationsModal({ isOpen, onClose, pendingInvites, currentUser, setActiveWorkspace }) {
   const [processingId, setProcessingId] = useState(null);
   const navigate = useNavigate();
-
-  if (!isOpen) return null;
 
   const handleAccept = async (invite) => {
     setProcessingId(invite.id);
@@ -60,8 +59,20 @@ export default function NotificationsModal({ isOpen, onClose, pendingInvites, cu
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
-      <div className="w-[400px] h-full bg-[#0a0a0b] border-l border-border shadow-2xl flex flex-col animate-slide-in-right relative">
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          key="notifications-modal"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex justify-end"
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
+          <motion.div 
+            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            className="w-[400px] h-full bg-[#0a0a0b] border-l border-border shadow-2xl flex flex-col relative z-10"
+          >
         
         <button 
           onClick={onClose}
@@ -119,7 +130,9 @@ export default function NotificationsModal({ isOpen, onClose, pendingInvites, cu
             </div>
           )}
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

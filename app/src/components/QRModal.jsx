@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Link as LinkIcon, Phone, MessageSquare, Type, FileText, Wifi, Image as ImageIcon, Trash, QrCode, Globe } from 'lucide-react';
 import QRCodeStyling from 'qr-code-styling';
 import { HexColorPicker } from 'react-colorful';
@@ -289,11 +290,25 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
 
   const scannability = getScannability();
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative" onClick={e => e.stopPropagation()}>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4" 
+          onClick={onClose}
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+            className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative" 
+            onClick={e => e.stopPropagation()}
+          >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-sidebar">
           <div className="flex items-center gap-3">
@@ -642,9 +657,11 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
              </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
+      </motion.div>
+    </motion.div>
+    )}
+  </AnimatePresence>
+);
 }
 
 function Tab({ icon, label, active, onClick }) {

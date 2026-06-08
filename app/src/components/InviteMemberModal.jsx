@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from '../context/AuthContext';
 
 export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) {
+  const { currentUser } = useAuth();
   const [email, setEmail] = useState('');
   const [isConfirming, setIsConfirming] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +22,7 @@ export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) 
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+
 
   const handleSearchChange = (e) => {
     setEmail(e.target.value);
@@ -65,13 +68,28 @@ export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) 
   };
 
   const matchedUsers = email.trim().length >= 2 
-    ? allUsers.filter(u => u.email.toLowerCase().includes(email.toLowerCase()) || (u.name && u.name.toLowerCase().includes(email.toLowerCase())))
+    ? allUsers.filter(u => 
+        u.email !== currentUser?.email &&
+        (u.email.toLowerCase().includes(email.toLowerCase()) || (u.name && u.name.toLowerCase().includes(email.toLowerCase())))
+      )
     : [];
 
   return (
-    <>
-      <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
-        <div className="w-[400px] h-full bg-[#0a0a0b] border-l border-border shadow-2xl flex flex-col animate-slide-in-right relative">
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div 
+            key="invite-modal"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[50] flex justify-end"
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            
+            <motion.div 
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+              className="w-[400px] h-full bg-[#0a0a0b] border-l border-border shadow-2xl flex flex-col relative z-10"
+            >
           
           <button 
             onClick={onClose}
@@ -80,10 +98,12 @@ export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) 
             <X size={18} />
           </button>
 
-          <div className="p-8 pb-4">
-            <h2 className="text-xl font-bold mb-2">Zaproś członków zespołu</h2>
-            <p className="text-sm text-gray-400 mb-8">Wyszukaj członków zespołu po adresie e-mail, aby ich zaprosić</p>
+          <div className="p-8 pb-4 border-b border-border">
+            <h2 className="text-2xl font-bold mb-1">Zaproś członków zespołu</h2>
+            <p className="text-sm text-gray-400 mb-4">Wyszukaj członków zespołu po adresie e-mail, aby ich zaprosić</p>
+          </div>
 
+          <div className="p-8 pt-4 flex-1 overflow-y-auto">
             <div className="relative mb-6">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input 
@@ -139,12 +159,16 @@ export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) 
               </div>
             )}
           </div>
-        </div>
-      </div>
+            </motion.div>
+          </motion.div>
 
       {isConfirming && (
-        <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsConfirming(false)} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+            className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl relative z-10"
+          >
             <h3 className="font-bold mb-2 uppercase text-white">Zaproś użytkownika</h3>
             <p className="text-sm text-gray-400 mb-6">Czy chcesz wysłać zaproszenie do dołączenia do Twojego zespołu?</p>
             <button 
@@ -160,9 +184,11 @@ export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) 
             >
               ANULUJ
             </button>
-          </div>
+          </motion.div>
         </div>
       )}
-    </>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

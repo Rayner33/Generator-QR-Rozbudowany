@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { QrCode, Link as LinkIcon, PieChart, Check, ChevronDown, Plus, User, Settings, Bell } from 'lucide-react';
 import { auth, db } from '../firebase';
 import { signOut } from 'firebase/auth';
+import { dropdownAnimation } from '../utils/animations';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
 export default function Sidebar({ activePath, workspaces, activeWorkspace, setActiveWorkspace, onOpenWorkspaceModal, pendingInvites, onOpenNotifications }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [hoveredNav, setHoveredNav] = useState(null);
+  const [hoveredWs, setHoveredWs] = useState(null);
   const dropdownRef = useRef(null);
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -75,15 +79,30 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
             <ChevronDown size={16} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
           </div>
 
-          {isDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden p-2 z-50 flex flex-col gap-1">
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div 
+                key="workspace-dropdown"
+                {...dropdownAnimation}
+                onMouseLeave={() => setHoveredWs(null)}
+                className="absolute top-full left-0 right-0 mt-2 bg-[#0a0a0b] border border-border rounded-xl shadow-xl overflow-hidden p-2 z-50 flex flex-col gap-1 origin-top"
+              >
               {sortedWorkspaces.map(ws => (
                 <div 
                   key={ws.id} 
                   onClick={() => { setActiveWorkspace(ws); setIsDropdownOpen(false); }}
-                  className="p-2 flex items-center justify-between cursor-pointer hover:bg-border transition-colors group rounded-lg"
+                  onMouseEnter={() => setHoveredWs(ws.id)}
+                  className="relative p-2 flex items-center justify-between cursor-pointer transition-colors group rounded-lg"
                 >
-                  <div className="flex items-center gap-3">
+                  {hoveredWs === ws.id && (
+                    <motion.div 
+                      layoutId="ws-hover"
+                      className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                      initial={false}
+                      transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                    />
+                  )}
+                  <div className="flex items-center gap-3 relative z-10 pointer-events-none">
                     <div 
                       className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
                       style={{ background: ws.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
@@ -111,10 +130,19 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                     setIsDropdownOpen(false);
                     onOpenWorkspaceModal();
                   }}
-                  className="p-2 flex items-center gap-3 cursor-pointer hover:bg-border transition-colors rounded-lg group"
+                  onMouseEnter={() => setHoveredWs('create')}
+                  className="relative p-2 flex items-center gap-3 cursor-pointer transition-colors rounded-lg group"
                 >
+                  {hoveredWs === 'create' && (
+                    <motion.div 
+                      layoutId="ws-hover"
+                      className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                      initial={false}
+                      transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                    />
+                  )}
                   <div 
-                    className="w-10 h-10 border-2 border-dashed border-gray-600 flex items-center justify-center text-gray-400 shrink-0 group-hover:border-gray-400 group-hover:text-white transition-colors"
+                    className="w-10 h-10 border-2 border-dashed border-gray-600 flex items-center justify-center text-gray-400 shrink-0 group-hover:border-gray-400 group-hover:text-white transition-colors relative z-10 pointer-events-none"
                     style={{ borderRadius: '30%' }}
                   >
                     <Plus size={20} />
@@ -122,8 +150,9 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                   <span className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors">Utwórz zespół</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -135,32 +164,40 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
         </div>
       )}
 
-      <nav className="flex-1 flex flex-col gap-2 mt-4">
+      <nav onMouseLeave={() => setHoveredNav(null)} className="flex-1 flex flex-col gap-2 mt-4">
         <NavItem 
           icon={<QrCode size={20} />} 
           label="Kody Qr" 
           active={activePath === '/'} 
-          onClick={() => navigate('/')} 
+          onClick={() => navigate('/')}
+          onMouseEnter={() => setHoveredNav('/')}
+          hoveredNav={hoveredNav}
         />
         <NavItem 
           icon={<LinkIcon size={20} />} 
           label="Smart Linki" 
           active={activePath === '/links'} 
-          onClick={() => navigate('/links')} 
+          onClick={() => navigate('/links')}
+          onMouseEnter={() => setHoveredNav('/links')}
+          hoveredNav={hoveredNav}
         />
         <div className="my-2 border-t border-border/50 mx-4"></div>
         <NavItem 
           icon={<PieChart size={20} />} 
           label="Analityka" 
           active={activePath === '/analytics'} 
-          onClick={() => navigate('/analytics')} 
+          onClick={() => navigate('/analytics')}
+          onMouseEnter={() => setHoveredNav('/analytics')}
+          hoveredNav={hoveredNav}
         />
         {activeWorkspace?.type !== 'personal' && activeWorkspace?.name !== 'Personal' && (
           <NavItem 
             icon={<Settings size={20} />} 
             label="Ustawienia" 
             active={activePath === '/settings'} 
-            onClick={() => navigate('/settings')} 
+            onClick={() => navigate('/settings')}
+            onMouseEnter={() => setHoveredNav('/settings')}
+            hoveredNav={hoveredNav}
           />
         )}
       </nav>
@@ -168,18 +205,47 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
   );
 }
 
-function NavItem({ icon, label, active, onClick }) {
+function NavItem({ icon, label, active, onClick, onMouseEnter, hoveredNav }) {
+  const path = activePathFor(label); // Helper
+  
   return (
     <div 
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3 mx-4 rounded-lg cursor-pointer transition-colors ${
+      onMouseEnter={onMouseEnter}
+      className={`relative flex items-center gap-3 px-4 py-3 mx-4 rounded-lg cursor-pointer transition-colors ${
         active 
-          ? 'bg-card text-white font-semibold border border-border shadow-sm' 
-          : 'text-gray-400 hover:text-white hover:bg-card/50'
+          ? 'text-white font-semibold' 
+          : 'text-gray-400 hover:text-white'
       }`}
     >
-      {icon}
-      <span className="text-sm capitalize">{label}</span>
+      {active && (
+        <motion.div 
+          layoutId="nav-active"
+          className="absolute inset-0 bg-card border border-border shadow-sm rounded-lg -z-20"
+          initial={false}
+          transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+        />
+      )}
+      {hoveredNav === path && !active && (
+        <motion.div 
+          layoutId="nav-hover"
+          className="absolute inset-0 bg-card/50 rounded-lg -z-10"
+          initial={false}
+          transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+        />
+      )}
+      <div className="flex items-center gap-3 relative z-10 pointer-events-none w-full">
+        {icon}
+        <span className="text-sm capitalize">{label}</span>
+      </div>
     </div>
   );
+}
+
+function activePathFor(label) {
+  if (label === 'Kody Qr') return '/';
+  if (label === 'Smart Linki') return '/links';
+  if (label === 'Analityka') return '/analytics';
+  if (label === 'Ustawienia') return '/settings';
+  return label;
 }
