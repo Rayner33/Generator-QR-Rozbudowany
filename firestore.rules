@@ -18,11 +18,11 @@ service cloud.firestore {
       // Zezwalamy na ODCZYT POJEDYNCZEGO KODU z ulicy, aby przekierowanie (RedirectEngine) mogło zadziałać.
       allow get: if true;
       
-      // Zezwalamy na UPDATE dla Klienta TYLKO w celu podbicia statystyki (clicks). 
+      // Zezwalamy na UPDATE dla Klienta TYLKO w celu podbicia statystyki (scans). 
       // Zapobiega to włamaniu polegającemu np. na cichej zamianie 'url' na złośliwy link przez obcą osobę.
       allow update: if isAppAdmin() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks', 'lastClickedAt']) &&
-        request.resource.data.clicks == resource.data.clicks + 1
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scans', 'lastClickedAt']) &&
+        request.resource.data.scans == resource.data.scans + 1
       );
     }
 

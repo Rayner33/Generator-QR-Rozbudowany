@@ -7,10 +7,12 @@ export default function RedirectEngine() {
   const { shortId } = useParams();
   const [error, setError] = useState('');
   const [status, setStatus] = useState('Analizowanie linku...');
+  const hasProcessed = React.useRef(false);
 
   useEffect(() => {
     async function processRedirect() {
-      if (!shortId) return;
+      if (!shortId || hasProcessed.current) return;
+      hasProcessed.current = true;
 
       try {
         // 1. Szukamy w kodach QR
@@ -43,19 +45,27 @@ export default function RedirectEngine() {
         }
 
         // 4. Podbicie statystyk kliknięć (Analytics Increment)
-        // Uwaga: W przyszłości dobudujemy tu zapisywanie lokalizacji, przeglądarki, systemu.
+        const incrementField = isQrCode ? 'scans' : 'clicks';
         setStatus('Przygotowywanie przekierowania...');
         await updateDoc(targetDocRef, {
-          clicks: increment(1),
+          [incrementField]: increment(1),
           lastClickedAt: new Date()
         });
 
         // 5. Przekierowanie
         let finalUrl = targetData.url || targetData.targetUrl; // w zalezności od nazwy pola w kolekcji
-        
-        // Zabezpieczenie braku protokołu
-        if (finalUrl && !finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-            finalUrl = 'https://' + finalUrl;
+
+        if (targetData.contentType === 'vcard') {
+          finalUrl = `data:text/vcard;charset=utf-8,${encodeURIComponent(finalUrl)}`;
+          setStatus('Pobieranie wizytówki...');
+        } else if (targetData.contentType === 'email' || (finalUrl && finalUrl.startsWith('mailto:'))) {
+          setStatus('Otwieranie poczty...');
+        } else if (targetData.contentType === 'phone' || (finalUrl && finalUrl.startsWith('tel:'))) {
+          setStatus('Otwieranie telefonu...');
+        } else if (targetData.contentType === 'wifi') {
+          finalUrl = null;
+        } else if (finalUrl && !finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+          finalUrl = 'https://' + finalUrl;
         }
 
         if (finalUrl) {

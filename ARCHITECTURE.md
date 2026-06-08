@@ -116,3 +116,4 @@ Aplikacja wykorzystuje `react-router-dom` (`<BrowserRouter>`, `<Routes>`) do obs
 
 ---
 *(Dokument utworzony i aktualizowany przez AI Assistant na podstawie wytycznych deweloperskich)*
+

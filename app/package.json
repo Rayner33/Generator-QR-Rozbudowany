@@ -22,7 +22,8 @@
     "react-colorful": "^5.7.0",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.17.0",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "ua-parser-js": "^2.0.10"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -113,7 +113,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
     }
   };
 
-  const getShortlink = () => {
+  const getFullUrl = () => {
     return `${window.location.origin}/${codeId || 'xxxxx'}`;
   };
 
@@ -121,7 +121,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
     if (contentType === 'wifi') {
       return getQrDataString();
     }
-    return getShortlink();
+    return getFullUrl();
   };
 
   const getValidationErrors = () => {
@@ -337,9 +337,9 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                 Short link
               </h3>
               <div className="flex items-start gap-2 ml-9">
-                <div className="flex items-center bg-[#1a1a1c] border border-border rounded-lg px-3 py-2 shrink-0 h-[38px]">
-                   <Globe className="w-4 h-4 mr-2 text-gray-400" />
-                   <span className="text-sm">{window.location.host}</span>
+                <div className="flex bg-[#0a0a0b] rounded-lg border border-border p-3 focus-within:border-white transition-colors">
+                  <span className="text-sm">{window.location.host}</span>
+                  <span className="text-sm text-gray-500 mx-1">/</span>
                 </div>
                 
                 <div className="flex-1">

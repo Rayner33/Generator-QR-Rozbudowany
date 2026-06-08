@@ -1,4 +1,13 @@
 # Changelog
+## [0.7.0] - 2026-06-08
+### Dodane
+- **Panel Analityki (Analytics.jsx):** Utworzenie g³ownego widoku analityki ze spersonalizowanymi statystykami. Wykorzystanie biblioteki chart.js do interaktywnego g³ównego wykresu.
+- Zaimplementowano ujednolicony modal 'Zobacz wszystko' w panelu Analityki ze wsparciem dla wyszukiwania i dostosowanym schematem kolorów (niebieski dla kodów QR, fioletowy dla Smart Linków).
+
+### Poprawione
+- **Optymalizacja wydajnoœci:** Wdro¿ono opóŸnienie wyci¹gania (renderowania) du¿ych list QR kodów i Smart Linków (setTimeout), co wyeliminowa³o zaciêcia podczas odtwarzania animacji nawigacyjnej w menu bocznym.
+- **Ujednolicenie wizualne:** Zsynchronizowano kolorystykê przycisków analityki oraz mini-wykresów (sparklines) w listach QRList.jsx i SmartLinksList.jsx do obowi¹zuj¹cego schematu Analytics (odpowiednio #1ea2e4 i #8b5cf6).
+
 Wszystkie najwaÅ¼niejsze zmiany w tym projekcie dokumentowane sÄ… w tym pliku.
 
 Format pliku bazuje na standardzie [Keep a Changelog](https://keepachangelog.com/pl/1.0.0/), a wersjonowanie odpowiada standardowi [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -150,3 +159,4 @@ Format pliku bazuje na standardzie [Keep a Changelog](https://keepachangelog.com
 - Instalacja Å›rodowiska TailwindCSS w oparciu o niestandardowe zmienne koloru i ciemne motywy.
 - PodÅ‚Ä…czenie bazowego rdzenia `firebase.js` Å‚Ä…czÄ…cego Firebase SDK dla funkcji autoryzacyjnych.
 - Podstawowa kontrola prywatnego dostÄ™pu (przekierowanie na stronÄ™ autoryzacji z gÅ‚Ã³wnej tablicy).
+

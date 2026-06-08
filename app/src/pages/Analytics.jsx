@@ -1,87 +1,456 @@
-import React from 'react';
-import { Doughnut, Line } from 'react-chartjs-2';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Line } from 'react-chartjs-2';
 import { 
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, 
-  LineElement, ArcElement, Title, Tooltip, Legend 
+  LineElement, Title, Tooltip, Legend, Filler 
 } from 'chart.js';
-import QRModal from '../components/QRModal';
+import { Download, Filter, Search, X, QrCode, Link as LinkIcon, MousePointerClick, ChevronDown, Globe, Monitor } from 'lucide-react';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 export default function Analytics() {
+  const [selectedMainTab, setSelectedMainTab] = useState('qr'); // 'qr' | 'smartlink'
+  const [selectedCodeId, setSelectedCodeId] = useState(null);
+  const [timeframe, setTimeframe] = useState('30d');
+  const [hoveredMainTab, setHoveredMainTab] = useState(null);
+  
+  const [modalType, setModalType] = useState(null); // 'top' | 'geo' | 'tech' | null
+  const [modalSearchQuery, setModalSearchQuery] = useState('');
+
+  // Pod-zakładki dla kolumn
+  const [geoTab, setGeoTab] = useState('Kontynenty');
+  const [techTab, setTechTab] = useState('Urządzenia');
+
+  const isQr = selectedMainTab === 'qr';
+  const themeColor = isQr ? '#1ea2e4' : '#8b5cf6';
+  const themeBg = isQr ? 'rgba(30, 162, 228, 0.1)' : 'rgba(139, 92, 246, 0.1)';
+
+  // Chart data mock
   const lineData = {
     labels: ['1 Maj', '5 Maj', '10 Maj', '15 Maj', '20 Maj', '25 Maj', '30 Maj'],
     datasets: [
       {
-        label: 'Skanowania',
+        label: isQr ? 'Skanowania' : 'Kliknięcia',
         data: [120, 190, 300, 500, 200, 300, 800],
-        borderColor: '#1ea2e4',
-        backgroundColor: 'rgba(30, 162, 228, 0.5)',
+        borderColor: themeColor,
+        backgroundColor: themeBg,
+        fill: true,
         tension: 0.4,
+        pointBackgroundColor: '#0a0a0b',
+        pointBorderColor: themeColor,
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
       },
     ],
   };
 
   const lineOptions = {
     responsive: true,
-    plugins: { legend: { display: false } },
+    maintainAspectRatio: false,
+    plugins: { 
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#18181b',
+        titleColor: '#fff',
+        bodyColor: '#a1a1aa',
+        borderColor: '#27272a',
+        borderWidth: 1,
+        padding: 12,
+        displayColors: false,
+      }
+    },
     scales: { 
-      y: { grid: { color: '#333' } },
-      x: { grid: { display: false } }
-    }
+      y: { 
+        grid: { color: '#27272a', borderDash: [5, 5] },
+        ticks: { color: '#71717a' },
+        border: { display: false }
+      },
+      x: { 
+        grid: { display: false },
+        ticks: { color: '#71717a' },
+        border: { display: false }
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
   };
 
-  const doughnutData = {
-    labels: ['iOS', 'Android', 'Windows', 'Mac'],
-    datasets: [{
-      data: [45, 35, 15, 5],
-      backgroundColor: ['#1ea2e4', '#e41e58', '#e4b01e', '#1ee476'],
-      borderWidth: 0,
-    }]
+  // Mock lists
+  const topItems = isQr ? [
+    { id: 'qr1', name: 'Black Friday Mega Sale', count: 135, percentage: 12.8 },
+    { id: 'qr2', name: 'Guest WiFi Access', count: 134, percentage: 12.8 },
+    { id: 'qr3', name: 'Follow Our Socials', count: 133, percentage: 12.7 },
+    { id: 'qr4', name: 'Mobile App Download', count: 114, percentage: 10.8 },
+    { id: 'qr5', name: 'Product Demo Video', count: 114, percentage: 10.8 },
+    { id: 'qr6', name: 'qrc-ai.com/event-checkin', count: 112, percentage: 10.7 },
+    { id: 'qr7', name: 'Digital Menu QR Code', count: 108, percentage: 10.3 },
+    { id: 'qr8', name: 'Digital Business Card', count: 107, percentage: 10.2 },
+    { id: 'qr9', name: 'Customer Feedback', count: 94, percentage: 8.9 },
+  ] : [
+    { id: 'sl1', name: 'bio.link/qrai', count: 3200, percentage: 40.0 },
+    { id: 'sl2', name: 'Promo Sklep', count: 2150, percentage: 25.5 },
+    { id: 'sl3', name: 'TikTok Bio', count: 1800, percentage: 20.0 },
+    { id: 'sl4', name: 'Facebook Ad', count: 1200, percentage: 10.0 },
+    { id: 'sl5', name: 'Instagram Story', count: 450, percentage: 4.5 },
+  ];
+
+  const geoData = [
+    { name: 'North America', count: 54, percentage: 40.0 },
+    { name: 'Europe', count: 34, percentage: 25.2 },
+    { name: 'South America', count: 15, percentage: 11.1 },
+    { name: 'Asia', count: 14, percentage: 10.4 },
+    { name: 'Oceania', count: 13, percentage: 9.6 },
+    { name: 'Africa', count: 5, percentage: 3.7 },
+  ];
+
+  const techData = [
+    { name: 'Mobile', count: 520, percentage: 75.0 },
+    { name: 'Desktop', count: 140, percentage: 20.0 },
+    { name: 'Tablet', count: 35, percentage: 5.0 },
+  ];
+
+  const mainTabs = [
+    { id: 'qr', label: 'Zeskanowane kody QR' },
+    { id: 'smartlink', label: 'Kliknięcia Smart linki' }
+  ];
+
+  const getModalConfig = () => {
+    if (modalType === 'top') return {
+      tabs: ['Kody QR', 'URL-e celu'],
+      activeTab: isQr ? 'Kody QR' : 'URL-e celu',
+      setActiveTab: (t) => setSelectedMainTab(t === 'Kody QR' ? 'qr' : 'smartlink'),
+      items: topItems,
+      icon: isQr ? QrCode : MousePointerClick
+    };
+    if (modalType === 'geo') return {
+      tabs: ['Kontynenty', 'Kraje', 'Regiony', 'Miasta'],
+      activeTab: geoTab,
+      setActiveTab: setGeoTab,
+      items: geoData,
+      icon: Globe
+    };
+    if (modalType === 'tech') return {
+      tabs: ['Urządzenia', 'Przeglądarki', 'System operacyjny'],
+      activeTab: techTab,
+      setActiveTab: setTechTab,
+      items: techData,
+      icon: Monitor
+    };
+    return null;
   };
+
+  const modalConfig = getModalConfig();
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-semibold">Analityka</h1>
-        <select className="bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary">
-          <option>Ostatnie 30 dni</option>
-          <option>Ostatnie 7 dni</option>
-          <option>Cały czas</option>
-        </select>
+    <div className="space-y-6 pb-20 relative min-h-[80vh]">
+      {/* Top Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-semibold">Analityka</h1>
+          
+          <div className="flex bg-[#0a0a0b] rounded-lg border border-border p-1">
+            {mainTabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedMainTab(tab.id)}
+                onMouseEnter={() => setHoveredMainTab(tab.id)}
+                onMouseLeave={() => setHoveredMainTab(null)}
+                className={`relative px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${selectedMainTab === tab.id ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+              >
+                {hoveredMainTab === tab.id && (
+                  <motion.div layoutId="analytics-tab-hover" className="absolute inset-0 bg-white/5 rounded-md -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                )}
+                {selectedMainTab === tab.id && (
+                  <motion.div layoutId="analytics-tab-active" className="absolute inset-0 bg-[#1a1a1c] border border-border rounded-md -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                )}
+                <span className="relative z-10">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button className="flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white w-full sm:w-40">
+            <span className="truncate flex-1 text-left">
+              {timeframe === '7d' ? 'Ostatnie 7 dni' : timeframe === '30d' ? 'Ostatnie 30 dni' : timeframe === '1y' ? 'Ostatni rok' : 'Cały okres'}
+            </span>
+            <ChevronDown size={14} className="text-gray-500 shrink-0" />
+          </button>
+          
+          <button 
+            onClick={() => setSelectedCodeId('xyz123')}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white shrink-0"
+          >
+            <Filter size={16} />
+            <span className="hidden sm:inline">Filtruj</span>
+          </button>
+
+          <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-white text-black border-transparent hover:bg-gray-200 shrink-0 font-semibold">
+            <Download size={16} />
+            <span className="hidden sm:inline">Export CSV</span>
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-card border border-border rounded-xl p-6">
-          <p className="text-gray-400 text-sm mb-1">Całkowite skanowania</p>
-          <h2 className="text-3xl font-bold">2,410</h2>
-          <span className="text-green-500 text-sm">+12% vs zeszły miesiąc</span>
+      {/* Main Chart */}
+      <div className="bg-[#0a0a0b] border border-border rounded-xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 opacity-20 blur-[100px] pointer-events-none transition-colors duration-1000" style={{ backgroundColor: themeColor }} />
+        <div className="flex justify-between items-start mb-6 relative z-10">
+          <div>
+            <h2 className="text-3xl font-bold text-white tracking-tight">6,850</h2>
+            <p className="text-sm text-gray-400 mt-1">Suma {isQr ? 'skanowań' : 'kliknięć'} w wybranym okresie</p>
+          </div>
+          <div className="text-right">
+            <h3 className="text-xl font-bold text-white tracking-tight">4,120</h3>
+            <p className="text-sm text-gray-400 mt-1">Unikalne wizyty</p>
+          </div>
         </div>
-        <div className="bg-card border border-border rounded-xl p-6">
-          <p className="text-gray-400 text-sm mb-1">Unikalni użytkownicy</p>
-          <h2 className="text-3xl font-bold">1,890</h2>
-          <span className="text-green-500 text-sm">+8% vs zeszły miesiąc</span>
-        </div>
-        <div className="bg-card border border-border rounded-xl p-6">
-          <p className="text-gray-400 text-sm mb-1">Najlepszy kod</p>
-          <h2 className="text-xl font-bold mt-2 truncate text-primary">Kampania Wiosna 2024</h2>
-          <span className="text-gray-400 text-sm">840 skanowań</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
-          <h3 className="font-semibold mb-6">Skanowania w czasie</h3>
+        <div className="h-[300px] w-full relative z-10">
           <Line data={lineData} options={lineOptions} />
         </div>
+      </div>
+
+      {/* 3 Columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div className="bg-card border border-border rounded-xl p-6">
-          <h3 className="font-semibold mb-6">Systemy operacyjne</h3>
-          <div className="w-full h-64 flex items-center justify-center">
-            <Doughnut data={doughnutData} options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }} />
+        {/* Col 1: Top List */}
+        <div className="bg-[#0a0a0b] border border-border rounded-xl flex flex-col relative overflow-hidden h-[420px]">
+          <div className="p-4 border-b border-border flex justify-between items-center">
+            <h3 className="font-medium text-white">{isQr ? 'Kody QR' : 'Smart linki'}</h3>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-1">
+               <QrCode size={12} />
+               {isQr ? 'SKANY' : 'KLIKNIĘCIA'}
+            </span>
+          </div>
+          <div className="p-2 flex-1 overflow-hidden">
+            {topItems.map((item, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-lg transition-colors group cursor-default">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-8 h-8 rounded bg-[#1a1a1c] border border-border flex items-center justify-center shrink-0">
+                    {isQr ? <QrCode size={14} className={themeColor === '#1ea2e4' ? "text-[#1ea2e4]" : "text-[#8b5cf6]"} /> : <MousePointerClick size={14} className={themeColor === '#1ea2e4' ? "text-[#1ea2e4]" : "text-[#8b5cf6]"} />}
+                  </div>
+                  <span className="text-sm font-semibold text-white truncate transition-colors">{item.name}</span>
+                </div>
+                <div className="text-sm font-bold text-white ml-3 shrink-0">{item.count}</div>
+              </div>
+            ))}
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/80 to-transparent flex items-end justify-center pb-4 z-10 pointer-events-none">
+            <button 
+              onClick={() => setModalType('top')}
+              className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
+            >
+              Zobacz wszystko
+            </button>
+          </div>
+        </div>
+
+        {/* Col 2: Geo */}
+        <div className="bg-[#0a0a0b] border border-border rounded-xl flex flex-col relative overflow-hidden h-[420px]">
+          <div className="p-4 border-b border-border flex items-center gap-4 overflow-x-auto no-scrollbar relative">
+            {['Kontynenty', 'Kraje', 'Regiony', 'Miasta'].map(tab => (
+              <button 
+                key={tab} 
+                onClick={() => setGeoTab(tab)}
+                className={`relative text-sm font-medium whitespace-nowrap transition-colors pb-1 ${geoTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                {geoTab === tab && (
+                  <motion.div layoutId="geo-tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-white z-10" />
+                )}
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="p-5 flex-1 space-y-5 overflow-hidden">
+            {geoData.map((item, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-300 font-semibold">{item.name}</span>
+                  <div className="flex gap-4">
+                    <span className="text-gray-500 font-medium">{item.percentage}%</span>
+                    <span className="text-white font-bold min-w-[32px] text-right">{item.count}</span>
+                  </div>
+                </div>
+                <div className="h-1.5 w-full bg-[#1a1a1c] rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${item.percentage}%`, backgroundColor: themeColor }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/80 to-transparent flex items-end justify-center pb-4 z-10 pointer-events-none">
+            <button 
+              onClick={() => setModalType('geo')}
+              className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
+            >
+              Zobacz wszystko
+            </button>
+          </div>
+        </div>
+
+        {/* Col 3: Tech */}
+        <div className="bg-[#0a0a0b] border border-border rounded-xl flex flex-col relative overflow-hidden h-[420px]">
+          <div className="p-4 border-b border-border flex items-center gap-4 overflow-x-auto no-scrollbar relative">
+            {['Urządzenia', 'Przeglądarki', 'System operacyjny'].map(tab => (
+              <button 
+                key={tab} 
+                onClick={() => setTechTab(tab)}
+                className={`relative text-sm font-medium whitespace-nowrap transition-colors pb-1 ${techTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                {techTab === tab && (
+                  <motion.div layoutId="tech-tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-white z-10" />
+                )}
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="p-5 flex-1 space-y-5 overflow-hidden">
+            {techData.map((item, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-300 font-semibold">{item.name}</span>
+                  <div className="flex gap-4">
+                    <span className="text-gray-500 font-medium">{item.percentage}%</span>
+                    <span className="text-white font-bold min-w-[32px] text-right">{item.count}</span>
+                  </div>
+                </div>
+                <div className="h-1.5 w-full bg-[#1a1a1c] rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${item.percentage}%`, backgroundColor: themeColor }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/80 to-transparent flex items-end justify-center pb-4 z-10 pointer-events-none">
+            <button 
+              onClick={() => setModalType('tech')}
+              className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
+            >
+              Zobacz wszystko
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Selected Code Pill (Bottom Left) */}
+      <AnimatePresence>
+        {selectedCodeId && (
+          <motion.div 
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 50, opacity: 0 }}
+            className="fixed bottom-6 left-6 z-50 flex items-center gap-3 bg-[#18181b] border border-border shadow-2xl rounded-full px-4 py-2"
+          >
+            <div className={`w-2 h-2 rounded-full ${isQr ? 'bg-[#1ea2e4]' : 'bg-[#8b5cf6]'} animate-pulse`} />
+            <span className="text-sm text-gray-400">
+              {isQr ? 'Kod QR to:' : 'Smart link to:'} <span className="text-white font-medium ml-1">qrc-ai.com/{selectedCodeId}</span>
+            </span>
+            <div className="w-px h-4 bg-border mx-1" />
+            <button 
+              onClick={() => setSelectedCodeId(null)}
+              className="text-gray-500 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+            >
+              <X size={14} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Zobacz Wszystko Modal */}
+      <AnimatePresence>
+        {modalType && modalConfig && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => { setModalType(null); setModalSearchQuery(''); }}
+            />
+            
+            <div className="relative flex flex-col items-center w-full max-w-lg">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-[#0a0a0b] border border-border rounded-2xl w-full overflow-hidden flex flex-col shadow-2xl"
+                style={{ height: '60vh' }}
+              >
+                {/* Modal Header Tabs */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-[#0a0a0b]">
+                  <div className="flex items-center gap-6 overflow-x-auto no-scrollbar">
+                    {modalConfig.tabs.map(tab => (
+                      <button 
+                        key={tab}
+                        onClick={() => modalConfig.setActiveTab(tab)}
+                        className={`relative pb-2 text-sm font-semibold transition-colors whitespace-nowrap ${modalConfig.activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                      >
+                        {modalConfig.activeTab === tab && (
+                          <motion.div layoutId="modal-tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                        )}
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5 shrink-0 ml-4">
+                    <QrCode size={14} />
+                    {isQr ? 'SKANY' : 'KLIKNIĘCIA'}
+                  </span>
+                </div>
+
+                {/* Modal Search */}
+                <div className="p-4 border-b border-border bg-[#0a0a0b] shrink-0">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input 
+                      type="text" 
+                      placeholder="Szukaj..."
+                      value={modalSearchQuery}
+                      onChange={(e) => setModalSearchQuery(e.target.value)}
+                      className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-gray-500 transition-colors text-white placeholder:text-gray-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Modal List */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#0a0a0b]">
+                  {modalConfig.items.filter(item => item.name.toLowerCase().includes(modalSearchQuery.toLowerCase())).map((item, i) => (
+                    <div key={i} className="w-full flex items-center justify-between p-3 rounded-xl transition-colors hover:bg-white/5 cursor-default">
+                      <div className="flex items-center gap-4 overflow-hidden">
+                        {/* Decorative Circle (non-clickable) */}
+                        
+                        
+                        <div className={`w-8 h-8 rounded bg-[#1a1a1c] border border-border flex items-center justify-center shrink-0`}>
+                          <modalConfig.icon size={14} className={themeColor === '#1ea2e4' ? "text-[#1ea2e4]" : "text-[#8b5cf6]"} />
+                        </div>
+                        <span className="text-sm font-semibold truncate text-white">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-4 shrink-0 ml-4">
+                        <span className="text-sm font-bold text-white">{item.count}</span>
+                        <span className="text-sm font-medium min-w-[36px] text-right" style={{ color: themeColor }}>{item.percentage}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Close Button Outside */}
+              <motion.button 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ delay: 0.1 }}
+                onClick={() => { setModalType(null); setModalSearchQuery(''); }}
+                className="mt-6 w-12 h-12 bg-white rounded-full flex items-center justify-center text-black hover:bg-gray-200 transition-colors shadow-xl shrink-0"
+              >
+                <X size={24} strokeWidth={2.5} />
+              </motion.button>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
