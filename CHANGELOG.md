@@ -5,6 +5,15 @@ Format pliku bazuje na standardzie [Keep a Changelog](https://keepachangelog.com
 
 ---
 
+## [0.16.0] - 2026-06-08
+### Dodane
+- **Globalne Animacje i Magic Hover:** Wprowadzono scentralizowany system animacji oparty o bibliotekę `framer-motion` (`src/utils/animations.js`). Aplikacja korzysta teraz ze spójnego efektu powiększania i rozjaśniania (fade & scale) przy otwieraniu wszelkich okienek typu dropdown (wybór Workspace, lista tagów, menu filtrów i menu akcji). Dodano również "magiczny", przesuwający się efekt tła przy najechaniu na kafelki głównych zakładek.
+- **Wizualna unifikacja:** Przyciski z filtrami ("Tagi", "Ostatnio utworzone") zyskały odświeżony styl podświetlający obramowania, a modale zyskały identyczny styl okrągłego białego przycisku zamknięcia, porządkując design systemu.
+
+### Poprawione
+- **Filtrowanie Zaproszeń:** Okno zapraszania członków do zespołu (`InviteMemberModal`) inteligentnie ignoruje teraz własny e-mail użytkownika podczas autouzupełniania – zapobiegając wysłaniu bezcelowego zaproszenia do samego siebie.
+- **Optymalizacja DOM:** Rozwiązano problemy z cyklem życia okien z użyciem tagu `<AnimatePresence>` w React, dzięki czemu animacje zamknięcia poszczególnych okien menu akcji odgrywają się w poprawny i naturalny sposób.
+
 ## [0.15.0] - 2026-06-07
 ### Dodane
 - **Silnik Przekierowań (Redirect Engine):** Niewidzialny, błyskawiczny moduł uruchamiający się przy wejściu na krótki odnośnik (np. `/:shortId`). Otwiera i zlicza kliknięcia w pełni asynchronicznie za pomocą `runTransaction` w Firebase, kierując użytkownika końcowego bezpośrednio na oryginalny URL.

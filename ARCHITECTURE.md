@@ -84,7 +84,7 @@ Kolekcja nasłuchiwana u klientów w celu wypychania powiadomień.
 │   │   ├── components/         # Główne komponenty interfejsu (Sidebar, QRModal, itd.)
 │   │   ├── pages/              # Główne widoki aplikacji (Account, Analytics, QRList, Login)
 │   │   ├── hooks/              # Wyekstrahowana logika odpytywania bazy i stanu (useWorkspaces.js)
-│   │   ├── utils/              # Funkcje pomocnicze, współdzielone moduły (colors.js)
+│   │   ├── utils/              # Funkcje pomocnicze, globalne warianty animacji (animations.js), współdzielone moduły
 │   │   ├── context/            # Konteksty globalne np. Autoryzacja
 │   │   ├── firebase.js         # Inicjalizacja i eksport instancji Firebase
 │   │   ├── App.jsx             # Główny router aplikacji i system zarządzania stanem
