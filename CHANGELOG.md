@@ -15,12 +15,12 @@
 
 ## [0.7.0] - 2026-06-08
 ### Dodane
-- **Panel Analityki (Analytics.jsx):** Utworzenie g�ownego widoku analityki ze spersonalizowanymi statystykami. Wykorzystanie biblioteki chart.js do interaktywnego g��wnego wykresu.
-- Zaimplementowano ujednolicony modal 'Zobacz wszystko' w panelu Analityki ze wsparciem dla wyszukiwania i dostosowanym schematem kolor�w (niebieski dla kod�w QR, fioletowy dla Smart Link�w).
+- **Panel Analityki (Analytics.jsx):** Utworzenie głównego widoku analityki ze spersonalizowanymi statystykami. Wykorzystanie biblioteki chart.js do interaktywnego głównego wykresu.
+- Zaimplementowano ujednolicony modal 'Zobacz wszystko' w panelu Analityki ze wsparciem dla wyszukiwania i dostosowanym schematem kolorów (niebieski dla kodów QR, fioletowy dla Smart Linków).
 
 ### Poprawione
-- **Optymalizacja wydajno�ci:** Wdro�ono op�nienie wyci�gania (renderowania) du�ych list QR kod�w i Smart Link�w (setTimeout), co wyeliminowa�o zaci�cia podczas odtwarzania animacji nawigacyjnej w menu bocznym.
-- **Ujednolicenie wizualne:** Zsynchronizowano kolorystykę� przycisk�w analityki oraz mini-wykres�w (sparklines) w listach QRList.jsx i SmartLinksList.jsx do obowi�zuj�cego schematu Analytics (odpowiednio #1ea2e4 i #8b5cf6).
+- **Optymalizacja wydajności:** Wdrożono opónienie wyciągania (renderowania) dużych list QR kodów i Smart Linków (setTimeout), co wyeliminowano zacięcia podczas odtwarzania animacji nawigacyjnej w menu bocznym.
+- **Ujednolicenie wizualne:** Zsynchronizowano kolorystykę przycisków analityki oraz mini-wykresów (sparklines) w listach QRList.jsx i SmartLinksList.jsx do obowiązującego schematu Analytics (odpowiednio #1ea2e4 i #8b5cf6).
 
 Wszystkie najważniejsze zmiany w tym projekcie dokumentowane są w tym pliku.
 
