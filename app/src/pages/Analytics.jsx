@@ -37,6 +37,7 @@ export default function Analytics({ activeWorkspace }) {
   const [modalType, setModalType] = useState(null); // 'top' | 'geo' | 'tech' | null
   const [modalSearchQuery, setModalSearchQuery] = useState('');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [isTimeframeDropdownOpen, setIsTimeframeDropdownOpen] = useState(false);
 
   // Pod-zakładki dla kolumn
   const [geoTab, setGeoTab] = useState('Kontynenty');
@@ -170,22 +171,51 @@ export default function Analytics({ activeWorkspace }) {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button className="relative flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white w-full sm:w-40">
-            <select
-              value={timeframe}
-              onChange={(e) => setTimeframe(e.target.value)}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          <div className="relative w-full sm:w-40 z-20">
+            <button 
+              onClick={() => setIsTimeframeDropdownOpen(!isTimeframeDropdownOpen)}
+              className={`relative flex items-center justify-between gap-2 px-4 py-2.5 w-full rounded-lg text-sm transition-colors border bg-[#18181b] ${isTimeframeDropdownOpen ? 'border-gray-500 text-white' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
             >
-              <option value="7d">Ostatnie 7 dni</option>
-              <option value="30d">Ostatnie 30 dni</option>
-              <option value="1y">Ostatni rok</option>
-              <option value="all">Cały okres</option>
-            </select>
-            <span className="truncate flex-1 text-left">
-              {timeframe === '7d' ? 'Ostatnie 7 dni' : timeframe === '30d' ? 'Ostatnie 30 dni' : timeframe === '1y' ? 'Ostatni rok' : 'Cały okres'}
-            </span>
-            <ChevronDown size={14} className="text-gray-500 shrink-0 pointer-events-none" />
-          </button>
+              <span className="truncate flex-1 text-left">
+                {timeframe === '7d' ? 'Ostatnie 7 dni' : timeframe === '30d' ? 'Ostatnie 30 dni' : timeframe === '1y' ? 'Ostatni rok' : 'Cały okres'}
+              </span>
+              <ChevronDown size={14} className={`text-gray-500 shrink-0 pointer-events-none transition-transform ${isTimeframeDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+              {isTimeframeDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsTimeframeDropdownOpen(false)} />
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 mt-2 w-full bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-1 flex flex-col">
+                      {[
+                        { val: '7d', label: 'Ostatnie 7 dni' },
+                        { val: '30d', label: 'Ostatnie 30 dni' },
+                        { val: '1y', label: 'Ostatni rok' },
+                        { val: 'all', label: 'Cały okres' }
+                      ].map((opt) => (
+                        <button 
+                          key={opt.val}
+                          onClick={() => {
+                            setTimeframe(opt.val);
+                            setIsTimeframeDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${timeframe === opt.val ? `bg-[${themeColor}]/10 text-[${themeColor}]` : 'text-gray-300 hover:bg-white/5'}`}
+                          style={timeframe === opt.val ? { color: themeColor, backgroundColor: themeBg } : {}}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
           
           <div className="relative">
             <button 
