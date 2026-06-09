@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment, collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { getAnalyticsData } from '../utils/tracking';
 
 export default function RedirectEngine() {
   const { shortId } = useParams();
@@ -46,11 +47,24 @@ export default function RedirectEngine() {
 
         // 4. Podbicie statystyk kliknięć (Analytics Increment)
         const incrementField = isQrCode ? 'scans' : 'clicks';
-        setStatus('Przygotowywanie przekierowania...');
+        setStatus('Zapisywanie logów analitycznych...');
         await updateDoc(targetDocRef, {
           [incrementField]: increment(1),
           lastClickedAt: new Date()
         });
+
+        // Generowanie zaawansowanych logów analitycznych
+        try {
+          const analyticsData = await getAnalyticsData();
+          await addDoc(collection(db, 'analytics'), {
+            codeId: shortId,
+            workspaceId: targetData.workspaceId,
+            type: isQrCode ? 'qr' : 'smartlink',
+            ...analyticsData
+          });
+        } catch (analyticsError) {
+          console.error("Błąd podczas zapisywania analityki:", analyticsError);
+        }
 
         // 5. Przekierowanie
         let finalUrl = targetData.url || targetData.targetUrl; // w zalezności od nazwy pola w kolekcji

@@ -111,7 +111,7 @@ export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) 
                 placeholder="name@example.com"
                 value={email}
                 onChange={handleSearchChange}
-                className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-[#f97316] transition-colors"
               />
             </div>
             

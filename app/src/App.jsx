@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import Sidebar from './components/Sidebar';
@@ -20,6 +20,7 @@ import { useWorkspaces } from './hooks/useWorkspaces';
 function App() {
   const { currentUser } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const activePath = location.pathname;
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,11 +106,12 @@ function App() {
                 
                 <div className="space-y-4 mt-8">
                   {activeWorkspace && (
-                    <QRList 
-                      activeWorkspace={activeWorkspace} 
-                      onEdit={(code) => openModal('edit', code)} 
-                      onDuplicate={(code) => openModal('duplicate', code)} 
-                    />
+                      <QRList 
+                        activeWorkspace={activeWorkspace} 
+                        onEdit={(code) => openModal('edit', code)} 
+                        onDuplicate={(code) => openModal('duplicate', code)} 
+                        onAnalytics={(code) => navigate(`/analytics?codeId=${code.id}&type=qr`)}
+                      />
                   )}
                 </div>
               </>
@@ -130,11 +132,12 @@ function App() {
                 
                 <div className="space-y-4 mt-8">
                   {activeWorkspace && (
-                    <SmartLinksList 
-                      activeWorkspace={activeWorkspace} 
-                      onEdit={(link) => openSmartLinkModal('edit', link)} 
-                      onDuplicate={(link) => openSmartLinkModal('duplicate', link)} 
-                    />
+                      <SmartLinksList 
+                        activeWorkspace={activeWorkspace} 
+                        onEdit={(link) => openSmartLinkModal('edit', link)} 
+                        onDuplicate={(link) => openSmartLinkModal('duplicate', link)} 
+                        onAnalytics={(link) => navigate(`/analytics?codeId=${link.id}&type=smartlink`)}
+                      />
                   )}
                 </div>
               </>

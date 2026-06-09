@@ -117,3 +117,21 @@ Aplikacja wykorzystuje `react-router-dom` (`<BrowserRouter>`, `<Routes>`) do obs
 ---
 *(Dokument utworzony i aktualizowany przez AI Assistant na podstawie wytycznych deweloperskich)*
 
+
+### 5. `analytics_logs` (Logi Analityczne - przykĹ‚adowa struktura)
+ModuĹ‚ analityki opiera siÄ™ na logach zbierajÄ…cych informacje o klikniÄ™ciach i skanach.
+- `id` (String): ID logu
+- `urlId` (String): ID kodu QR lub Smart Linku
+- `type` (String): `qr` lub `smartlink`
+- `timestamp` (Timestamp): DokĹ‚adny czas interakcji
+- `visitorId` (String): Zanonimizowane ID odwiedzajÄ…cego (Fingerprint) do zliczania unikalnych wizyt (Cookieless)
+- `geo` (Object): Dane geograficzne (kontynent, kraj, miasto)
+- `tech` (Object): Dane technologiczne (przeglÄ…darka, urzÄ…dzenie, system operacyjny)
+
+## Design System & Kolorystyka
+Aplikacja zostaĹ‚a uporzÄ…dkowana wedĹ‚ug Ĺ›ciĹ›le okreĹ›lonych stref kolorystycznych w celu poprawy User Experience:
+- **PomaraĹ„czowy (#f97316):** UĹĽywany do ustawieĹ„ systemowych i zarzÄ…dzania zespoĹ‚ami (wyszukiwarki czĹ‚onkĂłw, formularze tworzenia zespoĹ‚Ăłw, selektor menu).
+- **Niebieski (#1ea2e4):** Dedykowany do wizualizacji statystyk i okien modalnych kodĂłw QR.
+- **Fioletowy (#8b5cf6):** Dedykowany do wizualizacji statystyk i okien modalnych Smart LinkĂłw.
+
+Interfejs zyskaĹ‚ zaktualizowane moduĹ‚y list (paski procentowe `progress bars` zintegrowane w tle) oraz pĹ‚ynne efekty zanikania (CSS Masking) dla dĹ‚ugich list analitycznych.

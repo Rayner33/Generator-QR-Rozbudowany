@@ -212,7 +212,7 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="np. Kampania Wiosna 2026" 
-                className="flex-1 bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary transition-colors" 
+                className="flex-1 bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#8b5cf6] transition-colors" 
               />
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
                     onChange={(e) => setUrlData(e.target.value)}
                     placeholder="https://twojastrona.pl" 
                     className={`w-full bg-card border rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors ${
-                      validationErrors.urlData ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-border focus:border-primary text-white'
+                      validationErrors.urlData ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-border focus:border-[#8b5cf6] text-white'
                     }`}
                   />
                   {validationErrors.urlData && (

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Line } from 'react-chartjs-2';
 import { 
@@ -9,14 +10,33 @@ import { Download, Filter, Search, X, QrCode, Link as LinkIcon, MousePointerClic
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-export default function Analytics() {
-  const [selectedMainTab, setSelectedMainTab] = useState('qr'); // 'qr' | 'smartlink'
-  const [selectedCodeId, setSelectedCodeId] = useState(null);
+import { useAnalytics } from '../hooks/useAnalytics';
+import { processAnalytics } from '../utils/analyticsHelpers';
+
+export default function Analytics({ activeWorkspace }) {
+  const { logs, qrcodes, smartlinks, loading } = useAnalytics(activeWorkspace?.id);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlCodeId = searchParams.get('codeId');
+  const urlType = searchParams.get('type');
+
+  const [selectedMainTab, setSelectedMainTab] = useState(urlType || 'qr');
+  const [selectedCodeId, setSelectedCodeId] = useState(urlCodeId || null);
   const [timeframe, setTimeframe] = useState('30d');
+  
+  useEffect(() => {
+    if (urlCodeId) setSelectedCodeId(urlCodeId);
+    if (urlType) setSelectedMainTab(urlType);
+  }, [urlCodeId, urlType]);
+
+  const clearFilter = () => {
+    setSelectedCodeId(null);
+    setSearchParams({});
+  };
   const [hoveredMainTab, setHoveredMainTab] = useState(null);
   
   const [modalType, setModalType] = useState(null); // 'top' | 'geo' | 'tech' | null
   const [modalSearchQuery, setModalSearchQuery] = useState('');
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   // Pod-zakładki dla kolumn
   const [geoTab, setGeoTab] = useState('Kontynenty');
@@ -26,13 +46,23 @@ export default function Analytics() {
   const themeColor = isQr ? '#1ea2e4' : '#8b5cf6';
   const themeBg = isQr ? 'rgba(30, 162, 228, 0.1)' : 'rgba(139, 92, 246, 0.1)';
 
-  // Chart data mock
+  // Dynamic data processing
+  const activeItems = isQr ? qrcodes : smartlinks;
+  
+  const {
+    topItems, geoData, techData, chartLabels, chartData, totalLogs, uniqueVisits
+  } = useMemo(() => {
+    if (!logs || loading) return { topItems: [], geoData: [], techData: [], chartLabels: [], chartData: [], totalLogs: 0, uniqueVisits: 0 };
+    return processAnalytics(logs, activeItems, timeframe, selectedMainTab, selectedCodeId, geoTab, techTab);
+  }, [logs, activeItems, timeframe, selectedMainTab, selectedCodeId, geoTab, techTab, loading]);
+
+  // Chart data configuration
   const lineData = {
-    labels: ['1 Maj', '5 Maj', '10 Maj', '15 Maj', '20 Maj', '25 Maj', '30 Maj'],
+    labels: chartLabels,
     datasets: [
       {
         label: isQr ? 'Skanowania' : 'Kliknięcia',
-        data: [120, 190, 300, 500, 200, 300, 800],
+        data: chartData,
         borderColor: themeColor,
         backgroundColor: themeBg,
         fill: true,
@@ -79,40 +109,6 @@ export default function Analytics() {
     },
   };
 
-  // Mock lists
-  const topItems = isQr ? [
-    { id: 'qr1', name: 'Black Friday Mega Sale', count: 135, percentage: 12.8 },
-    { id: 'qr2', name: 'Guest WiFi Access', count: 134, percentage: 12.8 },
-    { id: 'qr3', name: 'Follow Our Socials', count: 133, percentage: 12.7 },
-    { id: 'qr4', name: 'Mobile App Download', count: 114, percentage: 10.8 },
-    { id: 'qr5', name: 'Product Demo Video', count: 114, percentage: 10.8 },
-    { id: 'qr6', name: 'qrc-ai.com/event-checkin', count: 112, percentage: 10.7 },
-    { id: 'qr7', name: 'Digital Menu QR Code', count: 108, percentage: 10.3 },
-    { id: 'qr8', name: 'Digital Business Card', count: 107, percentage: 10.2 },
-    { id: 'qr9', name: 'Customer Feedback', count: 94, percentage: 8.9 },
-  ] : [
-    { id: 'sl1', name: 'bio.link/qrai', count: 3200, percentage: 40.0 },
-    { id: 'sl2', name: 'Promo Sklep', count: 2150, percentage: 25.5 },
-    { id: 'sl3', name: 'TikTok Bio', count: 1800, percentage: 20.0 },
-    { id: 'sl4', name: 'Facebook Ad', count: 1200, percentage: 10.0 },
-    { id: 'sl5', name: 'Instagram Story', count: 450, percentage: 4.5 },
-  ];
-
-  const geoData = [
-    { name: 'North America', count: 54, percentage: 40.0 },
-    { name: 'Europe', count: 34, percentage: 25.2 },
-    { name: 'South America', count: 15, percentage: 11.1 },
-    { name: 'Asia', count: 14, percentage: 10.4 },
-    { name: 'Oceania', count: 13, percentage: 9.6 },
-    { name: 'Africa', count: 5, percentage: 3.7 },
-  ];
-
-  const techData = [
-    { name: 'Mobile', count: 520, percentage: 75.0 },
-    { name: 'Desktop', count: 140, percentage: 20.0 },
-    { name: 'Tablet', count: 35, percentage: 5.0 },
-  ];
-
   const mainTabs = [
     { id: 'qr', label: 'Zeskanowane kody QR' },
     { id: 'smartlink', label: 'Kliknięcia Smart linki' }
@@ -120,9 +116,9 @@ export default function Analytics() {
 
   const getModalConfig = () => {
     if (modalType === 'top') return {
-      tabs: ['Kody QR', 'URL-e celu'],
-      activeTab: isQr ? 'Kody QR' : 'URL-e celu',
-      setActiveTab: (t) => setSelectedMainTab(t === 'Kody QR' ? 'qr' : 'smartlink'),
+      tabs: isQr ? ['Kody QR'] : ['Smart linki'],
+      activeTab: isQr ? 'Kody QR' : 'Smart linki',
+      setActiveTab: () => {}, // No op since there is only one tab now
       items: topItems,
       icon: isQr ? QrCode : MousePointerClick
     };
@@ -174,20 +170,65 @@ export default function Analytics() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button className="flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white w-full sm:w-40">
+          <button className="relative flex items-center justify-between gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white w-full sm:w-40">
+            <select
+              value={timeframe}
+              onChange={(e) => setTimeframe(e.target.value)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+              <option value="7d">Ostatnie 7 dni</option>
+              <option value="30d">Ostatnie 30 dni</option>
+              <option value="1y">Ostatni rok</option>
+              <option value="all">Cały okres</option>
+            </select>
             <span className="truncate flex-1 text-left">
               {timeframe === '7d' ? 'Ostatnie 7 dni' : timeframe === '30d' ? 'Ostatnie 30 dni' : timeframe === '1y' ? 'Ostatni rok' : 'Cały okres'}
             </span>
-            <ChevronDown size={14} className="text-gray-500 shrink-0" />
+            <ChevronDown size={14} className="text-gray-500 shrink-0 pointer-events-none" />
           </button>
           
-          <button 
-            onClick={() => setSelectedCodeId('xyz123')}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white shrink-0"
-          >
-            <Filter size={16} />
-            <span className="hidden sm:inline">Filtruj</span>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+              className={`flex items-center justify-center px-4 py-2.5 rounded-lg text-sm border bg-[#18181b] shrink-0 transition-colors ${isFilterDropdownOpen ? 'border-gray-500 text-white' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
+            >
+              <Filter size={16} className="mr-2" />
+              <span className="hidden sm:inline">Filtruj</span>
+            </button>
+            <AnimatePresence>
+              {isFilterDropdownOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-full right-0 lg:left-0 lg:right-auto mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+                >
+                  <div className="p-1">
+                    <button 
+                      onClick={() => {
+                        setSelectedMainTab('qr');
+                        setModalType('top');
+                        setIsFilterDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#1ea2e4]/10 hover:text-[#1ea2e4] rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <QrCode size={14} /> Wybierz Kod QR
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setSelectedMainTab('smartlink');
+                        setModalType('top');
+                        setIsFilterDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#8b5cf6]/10 hover:text-[#8b5cf6] rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <MousePointerClick size={14} /> Wybierz Smart Link
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-white text-black border-transparent hover:bg-gray-200 shrink-0 font-semibold">
             <Download size={16} />
@@ -201,12 +242,12 @@ export default function Analytics() {
         <div className="absolute top-0 right-0 w-64 h-64 opacity-20 blur-[100px] pointer-events-none transition-colors duration-1000" style={{ backgroundColor: themeColor }} />
         <div className="flex justify-between items-start mb-6 relative z-10">
           <div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">6,850</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">{totalLogs.toLocaleString('pl-PL')}</h2>
             <p className="text-sm text-gray-400 mt-1">Suma {isQr ? 'skanowań' : 'kliknięć'} w wybranym okresie</p>
           </div>
           <div className="text-right">
-            <h3 className="text-xl font-bold text-white tracking-tight">4,120</h3>
-            <p className="text-sm text-gray-400 mt-1">Unikalne wizyty</p>
+            <h3 className="text-xl font-bold text-white tracking-tight">{uniqueVisits.toLocaleString('pl-PL')}</h3>
+            <p className="text-sm text-gray-400 mt-1">Unikalne wizyty (Cookieless)</p>
           </div>
         </div>
         <div className="h-[300px] w-full relative z-10">
@@ -226,27 +267,45 @@ export default function Analytics() {
                {isQr ? 'SKANY' : 'KLIKNIĘCIA'}
             </span>
           </div>
-          <div className="p-2 flex-1 overflow-hidden">
+          <div 
+            className="p-2 flex-1 overflow-hidden group/list space-y-1"
+            style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
+          >
             {topItems.map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg transition-colors group cursor-default">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-8 h-8 rounded bg-[#1a1a1c] border border-border flex items-center justify-center shrink-0">
-                    {isQr ? <QrCode size={14} className={themeColor === '#1ea2e4' ? "text-[#1ea2e4]" : "text-[#8b5cf6]"} /> : <MousePointerClick size={14} className={themeColor === '#1ea2e4' ? "text-[#1ea2e4]" : "text-[#8b5cf6]"} />}
-                  </div>
-                  <span className="text-sm font-semibold text-white truncate transition-colors">{item.name}</span>
+              <div 
+                key={i} 
+                onClick={() => setSelectedCodeId(item.id)}
+                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
+              >
+                <div className="absolute inset-[3px] z-[-1]">
+                  <div 
+                    className="h-full rounded-md transition-all duration-1000"
+                    style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                  />
                 </div>
-                <div className="text-sm font-bold text-white ml-3 shrink-0">{item.count}</div>
+                <div className="flex items-center gap-3 overflow-hidden relative z-10">
+                  {isQr ? <QrCode size={16} className="text-white shrink-0 drop-shadow-md" /> : <MousePointerClick size={16} className="text-white shrink-0 drop-shadow-md" />}
+                  <span className="text-sm font-semibold text-white truncate drop-shadow-md">{item.name}</span>
+                </div>
+                <div className="flex items-center justify-end overflow-hidden w-[90px] shrink-0 relative h-6 z-10">
+                  <div className="absolute right-0 top-0 h-full flex items-center justify-end transition-transform duration-300 transform translate-x-12 group-hover/list:translate-x-0">
+                    <span className="text-sm font-bold text-white leading-none drop-shadow-md">{item.count}</span>
+                    <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/80 to-transparent flex items-end justify-center pb-4 z-10 pointer-events-none">
-            <button 
-              onClick={() => setModalType('top')}
-              className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
-            >
-              Zobacz wszystko
-            </button>
-          </div>
+          {topItems.length > 7 && (
+            <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
+              <button 
+                onClick={() => setModalType('top')}
+                className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
+              >
+                Zobacz wszystko
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Col 2: Geo */}
@@ -265,30 +324,44 @@ export default function Analytics() {
               </button>
             ))}
           </div>
-          <div className="p-5 flex-1 space-y-5 overflow-hidden">
+          <div 
+            className="p-2 flex-1 overflow-hidden group/list space-y-1"
+            style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
+          >
             {geoData.map((item, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-300 font-semibold">{item.name}</span>
-                  <div className="flex gap-4">
-                    <span className="text-gray-500 font-medium">{item.percentage}%</span>
-                    <span className="text-white font-bold min-w-[32px] text-right">{item.count}</span>
-                  </div>
+              <div 
+                key={i} 
+                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-default group/item hover:bg-white/5 overflow-hidden z-0"
+              >
+                <div className="absolute inset-[3px] z-[-1]">
+                  <div 
+                    className="h-full rounded-md transition-all duration-1000"
+                    style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                  />
                 </div>
-                <div className="h-1.5 w-full bg-[#1a1a1c] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${item.percentage}%`, backgroundColor: themeColor }} />
+                <div className="flex items-center gap-3 overflow-hidden relative z-10">
+                  <Globe size={16} className="text-white shrink-0 drop-shadow-md" />
+                  <span className="text-sm font-semibold text-white truncate drop-shadow-md">{item.name}</span>
+                </div>
+                <div className="flex items-center justify-end overflow-hidden w-[90px] shrink-0 relative h-6 z-10">
+                  <div className="absolute right-0 top-0 h-full flex items-center justify-end transition-transform duration-300 transform translate-x-12 group-hover/list:translate-x-0">
+                    <span className="text-sm font-bold text-white leading-none drop-shadow-md">{item.count}</span>
+                    <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/80 to-transparent flex items-end justify-center pb-4 z-10 pointer-events-none">
-            <button 
-              onClick={() => setModalType('geo')}
-              className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
-            >
-              Zobacz wszystko
-            </button>
-          </div>
+          {geoData.length > 7 && (
+            <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
+              <button 
+                onClick={() => setModalType('geo')}
+                className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
+              >
+                Zobacz wszystko
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Col 3: Tech */}
@@ -307,56 +380,47 @@ export default function Analytics() {
               </button>
             ))}
           </div>
-          <div className="p-5 flex-1 space-y-5 overflow-hidden">
+          <div 
+            className="p-2 flex-1 overflow-hidden group/list space-y-1"
+            style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
+          >
             {techData.map((item, i) => (
-              <div key={i} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-300 font-semibold">{item.name}</span>
-                  <div className="flex gap-4">
-                    <span className="text-gray-500 font-medium">{item.percentage}%</span>
-                    <span className="text-white font-bold min-w-[32px] text-right">{item.count}</span>
-                  </div>
+              <div 
+                key={i} 
+                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-default group/item hover:bg-white/5 overflow-hidden z-0"
+              >
+                <div className="absolute inset-[3px] z-[-1]">
+                  <div 
+                    className="h-full rounded-md transition-all duration-1000"
+                    style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                  />
                 </div>
-                <div className="h-1.5 w-full bg-[#1a1a1c] rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${item.percentage}%`, backgroundColor: themeColor }} />
+                <div className="flex items-center gap-3 overflow-hidden relative z-10">
+                  <Monitor size={16} className="text-white shrink-0 drop-shadow-md" />
+                  <span className="text-sm font-semibold text-white truncate drop-shadow-md">{item.name}</span>
+                </div>
+                <div className="flex items-center justify-end overflow-hidden w-[90px] shrink-0 relative h-6 z-10">
+                  <div className="absolute right-0 top-0 h-full flex items-center justify-end transition-transform duration-300 transform translate-x-12 group-hover/list:translate-x-0">
+                    <span className="text-sm font-bold text-white leading-none drop-shadow-md">{item.count}</span>
+                    <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/80 to-transparent flex items-end justify-center pb-4 z-10 pointer-events-none">
-            <button 
-              onClick={() => setModalType('tech')}
-              className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
-            >
-              Zobacz wszystko
-            </button>
-          </div>
+          {techData.length > 7 && (
+            <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
+              <button 
+                onClick={() => setModalType('tech')}
+                className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
+              >
+                Zobacz wszystko
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Selected Code Pill (Bottom Left) */}
-      <AnimatePresence>
-        {selectedCodeId && (
-          <motion.div 
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 50, opacity: 0 }}
-            className="fixed bottom-6 left-6 z-50 flex items-center gap-3 bg-[#18181b] border border-border shadow-2xl rounded-full px-4 py-2"
-          >
-            <div className={`w-2 h-2 rounded-full ${isQr ? 'bg-[#1ea2e4]' : 'bg-[#8b5cf6]'} animate-pulse`} />
-            <span className="text-sm text-gray-400">
-              {isQr ? 'Kod QR to:' : 'Smart link to:'} <span className="text-white font-medium ml-1">qrc-ai.com/{selectedCodeId}</span>
-            </span>
-            <div className="w-px h-4 bg-border mx-1" />
-            <button 
-              onClick={() => setSelectedCodeId(null)}
-              className="text-gray-500 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
-            >
-              <X size={14} />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Zobacz Wszystko Modal */}
       <AnimatePresence>
@@ -409,27 +473,40 @@ export default function Analytics() {
                       placeholder="Szukaj..."
                       value={modalSearchQuery}
                       onChange={(e) => setModalSearchQuery(e.target.value)}
-                      className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-gray-500 transition-colors text-white placeholder:text-gray-500"
+                      autoFocus
+                      className={`w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none transition-colors text-white placeholder:text-gray-500 ${isQr ? 'focus:border-[#1ea2e4]' : 'focus:border-[#8b5cf6]'}`}
                     />
                   </div>
                 </div>
 
                 {/* Modal List */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#0a0a0b]">
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#0a0a0b] group/list space-y-1">
                   {modalConfig.items.filter(item => item.name.toLowerCase().includes(modalSearchQuery.toLowerCase())).map((item, i) => (
-                    <div key={i} className="w-full flex items-center justify-between p-3 rounded-xl transition-colors hover:bg-white/5 cursor-default">
-                      <div className="flex items-center gap-4 overflow-hidden">
-                        {/* Decorative Circle (non-clickable) */}
-                        
-                        
-                        <div className={`w-8 h-8 rounded bg-[#1a1a1c] border border-border flex items-center justify-center shrink-0`}>
-                          <modalConfig.icon size={14} className={themeColor === '#1ea2e4' ? "text-[#1ea2e4]" : "text-[#8b5cf6]"} />
-                        </div>
-                        <span className="text-sm font-semibold truncate text-white">{item.name}</span>
+                    <div 
+                      key={i} 
+                      onClick={() => {
+                        if (modalType === 'top') {
+                          setSelectedCodeId(item.id);
+                          setModalType(null);
+                        }
+                      }}
+                      className={`relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors group/item overflow-hidden z-0 ${modalType === 'top' ? 'cursor-pointer hover:bg-white/5' : 'cursor-default hover:bg-white/5'}`}
+                    >
+                      <div className="absolute inset-[3px] z-[-1]">
+                        <div 
+                          className="h-full rounded-md transition-all duration-1000"
+                          style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                        />
                       </div>
-                      <div className="flex items-center gap-4 shrink-0 ml-4">
-                        <span className="text-sm font-bold text-white">{item.count}</span>
-                        <span className="text-sm font-medium min-w-[36px] text-right" style={{ color: themeColor }}>{item.percentage}%</span>
+                      <div className="flex items-center gap-3 overflow-hidden relative z-10">
+                        <modalConfig.icon size={16} className="text-white shrink-0 drop-shadow-md" />
+                        <span className="text-sm font-semibold text-white truncate drop-shadow-md">{item.name}</span>
+                      </div>
+                      <div className="flex items-center justify-end overflow-hidden w-[90px] shrink-0 relative h-6 z-10">
+                        <div className="absolute right-0 top-0 h-full flex items-center justify-end transition-transform duration-300 transform translate-x-12 group-hover/list:translate-x-0">
+                          <span className="text-sm font-bold text-white leading-none drop-shadow-md">{item.count}</span>
+                          <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -449,6 +526,33 @@ export default function Analytics() {
               </motion.button>
             </div>
           </div>
+        )}
+      </AnimatePresence>
+      {/* Bottom Floating Filter Pill */}
+      <AnimatePresence>
+        {selectedCodeId && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className={`fixed bottom-6 left-6 z-50 border backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-3 shadow-lg ${isQr ? 'bg-[#1ea2e4]/10 border-[#1ea2e4]/30 text-[#1ea2e4] shadow-[#1ea2e4]/5' : 'bg-[#8b5cf6]/10 border-[#8b5cf6]/30 text-[#8b5cf6] shadow-[#8b5cf6]/5'}`}
+          >
+            <div className="flex items-center gap-2">
+              <Filter size={14} />
+              <span className="text-sm font-medium">
+                Analizujesz: <span className="font-bold text-white ml-1">
+                  {activeItems.find(item => item.id === selectedCodeId)?.title || activeItems.find(item => item.id === selectedCodeId)?.name || 'Link'}
+                </span>
+              </span>
+            </div>
+            <div className={`w-px h-4 mx-1 ${isQr ? 'bg-[#1ea2e4]/30' : 'bg-[#8b5cf6]/30'}`}></div>
+            <button 
+              onClick={clearFilter}
+              className={`transition-colors hover:text-white ${isQr ? 'text-[#1ea2e4]' : 'text-[#8b5cf6]'}`}
+            >
+              <X size={16} />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

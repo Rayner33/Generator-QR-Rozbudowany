@@ -390,7 +390,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="np. Kampania Wiosna 2026" 
-                  className="flex-1 bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary transition-colors" 
+                  className="flex-1 bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4] transition-colors" 
                 />
               </div>
             </div>
@@ -447,7 +447,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
               <select
                 value={wifiData.type}
                 onChange={(e) => setWifiData({...wifiData, type: e.target.value})}
-                className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#1ea2e4] transition-colors"
               >
                 <option value="WPA">WPA/WPA2</option>
                 <option value="WEP">WEP</option>
@@ -490,16 +490,16 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                 )}
                 {contentType === 'vcard' && (
                   <div className="grid grid-cols-2 gap-3">
-                    <input type="text" value={vcardData.firstName} onChange={e => setVcardData({...vcardData, firstName: e.target.value})} placeholder="Imię" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary" />
-                    <input type="text" value={vcardData.lastName} onChange={e => setVcardData({...vcardData, lastName: e.target.value})} placeholder="Nazwisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary" />
+                    <input type="text" value={vcardData.firstName} onChange={e => setVcardData({...vcardData, firstName: e.target.value})} placeholder="Imię" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
+                    <input type="text" value={vcardData.lastName} onChange={e => setVcardData({...vcardData, lastName: e.target.value})} placeholder="Nazwisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
                     <div className="col-span-2">
                       <ValidatedInput type="tel" value={vcardData.phone} onChange={val => setVcardData({...vcardData, phone: val})} placeholder="Telefon" error={validationErrors.vcardPhone} />
                     </div>
                     <div className="col-span-2">
                       <ValidatedInput type="email" value={vcardData.email} onChange={val => setVcardData({...vcardData, email: val})} placeholder="E-mail" error={validationErrors.vcardEmail} />
                     </div>
-                    <input type="text" value={vcardData.company} onChange={e => setVcardData({...vcardData, company: e.target.value})} placeholder="Firma" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary" />
-                    <input type="text" value={vcardData.title} onChange={e => setVcardData({...vcardData, title: e.target.value})} placeholder="Stanowisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary" />
+                    <input type="text" value={vcardData.company} onChange={e => setVcardData({...vcardData, company: e.target.value})} placeholder="Firma" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
+                    <input type="text" value={vcardData.title} onChange={e => setVcardData({...vcardData, title: e.target.value})} placeholder="Stanowisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
                     <div className="col-span-2">
                       <ValidatedInput type="url" value={vcardData.website} onChange={val => setVcardData({...vcardData, website: val})} placeholder="Strona WWW" error={validationErrors.vcardWebsite} />
                     </div>
@@ -532,7 +532,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <label className="text-xs text-gray-400 block mb-2">Kolor kropek</label>
                    <div className="flex items-center gap-3 relative">
                      <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: dotsColor }} onClick={() => setOpenColorPicker('dots')} />
-                     <input type="text" value={dotsColor} onChange={e => setDotsColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#FF4C00]" />
+                     <input type="text" value={dotsColor} onChange={e => setDotsColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#1ea2e4]" />
                      {openColorPicker === 'dots' && (
                         <div className="absolute z-10 bottom-[110%] left-0">
                           <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
@@ -545,7 +545,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <label className="text-xs text-gray-400 block mb-2">Kolor oczka</label>
                    <div className="flex items-center gap-3 relative">
                      <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: eyeColor }} onClick={() => setOpenColorPicker('eye')} />
-                     <input type="text" value={eyeColor} onChange={e => setEyeColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#FF4C00]" />
+                     <input type="text" value={eyeColor} onChange={e => setEyeColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#1ea2e4]" />
                      {openColorPicker === 'eye' && (
                         <div className="absolute z-10 bottom-[110%] left-0">
                           <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
@@ -558,7 +558,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <label className="text-xs text-gray-400 block mb-2">Kolor tła</label>
                    <div className="flex items-center gap-3 relative">
                      <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: backgroundColor }} onClick={() => setOpenColorPicker('bg')} />
-                     <input type="text" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#FF4C00]" />
+                     <input type="text" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#1ea2e4]" />
                      {openColorPicker === 'bg' && (
                         <div className="absolute z-10 bottom-[110%] left-0">
                           <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
@@ -740,7 +740,7 @@ function ValidatedInput({ value, onChange, placeholder, type = "text", error, ..
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder} 
           className={`w-full bg-card border rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors ${
-            error ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-border focus:border-primary text-white'
+            error ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-border focus:border-[#1ea2e4] text-white'
           } ${props.className || ''}`}
           {...props}
         />

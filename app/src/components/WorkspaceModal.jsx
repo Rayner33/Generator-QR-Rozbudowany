@@ -106,7 +106,7 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="np. Mój zespół"
-              className="w-full bg-card border border-border focus:border-primary rounded-lg px-4 py-3 text-sm focus:outline-none transition-colors mb-8"
+              className="w-full bg-card border border-border focus:border-[#f97316] rounded-lg px-4 py-3 text-sm focus:outline-none transition-colors mb-8"
               autoFocus
             />
 

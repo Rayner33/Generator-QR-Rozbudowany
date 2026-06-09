@@ -194,7 +194,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                   type="text" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f97316] transition-colors"
                   placeholder="Nazwa zespołu"
                 />
                 <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" size={20} />
@@ -260,7 +260,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             placeholder="Szukaj członków..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-[#f97316] transition-colors"
           />
         </div>
         {isOwner && (

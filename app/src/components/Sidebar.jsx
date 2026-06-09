@@ -110,7 +110,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                       {ws.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className={`text-sm font-semibold ${activeWorkspace?.id === ws.id ? 'text-blue-500' : 'text-white'}`}>
+                      <p className={`text-sm font-semibold ${activeWorkspace?.id === ws.id ? 'text-[#f97316]' : 'text-white'}`}>
                         {ws.name}
                       </p>
                       <p className="text-xs text-gray-400">
@@ -119,7 +119,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                     </div>
                   </div>
                   {activeWorkspace?.id === ws.id && (
-                     <Check size={18} className="text-blue-500 shrink-0 ml-2" />
+                     <Check size={18} className="text-[#f97316] shrink-0 ml-2" />
                   )}
                 </div>
               ))}

@@ -35,7 +35,12 @@ service cloud.firestore {
         request.resource.data.clicks == resource.data.clicks + 1
       );
     }
-    
+    // Reguły dla kolekcji "analytics"
+    match /analytics/{docId} {
+      allow list, read, delete, update: if isAppAdmin();
+      allow create: if true;
+    }
+
     // Reguły dla wszystkich pozostałych kolekcji (użytkownicy, przestrzenie robocze, tagi, zaproszenia itp.)
     match /{document=**} {
       // Tylko zalogowani pracownicy mogą odczytywać i zapisywać.
