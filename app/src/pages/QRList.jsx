@@ -71,7 +71,6 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
   // Modale potwierdzające
   const [codeToArchive, setCodeToArchive] = useState(null);
   const [codeToReset, setCodeToReset] = useState(null);
-  const [codeToDelete, setCodeToDelete] = useState(null);
 
   // Zamykanie dropdowna przy kliknięciu gdziekolwiek
   useEffect(() => {
@@ -159,10 +158,6 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
     setCodeToArchive(null);
   };
 
-  const handleDelete = (code) => {
-    // Implementacja usuwania
-    setCodeToDelete(null);
-  };
 
   const handleRestore = (code) => {
     updateDoc(doc(db, "qrcodes", code.id), { archived: false });
@@ -577,18 +572,6 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
     </div>
     )}
 
-      <AnimatePresence>
-      {codeToDelete && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ type: "spring", duration: 0.4, bounce: 0.1 }} className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
-            <h3 className="text-red-500 font-bold mb-2 uppercase">Usuń kod QR</h3>
-            <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz trwale usunąć ten kod? Tej operacji nie można cofnąć.</p>
-            <button onClick={() => handleDelete(codeToDelete)} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mb-2 transition-colors">USUŃ TRWALE</button>
-            <button onClick={() => setCodeToDelete(null)} className="w-full bg-[#18181b] hover:bg-[#27272a] text-gray-300 font-bold py-3 rounded-lg transition-colors border border-border">ANULUJ</button>
-          </motion.div>
-        </motion.div>
-      )}
-      </AnimatePresence>
 
       <AnimatePresence>
       {codeToArchive && (

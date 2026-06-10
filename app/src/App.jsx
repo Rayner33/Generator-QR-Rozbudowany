@@ -61,7 +61,7 @@ function App() {
   // --- PUBLICZNY ROUTING (PRZEKIEROWANIA) ---
   // Rozpoznajemy, czy jesteśmy na krótkim linku np. domena.pl/XyZ12
   // Zabezpieczamy znane ścieżki aplikacji by nie zostały wzięte za skróty
-  const isPublicRedirect = /^\/[a-zA-Z0-9_-]+$/.test(activePath) && !['/links', '/analytics', '/account', '/settings'].includes(activePath);
+  const isPublicRedirect = /^\/[a-zA-Z0-9_-]+$/.test(activePath) && !['/links', '/analytics', '/account', '/settings', '/login'].includes(activePath);
 
   if (isPublicRedirect) {
     return (

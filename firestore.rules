@@ -2,24 +2,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Uproszczona walidacja: Czy użytkownik to administrator/pracownik?
-    // Tymczasowo każda zalogowana (Z Google SSO) osoba uznawana jest za Admina, 
-    // ponieważ dostęp kontrolujemy na poziomie autoryzacji domenowej w aplikacji.
+    // Weryfikacja: czy użytkownik jest uwierzytelnionym pracownikiem firmy?
+    // Sprawdzamy zarówno fakt zalogowania JAK I domenę emaila.
+    // Zabezpiecza przed sytuacją, gdy ktoś zaloguje się przez Firebase SDK
+    // omijając UI aplikacji, używając konta spoza domeny firmowej.
     function isAppAdmin() {
-      return request.auth != null;
+      return request.auth != null &&
+             request.auth.token.email.matches('.*@parys\\.pl$');
     }
 
     // Reguły dla kolekcji "qrcodes"
     match /qrcodes/{docId} {
-      // Pracownicy mają pełen dostęp do całej bazy
       allow list, create, delete: if isAppAdmin();
       
-      // Klienci / Użytkownicy Publiczni:
-      // Zezwalamy na ODCZYT POJEDYNCZEGO KODU z ulicy, aby przekierowanie (RedirectEngine) mogło zadziałać.
+      // Odczyt pojedynczego kodu – publiczny, by RedirectEngine mógł działać
       allow get: if true;
       
-      // Zezwalamy na UPDATE dla Klienta TYLKO w celu podbicia statystyki (scans). 
-      // Zapobiega to włamaniu polegającemu np. na cichej zamianie 'url' na złośliwy link przez obcą osobę.
+      // Update: pracownicy mają pełen dostęp.
+      // Publiczny (niezalogowany) użytkownik może TYLKO zinkrementować licznik skanowań.
       allow update: if isAppAdmin() || (
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['scans', 'lastClickedAt']) &&
         request.resource.data.scans == resource.data.scans + 1
@@ -35,16 +35,34 @@ service cloud.firestore {
         request.resource.data.clicks == resource.data.clicks + 1
       );
     }
+
     // Reguły dla kolekcji "analytics"
+    // Odczyt/aktualizacja/usuwanie tylko dla pracowników.
+    // Zapis (create) jest dozwolony publicznie (skanujący nie musi być zalogowany),
+    // ale TYLKO jeśli skanowany kod faktycznie istnieje w bazie i dane są poprawne.
+    // Zapobiega to zalewaniu bazy fałszywymi danymi przez boty.
     match /analytics/{docId} {
       allow list, read, delete, update: if isAppAdmin();
-      allow create: if true;
+      allow create: if (
+        // Wymagane pola – dokładnie te, które zapisuje tracking.js
+        request.resource.data.keys().hasOnly([
+          'codeId', 'workspaceId', 'type', 'timestamp',
+          'country', 'region', 'city', 'continent',
+          'os', 'browser', 'device', 'visitorHash'
+        ]) &&
+        request.resource.data.codeId is string &&
+        request.resource.data.type in ['qr', 'smartlink'] &&
+        // Kod musi naprawdę istnieć w bazie – ochrona przed fałszywymi skanami
+        (
+          exists(/databases/$(database)/documents/qrcodes/$(request.resource.data.codeId)) ||
+          exists(/databases/$(database)/documents/smartlinks/$(request.resource.data.codeId))
+        )
+      );
     }
 
-    // Reguły dla wszystkich pozostałych kolekcji (użytkownicy, przestrzenie robocze, tagi, zaproszenia itp.)
+    // Reguły dla wszystkich pozostałych kolekcji (użytkownicy, workspace, tagi, zaproszenia itp.)
+    // Tylko zalogowani pracownicy z domeny firmowej mają dostęp.
     match /{document=**} {
-      // Tylko zalogowani pracownicy mogą odczytywać i zapisywać.
-      // Użytkownik publiczny z ulicy skanujący kod ma tutaj ścianę.
       allow read, write: if isAppAdmin();
     }
   }

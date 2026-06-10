@@ -22,7 +22,9 @@ export async function getAnalyticsData() {
   };
 
   try {
-    const geoResponse = await fetch('http://localhost:3001/api/geo');
+    const geoApiUrl = import.meta.env.VITE_GEO_API_URL;
+    if (!geoApiUrl) throw new Error('Brak konfiguracji VITE_GEO_API_URL');
+    const geoResponse = await fetch(geoApiUrl);
     if (geoResponse.ok) {
       const data = await geoResponse.json();
       geo = {
@@ -34,7 +36,7 @@ export async function getAnalyticsData() {
       };
     }
   } catch (err) {
-    console.warn("Nie udało się pobrać geolokalizacji z lokalnego serwera API.", err);
+    console.warn("Nie udało się pobrać geolokalizacji.", err);
   }
 
   const parser = new UAParser();

@@ -4,9 +4,8 @@ import { signInWithPopup, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { QrCode } from 'lucide-react';
 
-// TODO: Przed przejściem na produkcję należy USUNĄĆ 'gmail.com' z poniższej tablicy
-// i pozostawić jedynie docelowe domeny firmowe.
-const ALLOWED_DOMAINS = ['parys.pl', 'gmail.com'];
+// Dozwolone domeny firmowe
+const ALLOWED_DOMAINS = ['parys.pl'];
 
 export default function Login() {
   const [error, setError] = useState('');
@@ -27,20 +26,18 @@ export default function Login() {
       if (!ALLOWED_DOMAINS.includes(userDomain)) {
         await signOut(auth);
         setError('Brak dostępu. Twój adres e-mail nie znajduje się na liście dozwolonych domen służbowych.');
-        setLoading(false);
         return;
       }
       
-      // Jeśli domena jest ok - użytkownik automatycznie zostanie wpuszczony (dzięki AuthContext)
       navigate('/');
     } catch (err) {
       console.error(err);
       if (err.code !== 'auth/popup-closed-by-user') {
         setError('Wystąpił błąd podczas logowania przez Google.');
       }
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   }
 
   return (

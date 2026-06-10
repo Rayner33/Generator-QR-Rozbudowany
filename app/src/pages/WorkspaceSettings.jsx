@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc, deleteDoc, arrayRemove, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, arrayRemove, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { HexColorPicker } from "react-colorful";
 import { Check, X, Search, MoreVertical, Trash2, Shield } from 'lucide-react';
@@ -85,7 +85,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         try {
           const snap = await getDoc(doc(db, "users", uid));
           if (snap.exists()) {
-            details.push(snap.data());
+            // Ważne: przechowujemy uid explicite, bo snap.data() go nie zawiera
+            details.push({ uid, ...snap.data() });
           }
         } catch (e) {
           console.error(e);
@@ -129,13 +130,20 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   const handleDeleteOrLeave = async () => {
     try {
       if (isOwner) {
-        // Usuwanie kaskadowe
-        const qrcodesQ = query(collection(db, "qrcodes"), where("workspaceId", "==", activeWorkspace.id));
-        const qrcodesSnap = await getDocs(qrcodesQ);
-        const deletePromises = qrcodesSnap.docs.map(d => deleteDoc(d.ref));
-        await Promise.all(deletePromises);
+        // Kaskadowe usuwanie wszystkich powiązanych danych
+        const batch = writeBatch(db);
+        const wsId = activeWorkspace.id;
 
-        await deleteDoc(doc(db, "workspaces", activeWorkspace.id));
+        const collectionsToDelete = ['qrcodes', 'smartlinks', 'tags', 'analytics', 'invites'];
+        for (const col of collectionsToDelete) {
+          const q = query(collection(db, col), where('workspaceId', '==', wsId));
+          const snap = await getDocs(q);
+          snap.docs.forEach(d => batch.delete(d.ref));
+        }
+
+        // Usuń sam workspace
+        batch.delete(doc(db, 'workspaces', wsId));
+        await batch.commit();
       } else {
         // Opuszczanie
         await updateDoc(doc(db, "workspaces", activeWorkspace.id), {

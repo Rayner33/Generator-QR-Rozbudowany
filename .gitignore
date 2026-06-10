@@ -1,5 +1,19 @@
 node_modules/
+app/node_modules/
+server/node_modules/
 dist/
+app/dist/
+app/dist-ssr/
+
+# Pliki środowiskowe z kluczami API – nigdy nie commitować!
 .env
 .env.*
+.env.local
+.env.*.local
+app/.env
+app/.env.*
+app/.env.local
+app/.env.*.local
+
 .DS_Store
+Thumbs.db

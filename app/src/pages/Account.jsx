@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { updateProfile, signOut } from 'firebase/auth';
-import { doc, updateDoc, setDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Check } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
@@ -79,8 +79,8 @@ export default function Account({ currentUser, workspaces }) {
     }
   };
 
-  const handleLogout = () => {
-    signOut(auth);
+  const handleLogout = async () => {
+    await signOut(auth);
   };
 
   return (
@@ -185,44 +185,6 @@ export default function Account({ currentUser, workspaces }) {
            </button>
         </div>
       </div>
-
-      {/* STAŁE NARZĘDZIE DIAGNOSTYCZNE - CZYSZCZĄCE DUPLIKATY */}
-      {workspaces && workspaces.filter(w => w.type === 'personal' || w.name === 'Personal').length > 1 && (
-        <div className="bg-card border border-yellow-500/30 rounded-xl p-8 mt-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-yellow-500/5 pointer-events-none"></div>
-          <div className="relative z-10">
-             <h2 className="text-xl font-semibold mb-2 text-yellow-500">Narzędzie Diagnostyczne</h2>
-             <p className="text-gray-400 text-sm mb-6">Wykryto zduplikowane przestrzenie osobiste na tym koncie (wynik podwójnego renderowania StrictMode). Kliknij poniższy przycisk, aby usunąć błędy (zostanie zachowana pierwsza utworzona przestrzeń).</p>
-             
-             <button 
-               onClick={async () => {
-                 if (!personalWorkspace) return;
-                 const q = query(collection(db, 'workspaces'), where('ownerId', '==', currentUser.uid));
-                 const snaps = await getDocs(q);
-                 const personals = [];
-                 snaps.forEach(s => {
-                   if (s.data().type === 'personal' || s.data().name === 'Personal') personals.push(s);
-                 });
-                 if (personals.length > 1) {
-                    let deletedCount = 0;
-                    for (const p of personals) {
-                      if (p.id !== personalWorkspace.id) {
-                         await deleteDoc(doc(db, 'workspaces', p.id));
-                         deletedCount++;
-                      }
-                    }
-                    alert(`Pomyślnie usunięto ${deletedCount} zduplikowanych przestrzeni osobistych! Odśwież stronę.`);
-                 } else {
-                    alert('Nie znaleziono zduplikowanych przestrzeni.');
-                 }
-               }}
-               className="bg-yellow-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-yellow-500 transition-colors"
-             >
-               Usuń zduplikowane przestrzenie osobiste
-             </button>
-          </div>
-        </div>
-      )}
 
     </div>
   );
