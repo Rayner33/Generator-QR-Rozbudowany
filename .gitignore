@@ -15,5 +15,9 @@ app/.env.*
 app/.env.local
 app/.env.*.local
 
+# Pliki testowe i robocze
+samples/
+Nowy Dokument tekstowy.txt
+
 .DS_Store
 Thumbs.db

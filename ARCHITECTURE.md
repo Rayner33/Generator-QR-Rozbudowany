@@ -97,13 +97,38 @@ Aplikacja wykorzystuje `react-router-dom` (`<BrowserRouter>`, `<Routes>`) do obs
 ## Główne Komponenty Aplikacji (`app/src/components`)
 
 1. **`App.jsx`**: Serce aplikacji. Konfiguruje router aplikacji oraz system autoryzacji użytkownika.
-2. **`Login.jsx`**: Moduł autoryzacji Enterprise. Oparty w całości o Single Sign-On (SSO) od Google z mechanizmem filtrującym (tzw. whitelist) po domenach służbowych (np. `@parys.pl`). Całkowicie wycięto klasyczne metody logowania w celu zablokowania podatności typu Brute-Force.
+2. **`Login.jsx` + `AuthContext.jsx`**: Dwuwarstwowy moduł autoryzacji Enterprise. `Login.jsx` obsługuje UI logowania przez Google SSO z whitelistą domen. `AuthContext.jsx` stanowi drugi, niezbywalny punkt kontroli — po każdej zmianie stanu autoryzacji (login, odświeżenie tokenu) weryfikuje domenę emaila i natychmiastowo wylogowuje każdego spoza `@parys.pl`, niezależnie od tego jak uwierzytelnienie nastąpiło (UI czy bezpośrednie SDK).
 3. **`QRList.jsx` & `SmartLinksList.jsx`**: Moduły wyświetlające zapisane obiekty z bazy. Obejmują potężne wyszukiwanie, filtrowanie ("Ostatnio utworzone", "Zarchiwizowane") oraz pobieranie miniaturek favikon z zewnątrz. Wykorzystują innowacyjny interfejs do zaznaczania tagów oparty na wskaźnikach przypominających przyciski "radio" dla większej czytelności.
 4. **`QRModal.jsx` & `SmartLinkModal.jsx`**: Ogromne moduły odpowiedzialne za kreatory danych. **Sprawdzają w czasie rzeczywistym dostępność i duplikację nowo tworzonych aliasów (Short Linków) bezpośrednio w Firestore**. Wszystkie zamykane w sposób nowoczesny przez zrzucanie do tła (backdrop click).
 5. **System Modali Tagów** (`TagManagerModal`, `TagEditModal`, `TagDeleteModal`): Wyspecjalizowane, bardzo nowoczesne komponenty oparte na schematach Glassmorphism do zarządzania (CRUD) tagami. Co najważniejsze, działają natywnie z głównym stanem bazy danych, dzięki czemu operacje na nich są w 100% reaktywne na żywo z brakiem "martwych stanów".
 6. **`Analytics.jsx`**: Ekran dedykowany globalnym statystykom i szczegółowym danym odnośnie użycia poszczególnych kodów z przestrzeni roboczej.
 7. **`RedirectEngine.jsx`**: Niewidzialny, inteligentny komponent działający poza głównym UI aplikacji. Odpowiada za przechwytywanie publicznego ruchu krótkich linków (`/:shortId`). Zlicza "na żywo" unikalne wizyty w tle i odsyła do fizycznych adresów końcowych.
 8. **Moduły Pracy Zespołowej i Uprawnień** (`WorkspaceSettings.jsx`, `NotificationsModal.jsx`, `InviteMemberModal.jsx`): Nowoczesny system zarządzania danymi na żywo oparty o odpytywanie kolekcji po adresach E-mail. Właściciele mogą zapraszać członków i definiować ich precyzyjne Uprawnienia. Potencjalni odbiorcy zgarniają dynamiczne powiadomienia na pasku Sidebar z bezpośrednim przełączeniem do projektu po akceptacji.
+
+## Model Bezpieczeństwa (Trójwarstwowy)
+
+Aplikacja stosuje trzy niezależne warstwy ochrony, z których każda działa autonomicznie:
+
+| Warstwa | Mechanizm | Co blokuje |
+|---------|-----------|------------|
+| **1. Klucz API** | Restrykcja HTTP Referrer w Google Cloud Console | Użycie klucza z obcych domen, curl, Postmana |
+| **2. AuthContext** | Weryfikacja `@parys.pl` w `onAuthStateChanged` | Każde konto spoza domeny firmowej, niezależnie od ścieżki logowania |
+| **3. Firestore Rules** | `isAppAdmin()` sprawdza domenę w tokenie JWT | Bezpośrednie zapytania do bazy z pominięciem aplikacji |
+
+Dodatkowo reguła `analytics/create` weryfikuje istnienie `codeId` w bazie przed zapisem logu — chroniąc przed zalewaniem analityki fałszywymi danymi przez boty.
+
+### Zmienne środowiskowe
+Wszystkie dane uwierzytelniające Firebase przechowywane są w pliku `app/.env.local` (wykluczonym z git przez `.gitignore`). W środowisku produkcyjnym należy ustawić te same zmienne w panelu hostingowym:
+```
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_FIREBASE_MEASUREMENT_ID
+VITE_GEO_API_URL       # URL serwera GeoLite2
+```
 
 ## Główne wzorce w projekcie (Design Patterns)
 - **Dynamic QR Routing:** Aplikacja rozróżnia surowe dane docelowe (zapisywane w bazie Firestore) od danych kodowanych graficznie (krótki link URL powiązany z ID dokumentu). Dzięki temu raz wygenerowany wzór wektorowy kropek pozostaje niezmienny, bez względu na modyfikacje treści przez użytkownika (z wyjątkiem sieci WiFi dla wymuszenia kompatybilności natywnej).

@@ -1,5 +1,0 @@
-1. Przycisk Export CSV
-2. Poprawa klikania linków na liście qr kodów zależności d typu (WiFi itd.).
-3. Archiwizacja deaktywuje odczyt kodu QR.
-4. Dezaktywowany kod nie powinien oc być skanowany.
-5. Czy każdy użytkownik może przywrócić kody z archiwum w zespole.

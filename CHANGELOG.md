@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.1] - 2026-06-10
+### Bezpieczeństwo
+- **Konfiguracja Firebase przeniesiona do zmiennych środowiskowych:** Klucze API usunięte z kodu źródłowego do pliku `.env.local` (wykluczony z git). Wdrożono restrykcję domenową HTTP Referrer w Google Cloud Console — klucz działa wyłącznie z autoryzowanych domen produkcyjnych.
+- **Wzmocnienie Firestore Security Rules:** Funkcja `isAppAdmin()` weryfikuje teraz domenę emaila bezpośrednio w tokenie Firebase (`@parys.pl`). Eliminuje dostęp przez konta spoza domeny firmowej, nawet przy bezpośrednim wywołaniu Firebase SDK przez konsolę przeglądarki.
+- **Ochrona analityki przed botami:** Reguła `analytics/create` wymaga teraz uwierzytelnienia, ściśle określonego zestawu pól oraz weryfikacji, że `codeId` faktycznie istnieje w bazie. Eliminuje masowe wstrzykiwanie fałszywych skanowań.
+- **Weryfikacja domeny przeniesiona do AuthContext:** Sprawdzenie `@parys.pl` działa na poziomie kontekstu — każde konto spoza domeny jest natychmiast wylogowywane niezależnie od ścieżki uwierzytelnienia.
+- **Usunięcie `gmail.com` z whitelisty:** Domena testowa usunięta — aplikacja akceptuje wyłącznie konta `@parys.pl`.
+- **Usunięcie narzędzia diagnostycznego z UI:** Panel masowego usuwania przestrzeni roboczych usunięty ze strony Konta (był dostępny publicznie dla każdego zalogowanego użytkownika).
+
+### Poprawione
+- **Kaskadowe usuwanie workspace'u rozszerzone:** Usunięcie Zespołu usuwa teraz atomowo (`writeBatch`) powiązane: `qrcodes`, `smartlinks`, `tags`, `analytics` i `invites`. Poprzednio tylko `qrcodes` były czyszczone.
+- **Naprawa zarządzania członkami zespołu:** `memberDetails` przechowuje teraz `uid` explicite — poprzednio `member.uid` było zawsze `undefined`, blokując usuwanie i identyfikację członków.
+- **Routing `/login` naprawiony:** Dodano `/login` do wyjątków `isPublicRedirect` — wcześniej wejście na `/login` mogło być błędnie traktowane jako short link.
+- **`signOut` awaitable:** Wylogowanie używa teraz `await signOut(auth)`.
+- **URL geo API jako zmienna środowiskowa:** Hardkodowany `http://localhost:3001` zastąpiony przez `import.meta.env.VITE_GEO_API_URL`.
+- **Usunięto pusty stub `handleDelete`:** Funkcja i modal "Usuń trwale" usunięte z `QRList.jsx` — usuwanie jest celowo możliwe tylko ręcznie przez administratora bazy.
+
 ## [1.0.0] - 2026-06-10
 ### Dodane
 - **Eksport CSV Analityki:** Implementacja pobierania szczegółowych "surowych" logów z uwzględnieniem aktywnych w danej chwili filtrów z poziomu widoku statystyk. Pliki generowane w pełni kompatybilnie z programami kalkulacyjnymi (np. Excel) ze wsparciem polskich znaków (BOM).
