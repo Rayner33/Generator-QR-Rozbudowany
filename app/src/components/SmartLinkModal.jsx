@@ -255,7 +255,7 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
              <button 
                onClick={handleSave} 
                disabled={isSaving || !isFormValid}
-               className={`px-8 py-3 rounded-lg font-bold transition-colors text-white ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#9333ea] hover:bg-[#7e22ce]'}`}
+               className={`px-6 py-2 rounded-lg font-semibold transition-colors text-white ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#9333ea] hover:bg-[#7e22ce]'}`}
              >
                {isSaving ? 'Zapisywanie...' : 'Zapisz Smart Link'}
              </button>

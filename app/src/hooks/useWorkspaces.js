@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, or, onSnapshot, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, or, onSnapshot, addDoc, serverTimestamp, deleteDoc, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
 let creationAttemptedForUid = null;
@@ -8,6 +8,51 @@ export function useWorkspaces(currentUser) {
   const [workspaces, setWorkspaces] = useState([]);
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [pendingInvites, setPendingInvites] = useState([]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const checkAndCreatePersonal = async () => {
+      if (creationAttemptedForUid === currentUser.uid) return;
+      creationAttemptedForUid = currentUser.uid;
+      
+      try {
+        const q = query(
+          collection(db, "workspaces"), 
+          where("ownerId", "==", currentUser.uid),
+          where("type", "==", "personal")
+        );
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          const defaultGradients = [
+            'linear-gradient(to top right, #FF4C00, #9333ea)',
+            'linear-gradient(to bottom right, #3b82f6, #8b5cf6)',
+            'linear-gradient(to bottom right, #10b981, #3b82f6)',
+            'linear-gradient(to bottom right, #f59e0b, #ef4444)'
+          ];
+          const randomGradient = defaultGradients[Math.floor(Math.random() * defaultGradients.length)];
+          const defaultName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Osobisty');
+
+          await addDoc(collection(db, "workspaces"), {
+            name: defaultName,
+            ownerId: currentUser.uid,
+            type: "personal",
+            avatarStyle: randomGradient,
+            createdAt: serverTimestamp(),
+            allowMembersEdit: false,
+            allowMembersArchive: false,
+            allowMembersReset: false
+          });
+        }
+      } catch (e) {
+        console.error("Błąd podczas sprawdzania/tworzenia personal workspace:", e);
+        creationAttemptedForUid = null;
+      }
+    };
+
+    checkAndCreatePersonal();
+  }, [currentUser]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -31,37 +76,7 @@ export function useWorkspaces(currentUser) {
         }
       });
 
-      const hasPersonal = wks.some(w => w.type === "personal" || w.name === "Personal");
 
-      // Automatyczne utworzenie nowej przestrzeni, jeśli nie istnieje
-      if (!hasPersonal && creationAttemptedForUid !== currentUser.uid) {
-        creationAttemptedForUid = currentUser.uid;
-        
-        const defaultGradients = [
-          'linear-gradient(to top right, #FF4C00, #9333ea)',
-          'linear-gradient(to bottom right, #3b82f6, #8b5cf6)',
-          'linear-gradient(to bottom right, #10b981, #3b82f6)',
-          'linear-gradient(to bottom right, #f59e0b, #ef4444)'
-        ];
-        const randomGradient = defaultGradients[Math.floor(Math.random() * defaultGradients.length)];
-        const defaultName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'Osobisty');
-
-        try {
-          const docRef = await addDoc(collection(db, "workspaces"), {
-            name: defaultName,
-            ownerId: currentUser.uid,
-            type: "personal",
-            avatarStyle: randomGradient,
-            createdAt: serverTimestamp(),
-            allowMembersEdit: false,
-            allowMembersArchive: false,
-            allowMembersReset: false
-          });
-          wks.push({ id: docRef.id, name: defaultName, type: "personal", ownerId: currentUser.uid, avatarStyle: randomGradient });
-        } catch (e) {
-          console.error("Błąd zapisu do Firestore:", e);
-        }
-      }
 
       setWorkspaces(wks);
 

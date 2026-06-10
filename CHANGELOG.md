@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0] - 2026-06-10
+### Dodane
+- **Eksport CSV Analityki:** Implementacja pobierania szczegółowych "surowych" logów z uwzględnieniem aktywnych w danej chwili filtrów z poziomu widoku statystyk. Pliki generowane w pełni kompatybilnie z programami kalkulacyjnymi (np. Excel) ze wsparciem polskich znaków (BOM).
+- **Zabezpieczenie ról dla Zespołów (RBAC):** Pełna weryfikacja ról w Zespołach. Członkowie (Members) mają teraz zablokowany dostęp do modyfikacji ustawień drużyny, usuwania zespołu oraz Archiwum. Jedynie Założyciel (Owner) może trwale usunąć grupę. Zastosowano precyzyjne reguły w interfejsie w powiązaniu z uprawnieniami zapisanymi w Firestore.
+- **Inteligentne Linki w kodach:** Typy QR `vCard`, `WiFi` oraz `Telefon` automatycznie otwierają swój ekran edycji bezpośrednio po kliknięciu linku docelowego w liście kodów (ponieważ nie mają fizycznej strony docelowej). Tytuły linków w panelu otrzymały precyzyjne, sformatowane etykiety zastępujące nieczytelne przedrostki protokołów.
+
+### Poprawione
+- **Naprawa race condition przy logowaniu:** Wyeliminowano uporczywy problem dublujących się "Osobistych" przestrzeni roboczych (Personal Workspaces). Zapytanie `getDocs` twardo weryfikuje brak profilu z serwera przez utworzeniem, omijając wyścig danych lokalnej pamięci podręcznej.
+- Ujednolicono system wielkości, grubości oraz układu przycisków na przestrzeni całej aplikacji.
+- Płynne zamykanie okien (Click-outside) elegancko wyłącza wszystkie drobne okienka opcji (Role, Filtry) po kliknięciu w tło.
+- Wdrożono spójne, bezszwowe animacje wejścia (`framer-motion`) m.in. dla paska modyfikacji uprawnień członków.
 ## [0.17.0] - 2026-06-09
 ### Dodane
 - **Globalna Aktualizacja Interfejsu (UI/UX):** Zbudowano jednolity, spójny system kolorystyczny w całej aplikacji. Pomarańczowy (#f97316) dla ustawień zespołów, Niebieski (#1ea2e4) dla Modułu Kodów QR oraz Fioletowy (#8b5cf6) dla Smart Linków.

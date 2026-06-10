@@ -51,9 +51,9 @@ export default function Analytics({ activeWorkspace }) {
   const activeItems = isQr ? qrcodes : smartlinks;
   
   const {
-    topItems, geoData, techData, chartLabels, chartData, totalLogs, uniqueVisits
+    topItems, geoData, techData, chartLabels, chartData, totalLogs, uniqueVisits, filteredLogs
   } = useMemo(() => {
-    if (!logs || loading) return { topItems: [], geoData: [], techData: [], chartLabels: [], chartData: [], totalLogs: 0, uniqueVisits: 0 };
+    if (!logs || loading) return { topItems: [], geoData: [], techData: [], chartLabels: [], chartData: [], totalLogs: 0, uniqueVisits: 0, filteredLogs: [] };
     return processAnalytics(logs, activeItems, timeframe, selectedMainTab, selectedCodeId, geoTab, techTab);
   }, [logs, activeItems, timeframe, selectedMainTab, selectedCodeId, geoTab, techTab, loading]);
 
@@ -142,6 +142,58 @@ export default function Analytics({ activeWorkspace }) {
 
   const modalConfig = getModalConfig();
 
+  const handleExportCSV = () => {
+    if (!filteredLogs || filteredLogs.length === 0) {
+      alert("Brak danych do wyeksportowania dla wybranych filtrów.");
+      return;
+    }
+
+    const headers = [
+      'scan_date', 'qrcode_url', 'domain', 
+      'continent', 'country', 'region', 'city', 
+      'device', 'browser', 'os'
+    ];
+
+    const rows = filteredLogs.map(log => {
+      let scanDate = '';
+      if (log.timestamp) {
+        const d = log.timestamp.toDate();
+        // Format as YYYY-MM-DD HH:mm:ss +00:00 (approximate if we just want a standard ISO-like string)
+        scanDate = d.toISOString().replace('T', ' ').substring(0, 19) + ' +00:00';
+      }
+
+      const qrcodeUrl = `https://${window.location.host}/${log.codeId || ''}`;
+      const domain = window.location.host;
+
+      return [
+        scanDate,
+        qrcodeUrl,
+        domain,
+        log.continent || '(unknown)',
+        log.country || '(unknown)',
+        log.region || '(unknown)',
+        log.city || '(unknown)',
+        log.device || '(unknown)',
+        log.browser || '(unknown)',
+        log.os || '(unknown)'
+      ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+    });
+
+    // Add BOM for Excel UTF-8 support
+    const bom = '\uFEFF';
+    const csvContent = bom + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    const typeLabel = isQr ? 'qr' : 'smartlink';
+    link.setAttribute('download', `analytics-${typeLabel}-${timeframe}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6 pb-20 relative min-h-[80vh]">
       {/* Top Bar */}
@@ -227,40 +279,43 @@ export default function Analytics({ activeWorkspace }) {
             </button>
             <AnimatePresence>
               {isFilterDropdownOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute top-full right-0 lg:left-0 lg:right-auto mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
-                >
-                  <div className="p-1">
-                    <button 
-                      onClick={() => {
-                        setSelectedMainTab('qr');
-                        setModalType('top');
-                        setIsFilterDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#1ea2e4]/10 hover:text-[#1ea2e4] rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <QrCode size={14} /> Wybierz Kod QR
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setSelectedMainTab('smartlink');
-                        setModalType('top');
-                        setIsFilterDropdownOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#8b5cf6]/10 hover:text-[#8b5cf6] rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <MousePointerClick size={14} /> Wybierz Smart Link
-                    </button>
-                  </div>
-                </motion.div>
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsFilterDropdownOpen(false)} />
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full right-0 lg:left-0 lg:right-auto mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-1">
+                      <button 
+                        onClick={() => {
+                          setSelectedMainTab('qr');
+                          setModalType('top');
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#1ea2e4]/10 hover:text-[#1ea2e4] rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <QrCode size={14} /> Wybierz Kod QR
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setSelectedMainTab('smartlink');
+                          setModalType('top');
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#8b5cf6]/10 hover:text-[#8b5cf6] rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <MousePointerClick size={14} /> Wybierz Smart Link
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
               )}
             </AnimatePresence>
           </div>
 
-          <button className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-white text-black border-transparent hover:bg-gray-200 shrink-0 font-semibold">
+          <button onClick={handleExportCSV} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border bg-white text-black border-transparent hover:bg-gray-200 shrink-0 font-semibold">
             <Download size={16} />
             <span className="hidden sm:inline">Export CSV</span>
           </button>

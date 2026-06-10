@@ -22,6 +22,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   const [membersDetails, setMembersDetails] = useState([]);
   const [saveMessage, setSaveMessage] = useState('');
   const [memberToRemove, setMemberToRemove] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
   const colorPickerRef = useRef(null);
 
   // Uprawnienia
@@ -33,6 +34,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   const [searchQuery, setSearchQuery] = useState('');
   
   const isOwner = activeWorkspace?.ownerId === currentUser.uid;
+  const isAdmin = activeWorkspace?.memberRoles?.[currentUser.uid] === 'admin';
+  const hasAdminRights = isOwner || isAdmin;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,6 +50,12 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showColorPicker]);
+
+  useEffect(() => {
+    const closeDropdowns = () => setOpenDropdownId(null);
+    document.addEventListener("click", closeDropdowns);
+    return () => document.removeEventListener("click", closeDropdowns);
+  }, []);
 
   useEffect(() => {
     // Automatyczne przekierowanie do strony głównej, gdy użytkownik będąc w ustawieniach
@@ -140,9 +149,25 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
     setIsConfirmModalOpen(false);
   };
 
+  const handleRoleChange = async (uid, newRole) => {
+    try {
+      const newRoles = { ...(activeWorkspace?.memberRoles || {}) };
+      if (newRole === 'admin') {
+        newRoles[uid] = 'admin';
+      } else {
+        delete newRoles[uid];
+      }
+      await updateDoc(doc(db, "workspaces", activeWorkspace.id), {
+        memberRoles: newRoles
+      });
+    } catch (error) {
+      console.error("Błąd podczas aktualizacji ról:", error);
+    }
+  };
+
   const renderGeneralTab = () => (
     <div className="w-full">
-      {isOwner ? (
+      {hasAdminRights ? (
         <div className="bg-card border border-border rounded-xl p-8 mb-8">
           <h2 className="text-xl font-semibold mb-2">Dane zespołu</h2>
           <p className="text-gray-400 text-sm mb-8">Zaktualizuj profil swojego zespołu. Możesz zmienić nazwę i paletę kolorystyczną.</p>
@@ -263,7 +288,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-[#f97316] transition-colors"
           />
         </div>
-        {isOwner && (
+        {hasAdminRights && (
           <button onClick={() => setIsInviteModalOpen(true)} className="bg-white text-black font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-gray-200 transition-colors shrink-0">
             Dodaj członków
           </button>
@@ -287,36 +312,55 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                   <p className="font-semibold text-sm flex items-center gap-2">
                     {member.name || member.email.split('@')[0]}
                     {isUserOwner && <span className="bg-blue-500/10 text-blue-500 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Właściciel</span>}
-                    {!isUserOwner && <span className="bg-gray-500/10 text-gray-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Członek</span>}
+                    {!isUserOwner && activeWorkspace?.memberRoles?.[member.uid] === 'admin' && <span className="bg-[#FF4C00]/10 text-[#FF4C00] text-[10px] uppercase font-bold px-2 py-0.5 rounded">Admin</span>}
+                    {!isUserOwner && activeWorkspace?.memberRoles?.[member.uid] !== 'admin' && <span className="bg-gray-500/10 text-gray-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Członek</span>}
                     {isCurrentUser && <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded">Ty</span>}
                   </p>
                   <p className="text-xs text-gray-400">{member.email}</p>
                 </div>
               </div>
-              {isOwner && !isUserOwner && (
+              {hasAdminRights && !isUserOwner && !isCurrentUser && (
                 <div className="relative dropdown-container">
                   <button 
-                    onClick={() => {
-                      const el = document.getElementById(`dropdown-${member.uid}`);
-                      if (el.classList.contains('hidden')) {
-                        document.querySelectorAll('.member-dropdown').forEach(d => d.classList.add('hidden'));
-                        el.classList.remove('hidden');
-                      } else {
-                        el.classList.add('hidden');
-                      }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenDropdownId(openDropdownId === member.uid ? null : member.uid);
                     }}
                     className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-border transition-colors"
                   >
                     <MoreVertical size={16} />
                   </button>
-                  <div id={`dropdown-${member.uid}`} className="member-dropdown hidden absolute right-0 top-full mt-1 w-32 bg-[#18181b] border border-border rounded-xl shadow-2xl z-50 p-1">
-                    <button 
-                      onClick={() => setMemberToRemove(member)}
-                      className="w-full flex items-center gap-2 text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                  <AnimatePresence>
+                  {openDropdownId === member.uid && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute right-0 top-full mt-1 w-40 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 p-1 origin-top-right"
                     >
-                      <Trash2 size={14} /> Usuń
-                    </button>
-                  </div>
+                      <button 
+                        onClick={() => {
+                          handleRoleChange(member.uid, activeWorkspace?.memberRoles?.[member.uid] === 'admin' ? 'member' : 'admin');
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full flex items-center gap-2 text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/5 rounded-lg transition-colors"
+                      >
+                        <Shield size={14} /> {activeWorkspace?.memberRoles?.[member.uid] === 'admin' ? 'Zrób członkiem' : 'Zrób Adminem'}
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setMemberToRemove(member);
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full flex items-center gap-2 text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={14} /> Usuń
+                      </button>
+                    </motion.div>
+                  )}
+                  </AnimatePresence>
                 </div>
               )}
             </div>
@@ -335,9 +379,9 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             Uprawnienia Członków Zespołu
           </h2>
           <p className="text-gray-400 text-sm">
-            {isOwner 
-              ? 'Określ, jakie uprawnienia mają zaproszeni członkowie względem kodów i linków utworzonych przez innych współpracowników. Twoje uprawnienia jako właściciela są zawsze pełne.' 
-              : 'Jesteś zaproszonym członkiem. Poniższymi uprawnieniami zarządza wyłącznie właściciel zespołu.'}
+            {hasAdminRights 
+              ? 'Określ, jakie uprawnienia mają zaproszeni członkowie względem kodów i linków utworzonych przez innych współpracowników. Twoje uprawnienia jako Właściciela lub Admina są zawsze pełne.' 
+              : 'Jesteś zaproszonym członkiem. Poniższymi uprawnieniami zarządza wyłącznie właściciel lub administrator zespołu.'}
           </p>
         </div>
 
@@ -348,9 +392,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
               <p className="text-xs text-gray-400 leading-relaxed">Pozwala członkom zmieniać adres docelowy i parametry w kodach stworzonych przez innych w zespole.</p>
             </div>
             <button
-              onClick={() => isOwner && setAllowMembersEdit(!allowMembersEdit)}
-              disabled={!isOwner}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersEdit ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!isOwner ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={() => hasAdminRights && setAllowMembersEdit(!allowMembersEdit)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersEdit ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!hasAdminRights ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${allowMembersEdit ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
@@ -362,9 +405,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
               <p className="text-xs text-gray-400 leading-relaxed">Zezwala członkom na ukrywanie i przywracanie nieswoich kodów z przestrzeni publicznej zespołu.</p>
             </div>
             <button
-              onClick={() => isOwner && setAllowMembersArchive(!allowMembersArchive)}
-              disabled={!isOwner}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersArchive ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!isOwner ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={() => hasAdminRights && setAllowMembersArchive(!allowMembersArchive)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersArchive ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!hasAdminRights ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${allowMembersArchive ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
@@ -376,16 +418,15 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
               <p className="text-xs text-gray-400 leading-relaxed">Pozwala członkom na wyzerowanie licznika kliknięć (operacja jest bezpowrotna!).</p>
             </div>
             <button
-              onClick={() => isOwner && setAllowMembersReset(!allowMembersReset)}
-              disabled={!isOwner}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersReset ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!isOwner ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={() => hasAdminRights && setAllowMembersReset(!allowMembersReset)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${allowMembersReset ? 'bg-[#FF4C00]' : 'bg-gray-600'} ${!hasAdminRights ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ease-in-out ${allowMembersReset ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
           </div>
         </div>
         
-        {isOwner && (
+        {hasAdminRights && (
           <div className="mt-8 pt-6 border-t border-border flex items-center">
             <button 
               onClick={handleSave}

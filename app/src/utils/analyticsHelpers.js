@@ -117,6 +117,7 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
     chartLabels: labels,
     chartData: chartDataArray,
     totalLogs: filteredLogs.length,
-    uniqueVisits: uniqueVisitorHashes.size
+    uniqueVisits: uniqueVisitorHashes.size,
+    filteredLogs
   };
 }

@@ -320,7 +320,15 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
       </div>
     ) : (
       <div className="space-y-4">
-        {processedCodes.map(code => (
+        {processedCodes.map(code => {
+          const isOwner = activeWorkspace?.ownerId === currentUser.uid;
+          const isAdmin = activeWorkspace?.memberRoles?.[currentUser.uid] === 'admin';
+          const isCreator = code.createdBy === currentUser.uid;
+          const canEdit = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersEdit;
+          const canArchive = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersArchive;
+          const canReset = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersReset;
+          
+          return (
         <div key={code.id} className="bg-card border border-border rounded-xl p-3 flex items-stretch justify-between hover:border-gray-600 transition-colors">
           <div className="flex items-center gap-5 flex-1 min-w-0 pr-4 pl-2 min-h-[112px]">
             <div className="w-14 h-14 rounded-full shrink-0 border border-border overflow-hidden bg-white flex items-center justify-center shadow-inner">
@@ -330,16 +338,11 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
             <div className="flex flex-col flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-lg truncate">{code.title}</span>
-                {(() => {
-                  const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-                  const isCreator = code.createdBy === currentUser.uid;
-                  const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
-                  return canEdit && (
-                    <button onClick={() => onEdit(code)} className="text-gray-500 hover:text-white transition-colors shrink-0" title="Edytuj tytuł">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    </button>
-                  );
-                })()}
+                {canEdit && (
+                  <button onClick={() => onEdit(code)} className="text-gray-500 hover:text-white transition-colors shrink-0" title="Edytuj tytuł">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  </button>
+                )}
               </div>
               <button 
                 onClick={(e) => {
@@ -399,12 +402,8 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
           <div className="flex items-stretch gap-6">
              <div className="flex flex-col items-end justify-between py-0.5">
                 <div className="flex items-center gap-2 relative">
-                  {sortFilter === 'archived' ? (() => {
-                    const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-                    const isCreator = code.createdBy === currentUser.uid;
-                    const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
-
-                    return canArchive ? (
+                  {sortFilter === 'archived' ? (
+                    canArchive ? (
                       <button 
                         onClick={() => handleRestore(code)}
                         className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
@@ -414,8 +413,8 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
                       </button>
                     ) : (
                       <span className="text-xs text-gray-500 italic">Brak uprawnień do przywracania</span>
-                    );
-                  })() : (
+                    )
+                  ) : (
                     <>
                       <button 
                         onClick={(e) => {
@@ -435,14 +434,7 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
                         <MoreVertical size={16} />
                         
                         <AnimatePresence>
-                        {openDropdownId === code.id && (() => {
-                                  const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-                                  const isCreator = code.createdBy === currentUser.uid;
-                                  const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
-                                  const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
-                                  const canReset = isOwner || isCreator || activeWorkspace?.allowMembersReset;
-                                  
-                                  return (
+                        {openDropdownId === code.id && (
                             <motion.div 
                               key={`dropdown-${code.id}`}
                               {...dropdownAnimation}
@@ -478,8 +470,7 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
                                       )}
                               </div>
                             </motion.div>
-                                  );
-                                })()}
+                        )}
                         </AnimatePresence>
                       </button>
                     </>
@@ -540,7 +531,8 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
             </button>
           </div>
         </div>
-      ))}
+        );
+        })}
     </div>
     )}
 

@@ -25,6 +25,7 @@ Zarządza zespołami oraz przestrzenią personalną użytkowników.
 - `allowMembersEdit` (Boolean): Uprawnienia członków do edycji (Team)
 - `allowMembersArchive` (Boolean): Uprawnienia członków do archiwizacji (Team)
 - `allowMembersReset` (Boolean): Uprawnienia członków do resetowania statystyk (Team)
+- `memberRoles` (Map): Zestawienie ról dla użytkowników w formacie `{ [uid]: "owner" | "admin" | "member" }`
 - `createdAt` (Timestamp): Data utworzenia
 
 ### 2. `qrcodes` (Kody QR)
@@ -112,6 +113,8 @@ Aplikacja wykorzystuje `react-router-dom` (`<BrowserRouter>`, `<Routes>`) do obs
 
 - **Base64 Logo Encoding:** Obrazki wgrywane przez użytkowników w ramach dodawania logo do kodów QR są natychmiastowo konwertowane na ciągi znaków Base64 przez FileReader API. Pozwala to na ich zapisywanie bezstratnie w bazie Firestore bez konieczności utrzymywania i opłacania serwerów statycznych lub magazynów (np. Firebase Storage).
 - **Live Form Validation & DB Checks:** System weryfikacji formularzy wykorzystuje nie tylko RegEx, ale również ułamkowe zapytania (np. `getDoc`) do bazy danych, po to by w ułamku sekundy wychwycić konflikt np. duplikację zdefiniowanego odnośnika "Short link".
+- **Safe Initialization Strategy:** W celu uniknięcia "wyścigów danych" (race conditions) przy tworzeniu profilowych przestrzeni roboczych, inicjalizacja zrezygnowała z polegania na asynchronicznych nasłuchiwaczach na rzecz twardego zapytania autoryzującego `getDocs` – wymuszając tym samym odpowiedź bezpośrednio z serwera zanim jakikolwiek zapis zostanie dokonany.
+- **Data Export & BOM:** Aplikacja renderuje własne pliki CSV na bazie wyfiltrowanych zapytań (Analytics). By zapobiec utracie polskich znaków przy otwieraniu plików przez silniki Microsoft Excel, każdy plik generowany w locie poprzedzony jest niewidzialnym bajtem `BOM (\uFEFF)`.
 - **CSS Hardware Filters:** Skomplikowane efekty graficzne (np. hover na interaktywnych wykresach list) realizowane są przy użyciu wspieranych sprzętowo filtrów w CSS (m.in. `brightness`, `drop-shadow`, `grayscale`) nakładanych na pojedynczą instancję widoku (zamiast renderowania drugiego elementu Canvas), co zabezpiecza aplikację przed szarpaniem animacji.
 
 ---

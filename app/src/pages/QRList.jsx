@@ -356,7 +356,15 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
       </div>
     ) : (
       <div className="space-y-4">
-        {processedCodes.map(code => (
+        {processedCodes.map(code => {
+          const isOwner = activeWorkspace?.ownerId === currentUser.uid;
+          const isAdmin = activeWorkspace?.memberRoles?.[currentUser.uid] === 'admin';
+          const isCreator = code.createdBy === currentUser.uid;
+          const canEdit = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersEdit;
+          const canArchive = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersArchive;
+          const canReset = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersReset;
+          
+          return (
         <div key={code.id} className="bg-card border border-border rounded-xl p-3 flex items-stretch justify-between hover:border-gray-600 transition-colors">
           <div className="flex items-center gap-5 flex-1 min-w-0 pr-4">
             <div className="w-28 h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white">
@@ -366,16 +374,11 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
             <div className="flex flex-col flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-lg truncate">{code.title || 'Brak tytułu'}</span>
-                {(() => {
-                  const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-                  const isCreator = code.createdBy === currentUser.uid;
-                  const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
-                  return canEdit && (
-                    <button onClick={() => onEdit(code)} className="text-gray-500 hover:text-white transition-colors shrink-0" title="Edytuj tytuł">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    </button>
-                  );
-                })()}
+                {canEdit && (
+                  <button onClick={() => onEdit(code)} className="text-gray-500 hover:text-white transition-colors shrink-0" title="Edytuj tytuł">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                  </button>
+                )}
               </div>
               <button 
                 onClick={(e) => {
@@ -396,9 +399,15 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
               </button>
               <div className="flex items-center gap-2 text-sm text-white mt-1 min-w-0">
                 <span className="text-gray-500 shrink-0">↳</span>
-                <a href={code.contentType === 'email' ? `mailto:${code.emailData?.address || code.url}` : (code.url?.startsWith('http://') || code.url?.startsWith('https://') ? code.url : `https://${code.url}`)} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate">
-                  {code.contentType === 'email' ? (code.emailData?.address || code.url.replace('mailto:', '').split('?')[0]) : code.url}
-                </a>
+                {['vcard', 'wifi', 'phone'].includes(code.contentType) ? (
+                  <button onClick={(e) => { e.stopPropagation(); onEdit(code); }} className="hover:underline transition-colors truncate text-left cursor-pointer">
+                    {code.contentType === 'vcard' ? `vCard (${[code.vcardData?.firstName, code.vcardData?.lastName].filter(Boolean).join(' ')})` : code.contentType === 'wifi' ? `Sieć WiFi (${code.wifiData?.ssid || ''})` : code.contentType === 'phone' ? (code.phoneData || code.url.replace('tel:', '')) : code.url}
+                  </button>
+                ) : (
+                  <a href={code.contentType === 'email' ? `mailto:${code.emailData?.address || code.url}` : (code.url?.startsWith('http://') || code.url?.startsWith('https://') ? code.url : `https://${code.url}`)} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate cursor-pointer">
+                    {code.contentType === 'email' ? (code.emailData?.address || code.url.replace('mailto:', '').split('?')[0]) : code.url}
+                  </a>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-3">
                 {code.tags && code.tags.some(tagId => allTags.some(t => t.id === tagId)) ? (
@@ -436,13 +445,15 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
              <div className="flex flex-col items-end justify-between py-0.5">
                <div className="flex items-center gap-2 relative">
                  {sortFilter === 'archived' ? (
-                   <button 
-                     onClick={() => handleRestore(code)}
-                     className="flex items-center gap-2 bg-white text-black px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
-                   >
-                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
-                     Przywróć
-                   </button>
+                   canArchive && (
+                     <button 
+                       onClick={() => handleRestore(code)}
+                       className="flex items-center gap-2 bg-white text-black px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors"
+                     >
+                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                       Przywróć
+                     </button>
+                   )
                  ) : (
                    <>
                      <button 
@@ -465,15 +476,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                      </button>
 
                      <AnimatePresence>
-                     {openDropdownId === code.id && (() => {
-                        const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-                        const isCreator = code.createdBy === currentUser.uid;
-                        const canEdit = isOwner || isCreator || activeWorkspace?.allowMembersEdit;
-                        const canArchive = isOwner || isCreator || activeWorkspace?.allowMembersArchive;
-                        const canReset = isOwner || isCreator || activeWorkspace?.allowMembersReset;
-
-                        return (
-                          <motion.div 
+                     {openDropdownId === code.id && (
+                        <motion.div 
                             key={`dropdown-${code.id}`}
                             {...dropdownAnimation}
                             onClick={e => e.stopPropagation()} 
@@ -508,8 +512,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                               )}
                             </div>
                           </motion.div>
-                        );
-                      })()}
+                     )}
                      </AnimatePresence>
                    </>
                  )}
@@ -569,7 +572,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
             </button>
           </div>
         </div>
-      ))}
+        );
+        })}
     </div>
     )}
 

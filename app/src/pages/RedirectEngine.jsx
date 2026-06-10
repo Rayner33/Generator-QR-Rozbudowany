@@ -3,11 +3,15 @@ import { useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc, increment, collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { getAnalyticsData } from '../utils/tracking';
-
+import QRCodeStyling from 'qr-code-styling';
+import { QrCode as QrCodeIcon } from 'lucide-react';
 export default function RedirectEngine() {
   const { shortId } = useParams();
   const [error, setError] = useState('');
   const [status, setStatus] = useState('Analizowanie linku...');
+  const [deactivatedData, setDeactivatedData] = useState(null);
+  const qrRef = React.useRef(null);
+  const qrCodeInstance = React.useRef(null);
   const hasProcessed = React.useRef(false);
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export default function RedirectEngine() {
 
         // 3. Sprawdzamy czy nie jest zarchiwizowany
         if (targetData.archived) {
-          setError('Ten link został zarchiwizowany i jest nieaktywny.');
+          setDeactivatedData({ ...targetData, isQrCode });
           return;
         }
 
@@ -99,9 +103,64 @@ export default function RedirectEngine() {
     processRedirect();
   }, [shortId]);
 
+  useEffect(() => {
+    if (deactivatedData && qrRef.current) {
+      const qrDataUrl = deactivatedData.url || deactivatedData.targetUrl || 'https://qrcode-ai.com';
+      
+      const options = {
+        width: 200,
+        height: 200,
+        type: 'svg',
+        margin: 0,
+        data: qrDataUrl,
+        dotsOptions: {
+          color: deactivatedData.dotsColor || '#000000',
+          type: deactivatedData.styleType || 'square'
+        },
+        cornersSquareOptions: {
+          color: deactivatedData.eyeColor || deactivatedData.dotsColor || '#000000',
+          type: deactivatedData.styleType || 'square'
+        },
+        backgroundOptions: {
+          color: deactivatedData.backgroundColor || '#ffffff'
+        }
+      };
+
+      if (!qrCodeInstance.current) {
+        qrCodeInstance.current = new QRCodeStyling(options);
+        qrCodeInstance.current.append(qrRef.current);
+      } else {
+        qrCodeInstance.current.update(options);
+      }
+    }
+  }, [deactivatedData]);
+
   return (
     <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center p-4 text-white font-sans">
-      {!error ? (
+      {deactivatedData ? (
+        <div className="flex flex-col items-center max-w-md w-full animate-fade-in-up">
+          <div className="flex items-center gap-3 mb-16">
+            <QrCodeIcon size={32} className="text-white" />
+            <h1 className="text-2xl font-bold tracking-wide">QR PARYS</h1>
+          </div>
+
+          <div className="relative mb-12">
+            <div className="bg-white p-4 rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative">
+              <div ref={qrRef} className="w-[200px] h-[200px] rounded-xl overflow-hidden" />
+              
+              <div className="absolute top-0 right-0 -mr-6 -mt-4 transform rotate-12 z-10">
+                <div className="bg-[#ff3b30] text-white text-sm font-bold uppercase tracking-wider py-1.5 px-4 rounded-lg shadow-xl border border-red-500/50">
+                  Dezaktywowany
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-[1.35rem] font-semibold text-center mb-4 leading-snug">
+            Ten kod QR został z jakiegoś<br />powodu dezaktywowany.
+          </h2>
+        </div>
+      ) : !error ? (
         <div className="flex flex-col items-center gap-6">
           <div className="w-16 h-16 relative">
             <div className="absolute inset-0 border-4 border-[#FF4C00]/30 rounded-full"></div>

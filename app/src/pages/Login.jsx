@@ -48,7 +48,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center justify-center mb-10 gap-3">
           <QrCode size={96} className="text-[#FF4C00]" />
-          <h1 className="text-3xl font-black tracking-widest uppercase">Parys QR</h1>
+          <h1 className="text-3xl font-black tracking-widest uppercase">QR PARYS</h1>
         </div>
         
         <div className="bg-card border border-border rounded-2xl p-8 shadow-2xl flex flex-col items-center text-center">
