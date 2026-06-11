@@ -64,6 +64,7 @@ export default function RedirectEngine() {
             codeId: shortId,
             workspaceId: targetData.workspaceId,
             type: isQrCode ? 'qr' : 'smartlink',
+            utm: targetData.utm || null,
             ...analyticsData
           });
         } catch (analyticsError) {
@@ -84,6 +85,20 @@ export default function RedirectEngine() {
           finalUrl = null;
         } else if (finalUrl && !finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
           finalUrl = 'https://' + finalUrl;
+        }
+        
+        // Appending UTM Parameters if applicable
+        if (finalUrl && targetData.utm && (finalUrl.startsWith('http://') || finalUrl.startsWith('https://'))) {
+          try {
+            const urlObj = new URL(finalUrl);
+            if (targetData.utm.source) urlObj.searchParams.append('utm_source', targetData.utm.source);
+            if (targetData.utm.medium) urlObj.searchParams.append('utm_medium', targetData.utm.medium);
+            if (targetData.utm.campaign) urlObj.searchParams.append('utm_campaign', targetData.utm.campaign);
+            if (targetData.utm.content) urlObj.searchParams.append('utm_content', targetData.utm.content);
+            finalUrl = urlObj.toString();
+          } catch (e) {
+            console.error('Błąd dodawania parametrów UTM', e);
+          }
         }
 
         if (finalUrl) {

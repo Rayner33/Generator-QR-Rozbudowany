@@ -13,6 +13,13 @@ export default {
         border: '#27272a',
         primary: '#3b82f6',
         primaryDark: '#2563eb',
+        brand: {
+          qr: '#1ea2e4',
+          qrHover: '#1891ce',
+          smartlink: '#8b5cf6',
+          smartlinkHover: '#7e22ce',
+          orange: '#f97316',
+        }
       }
     },
   },

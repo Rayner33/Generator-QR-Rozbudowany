@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, Globe } from 'lucide-react';
 import { db, auth } from '../firebase';
 import { collection, addDoc, updateDoc, setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { Network } from 'lucide-react';
+import UTMBuilderModal from './UTMBuilderModal';
 
 export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode = 'create', initialData = null }) {
   const [title, setTitle] = useState('');
@@ -12,6 +14,10 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
   
   const [urlData, setUrlData] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  
+  // UTM
+  const [utmData, setUtmData] = useState(null);
+  const [isUtmModalOpen, setIsUtmModalOpen] = useState(false);
 
   const generateShortCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -28,10 +34,12 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
         
         setTitle(mode === 'duplicate' ? `${initialData.title} (Kopia)` : initialData.title);
         setUrlData(initialData.url || '');
+        setUtmData(initialData.utm || null);
       } else {
         setCodeId(generateShortCode());
         setTitle('');
         setUrlData('');
+        setUtmData(null);
       }
       setIsSaving(false);
     }
@@ -93,7 +101,8 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
       url: finalUrl,
       title: title || "Nowy Smart Link",
       workspaceId: activeWorkspace.id,
-      archived: false
+      archived: false,
+      utm: utmData
     };
 
     if (mode === 'edit' && initialData) {
@@ -115,6 +124,7 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <motion.div 
@@ -247,6 +257,22 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
                   )}
                 </div>
                 {validationErrors.urlData && <p className="text-xs text-red-500 mt-1.5">{validationErrors.urlData}</p>}
+                
+                <div className="mt-4">
+                  <button 
+                    type="button"
+                    onClick={() => setIsUtmModalOpen(true)}
+                    disabled={!urlData || validationErrors.urlData}
+                    className={`flex items-center justify-center gap-2 w-fit px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors ${
+                      !urlData || validationErrors.urlData
+                        ? 'bg-[#18181b] border-border text-gray-500 cursor-not-allowed'
+                        : 'bg-white border-white text-black hover:bg-gray-200'
+                    }`}
+                  >
+                    <Network size={14} />
+                    UTM {utmData && (utmData.source || utmData.medium || utmData.campaign || utmData.content) ? '(Aktywne)' : ''}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -262,8 +288,20 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
           </div>
           </div>
         </motion.div>
-      </motion.div>
+        </motion.div>
       )}
     </AnimatePresence>
+    
+    <UTMBuilderModal 
+      isOpen={isUtmModalOpen} 
+      onClose={() => setIsUtmModalOpen(false)} 
+      onSave={(data) => {
+        setUtmData(data);
+        setIsUtmModalOpen(false);
+      }} 
+      initialUtm={utmData}
+      type="smartlink"
+    />
+    </>
   );
 }

@@ -1,4 +1,4 @@
-export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, selectedCodeId, geoTab, techTab) {
+export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, activeFilters, geoTab, techTab, utmTab) {
   // 1. Time filtering
   const now = new Date();
   let cutoff = null;
@@ -13,8 +13,17 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
   if (cutoff) {
     filteredLogs = filteredLogs.filter(log => log.timestamp?.toDate() >= cutoff);
   }
-  if (selectedCodeId) {
-    filteredLogs = filteredLogs.filter(log => log.codeId === selectedCodeId);
+  
+  if (activeFilters && activeFilters.length > 0) {
+    filteredLogs = filteredLogs.filter(log => {
+      return activeFilters.every(filter => {
+        if (filter.id.startsWith('utm.')) {
+          const utmKey = filter.id.split('.')[1];
+          return log.utm && log.utm[utmKey] === filter.value;
+        }
+        return log[filter.id] === filter.value;
+      });
+    });
   }
 
   // 2. Top Items
@@ -62,6 +71,26 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
 
   const geoData = getAggregatedData(geoMap[geoTab]);
   const techData = getAggregatedData(techMap[techTab]);
+
+  const utmMap = { 'Source': 'source', 'Medium': 'medium', 'Campaign': 'campaign', 'Content': 'content' };
+  const getUtmAggregatedData = (field) => {
+    const counts = {};
+    filteredLogs.forEach(log => {
+      if (log.utm && log.utm[field]) {
+        const val = log.utm[field];
+        counts[val] = (counts[val] || 0) + 1;
+      }
+    });
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    return Object.entries(counts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: total > 0 ? ((count / total) * 100).toFixed(1) : 0
+      }))
+      .sort((a, b) => b.count - a.count);
+  };
+  const utmData = getUtmAggregatedData(utmMap[utmTab]);
 
   // 4. Chart Data
   const labels = [];
@@ -114,6 +143,7 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
     topItems,
     geoData,
     techData,
+    utmData,
     chartLabels: labels,
     chartData: chartDataArray,
     totalLogs: filteredLogs.length,

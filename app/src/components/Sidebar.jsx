@@ -167,7 +167,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
       <nav onMouseLeave={() => setHoveredNav(null)} className="flex-1 flex flex-col gap-2 mt-4">
         <NavItem 
           icon={<QrCode size={20} />} 
-          label="Kody Qr" 
+          label="Kody QR" 
           active={activePath === '/'} 
           onClick={() => navigate('/')}
           onMouseEnter={() => setHoveredNav('/')}
@@ -243,7 +243,7 @@ function NavItem({ icon, label, active, onClick, onMouseEnter, hoveredNav }) {
 }
 
 function activePathFor(label) {
-  if (label === 'Kody Qr') return '/';
+  if (label === 'Kody QR') return '/';
   if (label === 'Smart Linki') return '/links';
   if (label === 'Analityka') return '/analytics';
   if (label === 'Ustawienia') return '/settings';

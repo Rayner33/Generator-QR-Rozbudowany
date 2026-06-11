@@ -146,20 +146,21 @@ VITE_GEO_API_URL       # URL serwera GeoLite2
 *(Dokument utworzony i aktualizowany przez AI Assistant na podstawie wytycznych deweloperskich)*
 
 
-### 5. `analytics_logs` (Logi Analityczne - przykĹ‚adowa struktura)
-ModuĹ‚ analityki opiera siÄ™ na logach zbierajÄ…cych informacje o klikniÄ™ciach i skanach.
+### 5. `analytics_logs` (Logi Analityczne - przykładowa struktura)
+Moduł analityki opiera się na logach zbierających informacje o kliknięciach i skanach.
 - `id` (String): ID logu
 - `urlId` (String): ID kodu QR lub Smart Linku
 - `type` (String): `qr` lub `smartlink`
-- `timestamp` (Timestamp): DokĹ‚adny czas interakcji
-- `visitorId` (String): Zanonimizowane ID odwiedzajÄ…cego (Fingerprint) do zliczania unikalnych wizyt (Cookieless)
+- `timestamp` (Timestamp): Dokładny czas interakcji
+- `visitorId` (String): Zanonimizowane ID odwiedzającego (Fingerprint) do zliczania unikalnych wizyt (Cookieless)
 - `geo` (Object): Dane geograficzne (kontynent, kraj, miasto)
-- `tech` (Object): Dane technologiczne (przeglÄ…darka, urzÄ…dzenie, system operacyjny)
+- `tech` (Object): Dane technologiczne (przeglądarka, urządzenie, system operacyjny)
+- `utm` (Object): Parametry kampanii marketingowych (source, medium, campaign, content)
 
 ## Design System & Kolorystyka
-Aplikacja zostaĹ‚a uporzÄ…dkowana wedĹ‚ug Ĺ›ciĹ›le okreĹ›lonych stref kolorystycznych w celu poprawy User Experience:
-- **PomaraĹ„czowy (#f97316):** UĹĽywany do ustawieĹ„ systemowych i zarzÄ…dzania zespoĹ‚ami (wyszukiwarki czĹ‚onkĂłw, formularze tworzenia zespoĹ‚Ăłw, selektor menu).
-- **Niebieski (#1ea2e4):** Dedykowany do wizualizacji statystyk i okien modalnych kodĂłw QR.
-- **Fioletowy (#8b5cf6):** Dedykowany do wizualizacji statystyk i okien modalnych Smart LinkĂłw.
+Aplikacja została uporządkowana według ściśle określonych stref kolorystycznych w celu poprawy User Experience:
+- **Pomarańczowy (#f97316):** Używany do ustawień systemowych i zarządzania zespołami (wyszukiwarki członków, formularze tworzenia zespołów, selektor menu).
+- **Niebieski (#1ea2e4):** Dedykowany do wizualizacji statystyk i okien modalnych kodów QR.
+- **Fioletowy (#8b5cf6):** Dedykowany do wizualizacji statystyk i okien modalnych Smart Linków.
 
-Interfejs zyskaĹ‚ zaktualizowane moduĹ‚y list (paski procentowe `progress bars` zintegrowane w tle) oraz pĹ‚ynne efekty zanikania (CSS Masking) dla dĹ‚ugich list analitycznych.
+Interfejs zyskał zaktualizowane moduły list (paski procentowe `progress bars` zintegrowane w tle) oraz płynne efekty zanikania (CSS Masking) dla długich list analitycznych.

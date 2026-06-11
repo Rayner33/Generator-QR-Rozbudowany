@@ -150,7 +150,7 @@ export default function Account({ currentUser, workspaces }) {
                  type="text" 
                  value={username}
                  onChange={(e) => setUsername(e.target.value)}
-                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors"
+                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f97316] transition-colors"
                  placeholder="Twoja nazwa"
                />
                <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" size={20} />

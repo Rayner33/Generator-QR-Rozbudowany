@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Line } from 'react-chartjs-2';
@@ -6,7 +6,7 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, 
   LineElement, Title, Tooltip, Legend, Filler 
 } from 'chart.js';
-import { Download, Filter, Search, X, QrCode, Link as LinkIcon, MousePointerClick, ChevronDown, Globe, Monitor } from 'lucide-react';
+import { Download, Filter, Search, X, QrCode, Link as LinkIcon, MousePointerClick, ChevronDown, Globe, Monitor, Network } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -20,28 +20,68 @@ export default function Analytics({ activeWorkspace }) {
   const urlType = searchParams.get('type');
 
   const [selectedMainTab, setSelectedMainTab] = useState(urlType || 'qr');
-  const [selectedCodeId, setSelectedCodeId] = useState(urlCodeId || null);
+  const [activeFilters, setActiveFilters] = useState(urlCodeId ? [{ id: 'codeId', value: urlCodeId, label: urlCodeId }] : []);
   const [timeframe, setTimeframe] = useState('30d');
   
   useEffect(() => {
-    if (urlCodeId) setSelectedCodeId(urlCodeId);
+    if (urlCodeId) {
+      setActiveFilters(prev => {
+        if (!prev.find(f => f.id === 'codeId')) {
+          return [...prev, { id: 'codeId', value: urlCodeId, label: urlCodeId }];
+        }
+        return prev;
+      });
+    }
     if (urlType) setSelectedMainTab(urlType);
   }, [urlCodeId, urlType]);
 
-  const clearFilter = () => {
-    setSelectedCodeId(null);
+  const addFilter = (id, value, label) => {
+    setActiveFilters(prev => {
+      const existingIndex = prev.findIndex(f => f.id === id);
+      if (existingIndex >= 0) {
+        const newFilters = [...prev];
+        newFilters[existingIndex] = { id, value, label };
+        return newFilters;
+      }
+      return [...prev, { id, value, label }];
+    });
+  };
+
+  const removeFilter = (id) => {
+    setActiveFilters(prev => {
+      const newFilters = prev.filter(f => f.id !== id);
+      if (id === 'codeId' && newFilters.length === 0) {
+        setSearchParams({});
+      }
+      return newFilters;
+    });
+  };
+
+  const clearAllFilters = () => {
+    setActiveFilters([]);
     setSearchParams({});
   };
   const [hoveredMainTab, setHoveredMainTab] = useState(null);
   
   const [modalType, setModalType] = useState(null); // 'top' | 'geo' | 'tech' | null
   const [modalSearchQuery, setModalSearchQuery] = useState('');
+  const [dropdownSearch, setDropdownSearch] = useState('');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [isTimeframeDropdownOpen, setIsTimeframeDropdownOpen] = useState(false);
+
+  const filterTimeoutRef = useRef(null);
+  const timeframeTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    if (!isFilterDropdownOpen) {
+      setDropdownSearch('');
+    }
+  }, [isFilterDropdownOpen]);
 
   // Pod-zakładki dla kolumn
   const [geoTab, setGeoTab] = useState('Kontynenty');
   const [techTab, setTechTab] = useState('Urządzenia');
+  const [utmTab, setUtmTab] = useState('Source');
 
   const isQr = selectedMainTab === 'qr';
   const themeColor = isQr ? '#1ea2e4' : '#8b5cf6';
@@ -51,11 +91,11 @@ export default function Analytics({ activeWorkspace }) {
   const activeItems = isQr ? qrcodes : smartlinks;
   
   const {
-    topItems, geoData, techData, chartLabels, chartData, totalLogs, uniqueVisits, filteredLogs
+    topItems, geoData, techData, utmData, chartLabels, chartData, totalLogs, uniqueVisits, filteredLogs
   } = useMemo(() => {
-    if (!logs || loading) return { topItems: [], geoData: [], techData: [], chartLabels: [], chartData: [], totalLogs: 0, uniqueVisits: 0, filteredLogs: [] };
-    return processAnalytics(logs, activeItems, timeframe, selectedMainTab, selectedCodeId, geoTab, techTab);
-  }, [logs, activeItems, timeframe, selectedMainTab, selectedCodeId, geoTab, techTab, loading]);
+    if (!logs || loading) return { topItems: [], geoData: [], techData: [], utmData: [], chartLabels: [], chartData: [], totalLogs: 0, uniqueVisits: 0, filteredLogs: [] };
+    return processAnalytics(logs, activeItems, timeframe, selectedMainTab, activeFilters, geoTab, techTab, utmTab);
+  }, [logs, activeItems, timeframe, selectedMainTab, activeFilters, geoTab, techTab, utmTab, loading]);
 
   // Chart data configuration
   const lineData = {
@@ -137,6 +177,13 @@ export default function Analytics({ activeWorkspace }) {
       items: techData,
       icon: Monitor
     };
+    if (modalType === 'utm') return {
+      tabs: ['Source', 'Medium', 'Campaign', 'Content'],
+      activeTab: utmTab,
+      setActiveTab: setUtmTab,
+      items: utmData,
+      icon: Network
+    };
     return null;
   };
 
@@ -151,7 +198,8 @@ export default function Analytics({ activeWorkspace }) {
     const headers = [
       'scan_date', 'qrcode_url', 'domain', 
       'continent', 'country', 'region', 'city', 
-      'device', 'browser', 'os'
+      'device', 'browser', 'os',
+      'utm_source', 'utm_medium', 'utm_campaign', 'utm_content'
     ];
 
     const rows = filteredLogs.map(log => {
@@ -175,7 +223,11 @@ export default function Analytics({ activeWorkspace }) {
         log.city || '(unknown)',
         log.device || '(unknown)',
         log.browser || '(unknown)',
-        log.os || '(unknown)'
+        log.os || '(unknown)',
+        log.utm?.source || '',
+        log.utm?.medium || '',
+        log.utm?.campaign || '',
+        log.utm?.content || ''
       ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
     });
 
@@ -223,7 +275,13 @@ export default function Analytics({ activeWorkspace }) {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="relative w-full sm:w-40 z-20">
+          <div 
+            className="relative w-full sm:w-40 z-20" 
+            onMouseEnter={() => clearTimeout(timeframeTimeoutRef.current)}
+            onMouseLeave={() => {
+              timeframeTimeoutRef.current = setTimeout(() => setIsTimeframeDropdownOpen(false), 250);
+            }}
+          >
             <button 
               onClick={() => setIsTimeframeDropdownOpen(!isTimeframeDropdownOpen)}
               className={`relative flex items-center justify-between gap-2 px-4 py-2.5 w-full rounded-lg text-sm transition-colors border bg-[#18181b] ${isTimeframeDropdownOpen ? 'border-gray-500 text-white' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
@@ -236,14 +294,13 @@ export default function Analytics({ activeWorkspace }) {
             <AnimatePresence>
               {isTimeframeDropdownOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsTimeframeDropdownOpen(false)} />
                   <motion.div 
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full left-0 mt-2 w-full bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+                    className="absolute top-full left-0 pt-2 w-full z-50"
                   >
-                    <div className="p-1 flex flex-col">
+                    <div className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden p-1 flex flex-col">
                       {[
                         { val: '7d', label: 'Ostatnie 7 dni' },
                         { val: '30d', label: 'Ostatnie 30 dni' },
@@ -269,7 +326,13 @@ export default function Analytics({ activeWorkspace }) {
             </AnimatePresence>
           </div>
           
-          <div className="relative">
+          <div 
+            className="relative" 
+            onMouseEnter={() => clearTimeout(filterTimeoutRef.current)}
+            onMouseLeave={() => {
+              filterTimeoutRef.current = setTimeout(() => setIsFilterDropdownOpen(false), 250);
+            }}
+          >
             <button 
               onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
               className={`flex items-center justify-center px-4 py-2.5 rounded-lg text-sm border bg-[#18181b] shrink-0 transition-colors ${isFilterDropdownOpen ? 'border-gray-500 text-white' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
@@ -280,34 +343,66 @@ export default function Analytics({ activeWorkspace }) {
             <AnimatePresence>
               {isFilterDropdownOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsFilterDropdownOpen(false)} />
                   <motion.div 
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute top-full right-0 lg:left-0 lg:right-auto mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+                    className="absolute top-full right-0 lg:left-0 lg:right-auto pt-2 w-56 z-50"
                   >
-                    <div className="p-1">
-                      <button 
-                        onClick={() => {
-                          setSelectedMainTab('qr');
-                          setModalType('top');
-                          setIsFilterDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#1ea2e4]/10 hover:text-[#1ea2e4] rounded-lg transition-colors flex items-center gap-2"
+                    <div className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden p-1">
+                      <div className="relative mb-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input 
+                          type="text" 
+                          placeholder="Szukaj filtrów..." 
+                          value={dropdownSearch}
+                          onChange={(e) => setDropdownSearch(e.target.value)}
+                          className={`w-full bg-[#18181b] border border-border rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none transition-colors ${isQr ? 'focus:border-[#1ea2e4]' : 'focus:border-[#8b5cf6]'}`}
+                        />
+                      </div>
+                      <div 
+                        className="overflow-y-auto no-scrollbar max-h-[320px] space-y-0.5 pb-2" 
+                        style={{ maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)' }}
                       >
-                        <QrCode size={14} /> Wybierz Kod QR
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setSelectedMainTab('smartlink');
-                          setModalType('top');
-                          setIsFilterDropdownOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-[#8b5cf6]/10 hover:text-[#8b5cf6] rounded-lg transition-colors flex items-center gap-2"
-                      >
-                        <MousePointerClick size={14} /> Wybierz Smart Link
-                      </button>
+                        {[
+                          { label: 'Kody QR', icon: <QrCode size={14} />, type: 'top', mainTab: 'qr' },
+                          { label: 'Smart Linki', icon: <MousePointerClick size={14} />, type: 'top', mainTab: 'smartlink' },
+                          { label: 'Kontynenty', icon: <Globe size={14} />, type: 'geo', subTab: 'Kontynenty' },
+                          { label: 'Kraje', icon: <Globe size={14} />, type: 'geo', subTab: 'Kraje' },
+                          { label: 'Regiony', icon: <Globe size={14} />, type: 'geo', subTab: 'Regiony' },
+                          { label: 'Miasta', icon: <Globe size={14} />, type: 'geo', subTab: 'Miasta' },
+                          { label: 'Urządzenia', icon: <Monitor size={14} />, type: 'tech', subTab: 'Urządzenia' },
+                          { label: 'Przeglądarki', icon: <Monitor size={14} />, type: 'tech', subTab: 'Przeglądarki' },
+                          { label: 'System operacyjny', icon: <Monitor size={14} />, type: 'tech', subTab: 'System operacyjny' },
+                          { label: 'Source', icon: <Network size={14} />, type: 'utm', subTab: 'Source' },
+                          { label: 'Medium', icon: <Network size={14} />, type: 'utm', subTab: 'Medium' },
+                          { label: 'Campaign', icon: <Network size={14} />, type: 'utm', subTab: 'Campaign' },
+                          { label: 'Content', icon: <Network size={14} />, type: 'utm', subTab: 'Content' }
+                        ].filter(opt => opt.label.toLowerCase().includes(dropdownSearch.toLowerCase())).map((opt, i) => (
+                          <button 
+                            key={i}
+                            onClick={() => {
+                              if (opt.type === 'top') {
+                                setSelectedMainTab(opt.mainTab);
+                                setModalType('top');
+                              } else if (opt.type === 'geo') {
+                                setGeoTab(opt.subTab);
+                                setModalType('geo');
+                              } else if (opt.type === 'tech') {
+                                setTechTab(opt.subTab);
+                                setModalType('tech');
+                              } else if (opt.type === 'utm') {
+                                setUtmTab(opt.subTab);
+                                setModalType('utm');
+                              }
+                              setIsFilterDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2.5 text-sm text-gray-300 rounded-lg transition-colors flex items-center gap-2 ${opt.mainTab === 'qr' ? 'hover:bg-[#1ea2e4]/10 hover:text-[#1ea2e4]' : opt.mainTab === 'smartlink' ? 'hover:bg-[#8b5cf6]/10 hover:text-[#8b5cf6]' : 'hover:bg-white/5 hover:text-white'}`}
+                          >
+                            {opt.icon} {opt.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </motion.div>
                 </>
@@ -340,8 +435,8 @@ export default function Analytics({ activeWorkspace }) {
         </div>
       </div>
 
-      {/* 3 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* 4 Columns Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Col 1: Top List */}
         <div className="bg-[#0a0a0b] border border-border rounded-xl flex flex-col relative overflow-hidden h-[420px]">
@@ -356,16 +451,18 @@ export default function Analytics({ activeWorkspace }) {
             className="p-2 flex-1 overflow-hidden group/list space-y-1"
             style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
           >
-            {topItems.map((item, i) => (
+            {topItems.map((item, i) => {
+              const isActive = activeFilters.some(f => f.id === 'codeId' && f.value === item.id);
+              return (
               <div 
                 key={i} 
-                onClick={() => setSelectedCodeId(item.id)}
+                onClick={() => addFilter('codeId', item.id, item.name)}
                 className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
               >
                 <div className="absolute inset-[3px] z-[-1]">
                   <div 
                     className="h-full rounded-md transition-all duration-1000"
-                    style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                    style={{ width: `${item.percentage}%`, backgroundColor: isActive ? '#ef4444' : themeColor }}
                   />
                 </div>
                 <div className="flex items-center gap-3 overflow-hidden relative z-10">
@@ -379,7 +476,7 @@ export default function Analytics({ activeWorkspace }) {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
           {topItems.length > 7 && (
             <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
@@ -413,15 +510,19 @@ export default function Analytics({ activeWorkspace }) {
             className="p-2 flex-1 overflow-hidden group/list space-y-1"
             style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
           >
-            {geoData.map((item, i) => (
+            {geoData.map((item, i) => {
+              const field = geoTab === 'Kontynenty' ? 'continent' : geoTab === 'Kraje' ? 'country' : geoTab === 'Regiony' ? 'region' : 'city';
+              const isActive = activeFilters.some(f => f.id === field && f.value === item.name);
+              return (
               <div 
                 key={i} 
-                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-default group/item hover:bg-white/5 overflow-hidden z-0"
+                onClick={() => addFilter(field, item.name, `${geoTab}: ${item.name}`)}
+                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
               >
                 <div className="absolute inset-[3px] z-[-1]">
                   <div 
                     className="h-full rounded-md transition-all duration-1000"
-                    style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                    style={{ width: `${item.percentage}%`, backgroundColor: isActive ? '#ef4444' : themeColor }}
                   />
                 </div>
                 <div className="flex items-center gap-3 overflow-hidden relative z-10">
@@ -435,7 +536,7 @@ export default function Analytics({ activeWorkspace }) {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
           {geoData.length > 7 && (
             <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
@@ -469,15 +570,19 @@ export default function Analytics({ activeWorkspace }) {
             className="p-2 flex-1 overflow-hidden group/list space-y-1"
             style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
           >
-            {techData.map((item, i) => (
+            {techData.map((item, i) => {
+              const field = techTab === 'Urządzenia' ? 'device' : techTab === 'Przeglądarki' ? 'browser' : 'os';
+              const isActive = activeFilters.some(f => f.id === field && f.value === item.name);
+              return (
               <div 
                 key={i} 
-                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-default group/item hover:bg-white/5 overflow-hidden z-0"
+                onClick={() => addFilter(field, item.name, `${techTab}: ${item.name}`)}
+                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
               >
                 <div className="absolute inset-[3px] z-[-1]">
                   <div 
                     className="h-full rounded-md transition-all duration-1000"
-                    style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                    style={{ width: `${item.percentage}%`, backgroundColor: isActive ? '#ef4444' : themeColor }}
                   />
                 </div>
                 <div className="flex items-center gap-3 overflow-hidden relative z-10">
@@ -491,12 +596,78 @@ export default function Analytics({ activeWorkspace }) {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
           {techData.length > 7 && (
             <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
               <button 
                 onClick={() => setModalType('tech')}
+                className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
+              >
+                Zobacz wszystko
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Col 4: UTM */}
+        <div className="bg-[#0a0a0b] border border-border rounded-xl flex flex-col relative overflow-hidden h-[420px]">
+          <div className="p-4 border-b border-border flex justify-between items-center relative">
+            <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+              {['Source', 'Medium', 'Campaign', 'Content'].map(tab => (
+                <button 
+                  key={tab} 
+                  onClick={() => setUtmTab(tab)}
+                  className={`relative text-sm font-medium whitespace-nowrap transition-colors pb-1 ${utmTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  {utmTab === tab && (
+                    <motion.div layoutId="utm-tab-active" className="absolute bottom-0 left-0 right-0 h-0.5 bg-white z-10" />
+                  )}
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-1 shrink-0 ml-4">
+              <Network size={12} />
+              UTM
+            </span>
+          </div>
+          <div 
+            className="p-2 flex-1 overflow-hidden group/list space-y-1"
+            style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
+          >
+            {utmData.map((item, i) => {
+              const field = `utm.${utmTab.toLowerCase()}`;
+              const isActive = activeFilters.some(f => f.id === field && f.value === item.name);
+              return (
+              <div 
+                key={i} 
+                onClick={() => addFilter(field, item.name, `UTM ${utmTab}: ${item.name}`)}
+                className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
+              >
+                <div className="absolute inset-[3px] z-[-1]">
+                  <div 
+                    className="h-full rounded-md transition-all duration-1000"
+                    style={{ width: `${item.percentage}%`, backgroundColor: isActive ? '#ef4444' : themeColor }}
+                  />
+                </div>
+                <div className="flex items-center gap-3 overflow-hidden relative z-10">
+                  <Network size={16} className="text-white shrink-0 drop-shadow-md" />
+                  <span className="text-sm font-semibold text-white truncate drop-shadow-md">{item.name}</span>
+                </div>
+                <div className="flex items-center justify-end overflow-hidden w-[90px] shrink-0 relative h-6 z-10">
+                  <div className="absolute right-0 top-0 h-full flex items-center justify-end transition-transform duration-300 transform translate-x-12 group-hover/list:translate-x-0">
+                    <span className="text-sm font-bold text-white leading-none drop-shadow-md">{item.count}</span>
+                    <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
+                  </div>
+                </div>
+              </div>
+            )})}
+          </div>
+          {utmData.length > 7 && (
+            <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
+              <button 
+                onClick={() => setModalType('utm')}
                 className="px-6 py-2 bg-[#18181b] border border-border rounded-full text-sm font-medium text-white hover:border-gray-500 transition-colors pointer-events-auto shadow-lg"
               >
                 Zobacz wszystko
@@ -566,21 +737,40 @@ export default function Analytics({ activeWorkspace }) {
 
                 {/* Modal List */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-2 bg-[#0a0a0b] group/list space-y-1">
-                  {modalConfig.items.filter(item => item.name.toLowerCase().includes(modalSearchQuery.toLowerCase())).map((item, i) => (
+                  {modalConfig.items.filter(item => item.name.toLowerCase().includes(modalSearchQuery.toLowerCase())).map((item, i) => {
+                    let isActive = false;
+                    if (modalType === 'top') isActive = activeFilters.some(f => f.id === 'codeId' && f.value === item.id);
+                    else if (modalType === 'geo') {
+                      const field = geoTab === 'Kontynenty' ? 'continent' : geoTab === 'Kraje' ? 'country' : geoTab === 'Regiony' ? 'region' : 'city';
+                      isActive = activeFilters.some(f => f.id === field && f.value === item.name);
+                    } else if (modalType === 'tech') {
+                      const field = techTab === 'Urządzenia' ? 'device' : techTab === 'Przeglądarki' ? 'browser' : 'os';
+                      isActive = activeFilters.some(f => f.id === field && f.value === item.name);
+                    } else if (modalType === 'utm') {
+                      isActive = activeFilters.some(f => f.id === `utm.${utmTab.toLowerCase()}` && f.value === item.name);
+                    }
+                    
+                    return (
                     <div 
                       key={i} 
                       onClick={() => {
                         if (modalType === 'top') {
-                          setSelectedCodeId(item.id);
-                          setModalType(null);
+                          addFilter('codeId', item.id, item.name);
+                        } else if (modalType === 'geo') {
+                          addFilter(geoTab === 'Kontynenty' ? 'continent' : geoTab === 'Kraje' ? 'country' : geoTab === 'Regiony' ? 'region' : 'city', item.name, `${geoTab}: ${item.name}`);
+                        } else if (modalType === 'tech') {
+                          addFilter(techTab === 'Urządzenia' ? 'device' : techTab === 'Przeglądarki' ? 'browser' : 'os', item.name, `${techTab}: ${item.name}`);
+                        } else if (modalType === 'utm') {
+                          addFilter(`utm.${utmTab.toLowerCase()}`, item.name, `UTM ${utmTab}: ${item.name}`);
                         }
+                        setModalType(null);
                       }}
-                      className={`relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors group/item overflow-hidden z-0 ${modalType === 'top' ? 'cursor-pointer hover:bg-white/5' : 'cursor-default hover:bg-white/5'}`}
+                      className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
                     >
                       <div className="absolute inset-[3px] z-[-1]">
                         <div 
                           className="h-full rounded-md transition-all duration-1000"
-                          style={{ width: `${item.percentage}%`, backgroundColor: themeColor }}
+                          style={{ width: `${item.percentage}%`, backgroundColor: isActive ? '#ef4444' : themeColor }}
                         />
                       </div>
                       <div className="flex items-center gap-3 overflow-hidden relative z-10">
@@ -594,7 +784,7 @@ export default function Analytics({ activeWorkspace }) {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </motion.div>
 
@@ -614,32 +804,36 @@ export default function Analytics({ activeWorkspace }) {
         )}
       </AnimatePresence>
       {/* Bottom Floating Filter Pill */}
-      <AnimatePresence>
-        {selectedCodeId && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={`fixed bottom-6 left-6 z-50 border backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-3 shadow-lg ${isQr ? 'bg-[#1ea2e4]/10 border-[#1ea2e4]/30 text-[#1ea2e4] shadow-[#1ea2e4]/5' : 'bg-[#8b5cf6]/10 border-[#8b5cf6]/30 text-[#8b5cf6] shadow-[#8b5cf6]/5'}`}
-          >
-            <div className="flex items-center gap-2">
-              <Filter size={14} />
-              <span className="text-sm font-medium">
-                Analizujesz: <span className="font-bold text-white ml-1">
-                  {activeItems.find(item => item.id === selectedCodeId)?.title || activeItems.find(item => item.id === selectedCodeId)?.name || 'Link'}
-                </span>
-              </span>
-            </div>
-            <div className={`w-px h-4 mx-1 ${isQr ? 'bg-[#1ea2e4]/30' : 'bg-[#8b5cf6]/30'}`}></div>
-            <button 
-              onClick={clearFilter}
-              className={`transition-colors hover:text-white ${isQr ? 'text-[#1ea2e4]' : 'text-[#8b5cf6]'}`}
+      <div className="fixed bottom-6 left-6 z-50 flex flex-wrap gap-3 items-center pointer-events-none">
+        <AnimatePresence>
+          {activeFilters.map((filter) => {
+            const isCodeId = filter.id === 'codeId';
+            return (
+            <motion.div 
+              key={filter.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className={`pointer-events-auto border backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-3 shadow-lg ${isQr ? 'bg-[#1ea2e4]/10 border-[#1ea2e4]/30 text-[#1ea2e4] shadow-[#1ea2e4]/5' : 'bg-[#8b5cf6]/10 border-[#8b5cf6]/30 text-[#8b5cf6] shadow-[#8b5cf6]/5'}`}
             >
-              <X size={16} />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="flex items-center gap-2">
+                <Filter size={14} />
+                <span className="text-sm font-medium">
+                  {isCodeId ? (isQr ? 'Kod QR: ' : 'Smart Link: ') : ''}
+                  <span className="font-bold text-white">{filter.label}</span>
+                </span>
+              </div>
+              <div className={`w-px h-4 mx-1 ${isQr ? 'bg-[#1ea2e4]/30' : 'bg-[#8b5cf6]/30'}`}></div>
+              <button 
+                onClick={() => removeFilter(filter.id)}
+                className={`transition-colors hover:text-white ${isQr ? 'text-[#1ea2e4]' : 'text-[#8b5cf6]'}`}
+              >
+                <X size={16} />
+              </button>
+            </motion.div>
+          )})}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

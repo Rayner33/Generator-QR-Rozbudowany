@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0] - 2026-06-12
+### Dodane
+- **Wielowymiarowe Filtrowanie Analityki:** Pełna implementacja zaawansowanego filtrowania statystyk w panelu Analityki. Możliwość jednoczesnego krzyżowania danych (np. Państwo + Urządzenie + Kampania UTM), z dynamicznym odzwierciedleniem na wykresie i listach w czasie rzeczywistym.
+- **Moduł Analityki UTM:** Nowa dedykowana sekcja w statystykach analizująca parametry ruchu sieciowego (Source, Medium, Campaign, Content). 
+- Rozbudowa eksportu CSV o kolumny z wartościami UTM oraz zapewnienie, że plik zawsze eksportuje dane zgodne z nałożonymi filtrami w interfejsie.
+- **Interaktywne Listy Statystyk:** Kliknięcie w dowolny wiersz statystyki (np. "Mobile", "Europa", "Źródło: ulotka") automatycznie nakłada ten filtr, a aktywne elementy podświetlają swój pasek na czerwono, wskazując aktualne filtry. Interfejs zyskał dedykowane pływające okienka "chip" pozwalające wyłączać nałożone warunki selekcji.
+
+- **Optymalizacja UX Menu i Filtrów:** Zaimplementowano płynne zamykanie okien typu "dropdown" (Tagi, Sortowanie, Filtry Analityki) przy zjechaniu kursem (onMouseLeave) z marginesem błędu 250ms zapobiegającym przypadkowemu zamykaniu. Poprawiono estetykę i kolory dynamicznego focusu we wbudowanych wyszukiwarkach.
+
 ## [1.0.1] - 2026-06-10
 ### Bezpieczeństwo
 - **Konfiguracja Firebase przeniesiona do zmiennych środowiskowych:** Klucze API usunięte z kodu źródłowego do pliku `.env.local` (wykluczony z git). Wdrożono restrykcję domenową HTTP Referrer w Google Cloud Console — klucz działa wyłącznie z autoryzowanych domen produkcyjnych.

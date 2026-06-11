@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Download, MoreVertical, QrCode, Check, X, Wifi, Scan, ArrowRight } from 'lucide-react';
 import TagManagerModal from '../components/tags/TagManagerModal';
@@ -63,6 +63,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
   const [hoveredFilter, setHoveredFilter] = useState(null);
   const [hoveredAction, setHoveredAction] = useState(null);
   const [isTagsDropdownOpen, setIsTagsDropdownOpen] = useState(false);
+  const tagsTimeoutRef = useRef(null);
+  const filterTimeoutRef = useRef(null);
   const [tagSearchQuery, setTagSearchQuery] = useState('');
   const [codeForTagManager, setCodeForTagManager] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -214,7 +216,11 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
           />
         </div>
         
-        <div className="relative">
+        <div 
+          className="relative"
+          onMouseEnter={() => clearTimeout(tagsTimeoutRef.current)}
+          onMouseLeave={() => { tagsTimeoutRef.current = setTimeout(() => setIsTagsDropdownOpen(false), 250); }}
+        >
           <button 
             onClick={(e) => { e.stopPropagation(); setIsTagsDropdownOpen(!isTagsDropdownOpen); setIsFilterOpen(false); setOpenDropdownId(null); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${activeTagFilters.length > 0 ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
@@ -230,7 +236,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
           
           <AnimatePresence>
           {isTagsDropdownOpen && (
-            <motion.div key="tags-dropdown" {...dropdownAnimation} className="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top" onClick={e => e.stopPropagation()}>
+            <motion.div key="tags-dropdown" {...dropdownAnimation} className="absolute top-full right-0 pt-2 w-56 z-50 origin-top" onClick={e => e.stopPropagation()}>
+              <div className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden">
               <div className="p-2 border-b border-white/5">
                 <input 
                   type="text" 
@@ -259,7 +266,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                       {hoveredTagId === tag.id && !isSelected && (
                         <motion.div 
                           layoutId="qr-tags-hover"
-                          className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                          className="absolute inset-0 bg-white/5 rounded-lg"
                           initial={false}
                           transition={{ type: "spring", bounce: 0, duration: 0.2 }}
                         />
@@ -281,12 +288,17 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                   <div className="text-center text-xs text-gray-500 py-3">Brak wyników</div>
                 )}
               </div>
+              </div>
             </motion.div>
           )}
           </AnimatePresence>
         </div>
         
-        <div className="relative">
+        <div 
+          className="relative"
+          onMouseEnter={() => clearTimeout(filterTimeoutRef.current)}
+          onMouseLeave={() => { filterTimeoutRef.current = setTimeout(() => setIsFilterOpen(false), 250); }}
+        >
           <button 
             onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); setIsTagsDropdownOpen(false); setOpenDropdownId(null); }}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${sortFilter === 'archived' ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
@@ -301,17 +313,17 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
               <motion.div 
                 key="filter-dropdown"
                 {...dropdownAnimation}
-                className="absolute top-full right-0 mt-2 w-56 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top" 
+                className="absolute top-full right-0 pt-2 w-56 z-50 origin-top" 
                 onClick={e => e.stopPropagation()}
               >
-              <div onMouseLeave={() => setHoveredFilter(null)} className="p-1 flex flex-col gap-0.5">
+              <div onMouseLeave={() => setHoveredFilter(null)} className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden p-1 flex flex-col gap-0.5">
                 <button 
                   onClick={() => { setSortFilter('recent'); setIsFilterOpen(false); }} 
                   onMouseEnter={() => setHoveredFilter('recent')}
                   className={`relative flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'recent' ? 'text-white bg-white/10' : 'text-gray-300'}`}
                 >
                   {hoveredFilter === 'recent' && sortFilter !== 'recent' && (
-                    <motion.div layoutId="qr-filter-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                    <motion.div layoutId="qr-filter-hover" className="absolute inset-0 bg-white/5 rounded-lg" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
                   )}
                   <span className="flex items-center gap-2 relative z-10 pointer-events-none"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg> Ostatnio utworzone</span>
                   {sortFilter === 'recent' && <Check size={16} className="text-red-500 relative z-10 pointer-events-none" />}
@@ -322,7 +334,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                   className={`relative flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'scans' ? 'text-white bg-white/10' : 'text-gray-300'}`}
                 >
                   {hoveredFilter === 'scans' && sortFilter !== 'scans' && (
-                    <motion.div layoutId="qr-filter-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                    <motion.div layoutId="qr-filter-hover" className="absolute inset-0 bg-white/5 rounded-lg" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
                   )}
                   <span className="flex items-center gap-2 relative z-10 pointer-events-none"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg> Najwięcej skanów</span>
                   {sortFilter === 'scans' && <Check size={16} className="text-red-500 relative z-10 pointer-events-none" />}
@@ -333,7 +345,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                   className={`relative flex items-center justify-between w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${sortFilter === 'archived' ? 'text-red-500 bg-red-500/10' : 'text-red-400'}`}
                 >
                   {hoveredFilter === 'archived' && sortFilter !== 'archived' && (
-                    <motion.div layoutId="qr-filter-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                    <motion.div layoutId="qr-filter-hover" className="absolute inset-0 bg-red-500/10 rounded-lg" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
                   )}
                   <span className="flex items-center gap-2 relative z-10 pointer-events-none"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> Zarchiwizowane</span>
                   {sortFilter === 'archived' && <Check size={16} className="text-red-500 relative z-10 pointer-events-none" />}

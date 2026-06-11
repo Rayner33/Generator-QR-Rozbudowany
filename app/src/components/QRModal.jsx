@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Link as LinkIcon, Phone, MessageSquare, Type, FileText, Wifi, Image as ImageIcon, Trash, QrCode, Globe } from 'lucide-react';
+import { X, Check, Link as LinkIcon, Phone, MessageSquare, Type, FileText, Wifi, Image as ImageIcon, Trash, QrCode, Globe, Network } from 'lucide-react';
 import QRCodeStyling from 'qr-code-styling';
 import { HexColorPicker } from 'react-colorful';
 import { db, auth } from '../firebase';
 import { collection, addDoc, updateDoc, setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import UTMBuilderModal from './UTMBuilderModal';
 
 export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'create', initialData = null }) {
   const [title, setTitle] = useState('');
@@ -27,6 +28,10 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   const [logoBase64, setLogoBase64] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [openColorPicker, setOpenColorPicker] = useState(null);
+  
+  // UTM
+  const [utmData, setUtmData] = useState(null);
+  const [isUtmModalOpen, setIsUtmModalOpen] = useState(false);
   
   const qrRef = useRef(null);
   const qrCode = useRef(null);
@@ -56,6 +61,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         setEyeColor(initialData.eyeColor || initialData.dotsColor || '#000000');
         setBackgroundColor(initialData.backgroundColor || '#ffffff');
         setLogoBase64(initialData.logoBase64 || null);
+        setUtmData(initialData.utm || null);
       } else {
         setCodeId(generateShortCode());
         setTitle('');
@@ -70,6 +76,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         setEyeColor('#000000');
         setBackgroundColor('#ffffff');
         setLogoBase64(null);
+        setUtmData(null);
       }
       setIsSaving(false);
     }
@@ -182,6 +189,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
       eyeColor,
       backgroundColor,
       logoBase64,
+      utm: utmData,
       title: title || "Nowy kod QR",
       workspaceId: activeWorkspace.id,
       archived: false
@@ -291,6 +299,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   const scannability = getScannability();
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <motion.div 
@@ -412,13 +421,28 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
 
               <div className="ml-9">
                 {contentType === 'url' && (
-                  <ValidatedInput 
-                    type="url" 
-                    value={urlData}
-                    onChange={(val) => setUrlData(val)}
-                    placeholder="https://twojastrona.pl" 
-                    error={validationErrors.urlData}
-                  />
+                  <div className="space-y-4">
+                    <ValidatedInput 
+                      type="url" 
+                      value={urlData}
+                      onChange={(val) => setUrlData(val)}
+                      placeholder="https://twojastrona.pl" 
+                      error={validationErrors.urlData}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setIsUtmModalOpen(true)}
+                      disabled={!urlData || validationErrors.urlData}
+                      className={`flex items-center justify-center gap-2 w-fit px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors ${
+                        !urlData || validationErrors.urlData
+                          ? 'bg-[#18181b] border-border text-gray-500 cursor-not-allowed'
+                          : 'bg-white border-white text-black hover:bg-gray-200'
+                      }`}
+                    >
+                      <Network size={14} />
+                      UTM {utmData && (utmData.source || utmData.medium || utmData.campaign || utmData.content) ? '(Aktywne)' : ''}
+                    </button>
+                  </div>
                 )}
                 {contentType === 'phone' && (
                   <ValidatedInput 
@@ -577,14 +601,14 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                 Dodaj logo (Opcjonalnie)
               </h3>
               <div className="ml-9 bg-card border border-border rounded-2xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                <div className="absolute top-0 left-0 w-1 h-full bg-[#1ea2e4]"></div>
                 
                 <div className="space-y-4">
                 {!logoBase64 ? (
                   <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer bg-background hover:bg-white/5 transition-colors group">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <ImageIcon className="w-8 h-8 text-gray-500 mb-2 group-hover:text-blue-400 transition-colors" />
-                      <p className="text-sm text-gray-400"><span className="font-semibold text-blue-400">Kliknij aby wgrać</span> lub upuść plik</p>
+                      <ImageIcon className="w-8 h-8 text-gray-500 mb-2 group-hover:text-[#1ea2e4] transition-colors" />
+                      <p className="text-sm text-gray-400"><span className="font-semibold text-[#1ea2e4]">Kliknij aby wgrać</span> lub upuść plik</p>
                       <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG</p>
                     </div>
                     <input 
@@ -650,7 +674,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                <button 
                  onClick={handleSave} 
                  disabled={isSaving || !isFormValid}
-                 className={`px-6 py-2 rounded-lg font-semibold transition-colors text-white ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#0066FF] hover:bg-blue-600'}`}
+                 className={`px-6 py-2 rounded-lg font-semibold transition-colors text-white ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#1ea2e4] hover:bg-[#1891ce]'}`}
                >
                  {isSaving ? 'Zapisywanie...' : 'Zapisz kod QR'}
                </button>
@@ -661,12 +685,24 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
     </motion.div>
     )}
   </AnimatePresence>
+
+      <UTMBuilderModal 
+        isOpen={isUtmModalOpen} 
+        onClose={() => setIsUtmModalOpen(false)} 
+        onSave={(data) => {
+          setUtmData(data);
+          setIsUtmModalOpen(false);
+        }} 
+        initialUtm={utmData}
+        type="qr"
+      />
+    </>
 );
 }
 
 function Tab({ icon, label, active, onClick }) {
   return (
-    <div onClick={onClick} className={`flex flex-col items-center gap-2 cursor-pointer pb-2 border-b-2 whitespace-nowrap min-w-[100px] ${active ? 'border-primary text-primary' : 'border-transparent text-gray-400 hover:text-white'}`}>
+    <div onClick={onClick} className={`flex flex-col items-center gap-2 cursor-pointer pb-2 border-b-2 whitespace-nowrap min-w-[100px] ${active ? 'border-[#1ea2e4] text-[#1ea2e4]' : 'border-transparent text-gray-400 hover:text-white'}`}>
       {icon}
       <span className="text-xs font-semibold">{label}</span>
     </div>
@@ -721,7 +757,7 @@ function StyleIcon({ type }) {
 
 function StyleCard({ title, type, active, onClick }) {
   return (
-    <div onClick={onClick} className={`flex-1 p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${active ? 'border-primary bg-primary/10 text-white' : 'border-border bg-card text-gray-400 hover:border-gray-500 hover:text-gray-200'}`}>
+    <div onClick={onClick} className={`flex-1 p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${active ? 'border-[#1ea2e4] bg-[#1ea2e4]/10 text-white' : 'border-border bg-card text-gray-400 hover:border-gray-500 hover:text-gray-200'}`}>
       <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-black/20 shrink-0">
          <StyleIcon type={type} />
       </div>
