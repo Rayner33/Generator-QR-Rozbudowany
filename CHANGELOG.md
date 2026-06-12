@@ -9,6 +9,8 @@
 
 - **Optymalizacja UX Menu i Filtrów:** Zaimplementowano płynne zamykanie okien typu "dropdown" (Tagi, Sortowanie, Filtry Analityki) przy zjechaniu kursem (onMouseLeave) z marginesem błędu 250ms zapobiegającym przypadkowemu zamykaniu. Poprawiono estetykę i kolory dynamicznego focusu we wbudowanych wyszukiwarkach.
 - **Dynamiczny podgląd UTM:** W pełni zaimplementowano natychmiastowe aktualizowanie adresu URL o utworzone tagi UTM, zarówno w widoku modala jak i na głównej liście kodów, z obsługą czyszczenia starych tagów.
+- **Wydajność Przekierowań (Redirect Engine):** Przebudowano silnik przekierowań, eliminując sekwencyjne blokowanie przez zapytania do bazy danych i API geolokalizacyjnego. Wprowadzono architekturę współbieżną (Parallel Promise execution) dla zapytań odczytujących z 400ms limitem czasowym (timeout) dla logowania analityki, co przyspieszyło przekierowanie użytkownika o ponad 60% bez utraty danych.
+
 
 ## [1.0.1] - 2026-06-10
 ### Bezpieczeństwo

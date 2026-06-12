@@ -15,27 +15,31 @@ export default function RedirectEngine() {
   const hasProcessed = React.useRef(false);
 
   useEffect(() => {
+    // Rozpoczynamy pobieranie analityki (IP, Geo, UA) asynchronicznie od razu!
+    const analyticsPromise = getAnalyticsData().catch(() => ({}));
+
     async function processRedirect() {
       if (!shortId || hasProcessed.current) return;
       hasProcessed.current = true;
 
       try {
-        // 1. Szukamy w kodach QR
-        let targetDocRef = doc(db, 'qrcodes', shortId);
-        let targetDocSnap = await getDoc(targetDocRef);
+        // 1. Równoległe pobieranie z obu kolekcji dla maksymalnej szybkości
+        const [qrSnap, smartSnap] = await Promise.all([
+          getDoc(doc(db, 'qrcodes', shortId)).catch(() => null),
+          getDoc(doc(db, 'smartlinks', shortId)).catch(() => null)
+        ]);
+
         let targetData = null;
         let isQrCode = true;
+        let targetDocRef = null;
 
-        if (targetDocSnap.exists()) {
-          targetData = targetDocSnap.data();
-        } else {
-          // 2. Jeśli nie kod QR, szukamy w Smart Linkach
+        if (qrSnap && qrSnap.exists()) {
+          targetData = qrSnap.data();
+          targetDocRef = doc(db, 'qrcodes', shortId);
+        } else if (smartSnap && smartSnap.exists()) {
+          targetData = smartSnap.data();
+          isQrCode = false;
           targetDocRef = doc(db, 'smartlinks', shortId);
-          targetDocSnap = await getDoc(targetDocRef);
-          if (targetDocSnap.exists()) {
-            targetData = targetDocSnap.data();
-            isQrCode = false;
-          }
         }
 
         if (!targetData) {
@@ -43,36 +47,14 @@ export default function RedirectEngine() {
           return;
         }
 
-        // 3. Sprawdzamy czy nie jest zarchiwizowany
+        // 2. Sprawdzamy czy nie jest zarchiwizowany
         if (targetData.archived) {
           setDeactivatedData({ ...targetData, isQrCode });
           return;
         }
 
-        // 4. Podbicie statystyk kliknięć (Analytics Increment)
-        const incrementField = isQrCode ? 'scans' : 'clicks';
-        setStatus('Zapisywanie logów analitycznych...');
-        await updateDoc(targetDocRef, {
-          [incrementField]: increment(1),
-          lastClickedAt: new Date()
-        });
-
-        // Generowanie zaawansowanych logów analitycznych
-        try {
-          const analyticsData = await getAnalyticsData();
-          await addDoc(collection(db, 'analytics'), {
-            codeId: shortId,
-            workspaceId: targetData.workspaceId,
-            type: isQrCode ? 'qr' : 'smartlink',
-            utm: targetData.utm || null,
-            ...analyticsData
-          });
-        } catch (analyticsError) {
-          console.error("Błąd podczas zapisywania analityki:", analyticsError);
-        }
-
-        // 5. Przekierowanie
-        let finalUrl = targetData.url || targetData.targetUrl; // w zalezności od nazwy pola w kolekcji
+        // 3. Budowanie końcowego URL (nie czeka na analitykę!)
+        let finalUrl = targetData.url || targetData.targetUrl; 
 
         if (targetData.contentType === 'vcard') {
           finalUrl = `data:text/vcard;charset=utf-8,${encodeURIComponent(finalUrl)}`;
@@ -87,7 +69,7 @@ export default function RedirectEngine() {
           finalUrl = 'https://' + finalUrl;
         }
         
-        // Appending UTM Parameters if applicable
+        // Appending UTM Parameters
         if (finalUrl && targetData.utm && (finalUrl.startsWith('http://') || finalUrl.startsWith('https://'))) {
           try {
             const urlObj = new URL(finalUrl);
@@ -101,8 +83,38 @@ export default function RedirectEngine() {
           }
         }
 
+        // 4. Błyskawiczne zapisywanie analityki i przekierowanie
         if (finalUrl) {
-          window.location.href = finalUrl;
+          setStatus('Przekierowywanie...');
+          
+          const incrementField = isQrCode ? 'scans' : 'clicks';
+          
+          const logAnalytics = async () => {
+            try {
+              const analyticsData = await analyticsPromise;
+              await Promise.allSettled([
+                updateDoc(targetDocRef, {
+                  [incrementField]: increment(1),
+                  lastClickedAt: new Date()
+                }),
+                addDoc(collection(db, 'analytics'), {
+                  codeId: shortId,
+                  workspaceId: targetData.workspaceId,
+                  type: isQrCode ? 'qr' : 'smartlink',
+                  utm: targetData.utm || null,
+                  ...(analyticsData || {})
+                })
+              ]);
+            } catch (e) {
+              console.error(e);
+            }
+          };
+
+          // Dajemy Firebase maksymalnie 400ms na wysłanie pakietu logów w tle.
+          // Dzięki temu użytkownik nie odczuje zacięcia, a logi zostaną wysłane.
+          await Promise.race([logAnalytics(), new Promise(resolve => setTimeout(resolve, 400))]);
+          
+          window.location.replace(finalUrl);
         } else if (targetData.contentType === 'wifi') {
           setError('To jest kod WiFi. Proszę zeskanować go natywnym aparatem w telefonie, a nie przeglądarką.');
         } else {
