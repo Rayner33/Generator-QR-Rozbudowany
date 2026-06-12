@@ -5,6 +5,7 @@ import { db, auth } from '../firebase';
 import { collection, addDoc, updateDoc, setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { Network } from 'lucide-react';
 import UTMBuilderModal from './UTMBuilderModal';
+import { buildUrlWithUtm } from '../utils/analyticsHelpers';
 
 export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode = 'create', initialData = null }) {
   const [title, setTitle] = useState('');
@@ -33,7 +34,7 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
         else setCodeId(generateShortCode());
         
         setTitle(mode === 'duplicate' ? `${initialData.title} (Kopia)` : initialData.title);
-        setUrlData(initialData.url || '');
+        setUrlData(buildUrlWithUtm(initialData.url || '', initialData.utm));
         setUtmData(initialData.utm || null);
       } else {
         setCodeId(generateShortCode());
@@ -297,6 +298,7 @@ export default function SmartLinkModal({ isOpen, onClose, activeWorkspace, mode 
       onClose={() => setIsUtmModalOpen(false)} 
       onSave={(data) => {
         setUtmData(data);
+        setUrlData(prevUrl => buildUrlWithUtm(prevUrl, data));
         setIsUtmModalOpen(false);
       }} 
       initialUtm={utmData}

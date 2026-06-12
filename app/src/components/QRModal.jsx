@@ -6,6 +6,7 @@ import { HexColorPicker } from 'react-colorful';
 import { db, auth } from '../firebase';
 import { collection, addDoc, updateDoc, setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import UTMBuilderModal from './UTMBuilderModal';
+import { buildUrlWithUtm } from '../utils/analyticsHelpers';
 
 export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'create', initialData = null }) {
   const [title, setTitle] = useState('');
@@ -51,7 +52,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         
         setTitle(mode === 'duplicate' ? `${initialData.title} (Kopia)` : initialData.title);
         setContentType(initialData.contentType || 'url');
-        setUrlData(initialData.urlData || initialData.url || '');
+        setUrlData(buildUrlWithUtm(initialData.urlData || initialData.url || '', initialData.utm));
         setPhoneData(initialData.phoneData || '');
         setEmailData(initialData.emailData || { address: '', subject: '', body: '' });
         setWifiData(initialData.wifiData || { ssid: '', password: '', type: 'WPA' });
@@ -691,6 +692,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         onClose={() => setIsUtmModalOpen(false)} 
         onSave={(data) => {
           setUtmData(data);
+          setUrlData(prevUrl => buildUrlWithUtm(prevUrl, data));
           setIsUtmModalOpen(false);
         }} 
         initialUtm={utmData}

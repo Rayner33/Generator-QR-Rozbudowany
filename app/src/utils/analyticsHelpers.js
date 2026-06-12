@@ -151,3 +151,39 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
     filteredLogs
   };
 }
+
+export function buildUrlWithUtm(url, utm) {
+  if (!url) return '';
+
+  
+  try {
+    let urlToParse = url;
+    if (!urlToParse.startsWith('http://') && !urlToParse.startsWith('https://')) {
+      urlToParse = 'https://' + urlToParse;
+    }
+    const urlObj = new URL(urlToParse);
+    
+    // Clear existing to avoid duplicates if they exist
+    urlObj.searchParams.delete('utm_source');
+    urlObj.searchParams.delete('utm_medium');
+    urlObj.searchParams.delete('utm_campaign');
+    urlObj.searchParams.delete('utm_content');
+    
+    // Add new ones if they exist
+    if (utm) {
+      if (utm.source) urlObj.searchParams.set('utm_source', utm.source);
+      if (utm.medium) urlObj.searchParams.set('utm_medium', utm.medium);
+      if (utm.campaign) urlObj.searchParams.set('utm_campaign', utm.campaign);
+      if (utm.content) urlObj.searchParams.set('utm_content', utm.content);
+    }
+    
+    let finalString = urlObj.toString();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+       finalString = finalString.replace(/^https:\/\//, '');
+    }
+    
+    return finalString;
+  } catch (e) {
+    return url;
+  }
+}

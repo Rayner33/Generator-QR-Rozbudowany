@@ -91,10 +91,10 @@ export default function RedirectEngine() {
         if (finalUrl && targetData.utm && (finalUrl.startsWith('http://') || finalUrl.startsWith('https://'))) {
           try {
             const urlObj = new URL(finalUrl);
-            if (targetData.utm.source) urlObj.searchParams.append('utm_source', targetData.utm.source);
-            if (targetData.utm.medium) urlObj.searchParams.append('utm_medium', targetData.utm.medium);
-            if (targetData.utm.campaign) urlObj.searchParams.append('utm_campaign', targetData.utm.campaign);
-            if (targetData.utm.content) urlObj.searchParams.append('utm_content', targetData.utm.content);
+            if (targetData.utm.source) urlObj.searchParams.set('utm_source', targetData.utm.source);
+            if (targetData.utm.medium) urlObj.searchParams.set('utm_medium', targetData.utm.medium);
+            if (targetData.utm.campaign) urlObj.searchParams.set('utm_campaign', targetData.utm.campaign);
+            if (targetData.utm.content) urlObj.searchParams.set('utm_content', targetData.utm.content);
             finalUrl = urlObj.toString();
           } catch (e) {
             console.error('Błąd dodawania parametrów UTM', e);

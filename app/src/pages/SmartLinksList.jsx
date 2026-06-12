@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MoreVertical, Check, X, MousePointerClick, ArrowRight, Copy, Link as LinkIcon } from 'lucide-react';
 import TagManagerModal from '../components/tags/TagManagerModal';
 import { getTagColorInfo } from '../utils/tagColors';
+import { buildUrlWithUtm } from '../utils/analyticsHelpers';
 import { Line } from 'react-chartjs-2';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
@@ -375,8 +376,8 @@ export default function SmartLinksList({ activeWorkspace, onEdit, onDuplicate, o
               </button>
               <div className="flex items-center gap-2 text-sm text-white mt-1 min-w-0">
                 <span className="text-gray-500 shrink-0">↳</span>
-                <a href={code.url} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate">
-                  {code.url}
+                <a href={buildUrlWithUtm(code.url, code.utm)} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate">
+                  {buildUrlWithUtm(code.url, code.utm)}
                 </a>
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-3">

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, MoreVertical, QrCode, Check, X, Wifi, Scan, ArrowRight } from 'lucide-react';
 import TagManagerModal from '../components/tags/TagManagerModal';
 import { getTagColorInfo } from '../utils/tagColors';
+import { buildUrlWithUtm } from '../utils/analyticsHelpers';
 import { Line } from 'react-chartjs-2';
 import QRCodeStyling from 'qr-code-styling';
 import { db } from '../firebase';
@@ -408,11 +409,11 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                 <span className="text-gray-500 shrink-0">↳</span>
                 {['vcard', 'wifi', 'phone'].includes(code.contentType) ? (
                   <button onClick={(e) => { e.stopPropagation(); onEdit(code); }} className="hover:underline transition-colors truncate text-left cursor-pointer">
-                    {code.contentType === 'vcard' ? `vCard (${[code.vcardData?.firstName, code.vcardData?.lastName].filter(Boolean).join(' ')})` : code.contentType === 'wifi' ? `Sieć WiFi (${code.wifiData?.ssid || ''})` : code.contentType === 'phone' ? (code.phoneData || code.url.replace('tel:', '')) : code.url}
+                    {code.contentType === 'vcard' ? `vCard (${[code.vcardData?.firstName, code.vcardData?.lastName].filter(Boolean).join(' ')})` : code.contentType === 'wifi' ? `Sieć WiFi (${code.wifiData?.ssid || ''})` : code.contentType === 'phone' ? (code.phoneData || buildUrlWithUtm(code.url, code.utm)?.replace('tel:', '')) : buildUrlWithUtm(code.url, code.utm)}
                   </button>
                 ) : (
-                  <a href={code.contentType === 'email' ? `mailto:${code.emailData?.address || code.url}` : (code.url?.startsWith('http://') || code.url?.startsWith('https://') ? code.url : `https://${code.url}`)} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate cursor-pointer">
-                    {code.contentType === 'email' ? (code.emailData?.address || code.url.replace('mailto:', '').split('?')[0]) : code.url}
+                  <a href={code.contentType === 'email' ? `mailto:${code.emailData?.address || buildUrlWithUtm(code.url, code.utm)}` : (buildUrlWithUtm(code.url, code.utm)?.startsWith('http://') || buildUrlWithUtm(code.url, code.utm)?.startsWith('https://') ? buildUrlWithUtm(code.url, code.utm) : `https://${buildUrlWithUtm(code.url, code.utm)}`)} target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors truncate cursor-pointer">
+                    {code.contentType === 'email' ? (code.emailData?.address || buildUrlWithUtm(code.url, code.utm)?.replace('mailto:', '').split('?')[0]) : buildUrlWithUtm(code.url, code.utm)}
                   </a>
                 )}
               </div>

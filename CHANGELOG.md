@@ -8,6 +8,7 @@
 - **Interaktywne Listy Statystyk:** Kliknięcie w dowolny wiersz statystyki (np. "Mobile", "Europa", "Źródło: ulotka") automatycznie nakłada ten filtr, a aktywne elementy podświetlają swój pasek na czerwono, wskazując aktualne filtry. Interfejs zyskał dedykowane pływające okienka "chip" pozwalające wyłączać nałożone warunki selekcji.
 
 - **Optymalizacja UX Menu i Filtrów:** Zaimplementowano płynne zamykanie okien typu "dropdown" (Tagi, Sortowanie, Filtry Analityki) przy zjechaniu kursem (onMouseLeave) z marginesem błędu 250ms zapobiegającym przypadkowemu zamykaniu. Poprawiono estetykę i kolory dynamicznego focusu we wbudowanych wyszukiwarkach.
+- **Dynamiczny podgląd UTM:** W pełni zaimplementowano natychmiastowe aktualizowanie adresu URL o utworzone tagi UTM, zarówno w widoku modala jak i na głównej liście kodów, z obsługą czyszczenia starych tagów.
 
 ## [1.0.1] - 2026-06-10
 ### Bezpieczeństwo
