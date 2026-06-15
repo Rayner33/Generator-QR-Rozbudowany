@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0] - 2026-06-15
+### Dodane
+- **Dynamiczne Kody Tekstowe (Mikro-strony):** Nowa funkcjonalność umożliwiająca tworzenie kodów QR przechowujących sformatowany tekst. Kody zachowują się jak kody dynamiczne (zliczają statystyki), kierując skanującego na dedykowaną, estetyczną, mobilną mikro-stronę w aplikacji. Zintegrowano lekki wizualny edytor WYSIWYG (`react-quill-new`) pozwalający na dodawanie pogrubień, list i linków z zachowaniem brandingu.
+- **Odświeżone UI Modalów:** 
+  - Usunięto nieestetyczne systemowe suwaki z poziomych list zakładek (m.in. przy wyborze typów zawartości). Wprowadzono system "Drag to Scroll" z pojawiającymi się po najechaniu, dedykowanymi przyciskami (strzałkami) do przesuwania.
+  - Zaimplementowano płynne, zaawansowane animacje w oparciu o silnik `framer-motion` (Magic Layout) dla znaczników aktywnej zakładki, ujednolicając tym samym czas i charakterystykę przeskoku (typ sprężynowy bez odbicia - *bounce: 0*) z resztą platformy.
+
 ## [1.1.0] - 2026-06-12
 ### Dodane
 - **Wielowymiarowe Filtrowanie Analityki:** Pełna implementacja zaawansowanego filtrowania statystyk w panelu Analityki. Możliwość jednoczesnego krzyżowania danych (np. Państwo + Urządzenie + Kampania UTM), z dynamicznym odzwierciedleniem na wykresie i listach w czasie rzeczywistym.

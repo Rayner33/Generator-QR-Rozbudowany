@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @config "../tailwind.config.js";
 
 @layer base {
@@ -6,3 +7,96 @@
     @apply bg-background text-gray-200 antialiased font-sans;
   }
 }
+
+/* Dark mode for ReactQuill */
+.quill-dark .ql-toolbar.ql-snow {
+  @apply border-border bg-[#18181b] rounded-t-lg;
+}
+
+.quill-dark .ql-container.ql-snow {
+  @apply border-border bg-[#0a0a0b] rounded-b-lg text-white font-sans text-sm min-h-[150px];
+}
+
+.quill-dark .ql-snow .ql-stroke {
+  stroke: #a1a1aa; /* text-gray-400 */
+}
+
+.quill-dark .ql-snow .ql-fill, 
+.quill-dark .ql-snow .ql-stroke.ql-fill {
+  fill: #a1a1aa;
+}
+
+.quill-dark .ql-snow .ql-picker {
+  color: #a1a1aa;
+}
+
+.quill-dark .ql-snow .ql-picker-options {
+  @apply bg-[#18181b] border-border text-white;
+}
+
+.quill-dark .ql-snow.ql-toolbar button:hover .ql-stroke, 
+.quill-dark .ql-snow .ql-toolbar button:hover .ql-stroke, 
+.quill-dark .ql-snow.ql-toolbar button.ql-active .ql-stroke, 
+.quill-dark .ql-snow .ql-toolbar button.ql-active .ql-stroke, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke {
+  stroke: #1ea2e4;
+}
+
+.quill-dark .ql-snow.ql-toolbar button:hover .ql-fill, 
+.quill-dark .ql-snow .ql-toolbar button:hover .ql-fill, 
+.quill-dark .ql-snow.ql-toolbar button.ql-active .ql-fill, 
+.quill-dark .ql-snow .ql-toolbar button.ql-active .ql-fill, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-label:hover .ql-fill, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-fill, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-item:hover .ql-fill, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-item:hover .ql-fill, 
+.quill-dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill, 
+.quill-dark .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-fill {
+  fill: #1ea2e4;
+}
+
+.quill-dark .ql-editor.ql-blank::before {
+  color: #52525b; /* text-gray-600 */
+  font-style: normal;
+}
+
+.quill-dark .ql-editor {
+  @apply prose prose-invert max-w-none;
+}
+
+/* Tooltip for Links */
+.quill-dark .ql-snow .ql-tooltip {
+  @apply bg-[#18181b] border-border text-gray-300 rounded-lg shadow-xl shadow-black/50 px-4 py-2;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.quill-dark .ql-snow .ql-tooltip input[type="text"] {
+  @apply bg-[#0a0a0b] border border-border text-white rounded px-3 py-1 outline-none transition-colors focus:border-[#1ea2e4];
+}
+
+.quill-dark .ql-snow .ql-tooltip a.ql-action {
+  @apply text-[#1ea2e4] hover:text-blue-400 font-medium transition-colors ml-3;
+}
+
+.quill-dark .ql-snow .ql-tooltip a.ql-action::before {
+  @apply text-[#1ea2e4];
+}
+
+.quill-dark .ql-snow .ql-tooltip a.ql-remove {
+  @apply text-red-500 hover:text-red-400 font-medium transition-colors ml-3;
+}
+
+.quill-dark .ql-snow .ql-tooltip a.ql-remove::before {
+  @apply text-red-500;
+}
+
+

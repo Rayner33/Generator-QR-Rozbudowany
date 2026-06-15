@@ -10,6 +10,7 @@ export default function RedirectEngine() {
   const [error, setError] = useState('');
   const [status, setStatus] = useState('Analizowanie linku...');
   const [deactivatedData, setDeactivatedData] = useState(null);
+  const [textContent, setTextContent] = useState(null);
   const qrRef = React.useRef(null);
   const qrCodeInstance = React.useRef(null);
   const hasProcessed = React.useRef(false);
@@ -56,6 +57,37 @@ export default function RedirectEngine() {
         // 3. Budowanie końcowego URL (nie czeka na analitykę!)
         let finalUrl = targetData.url || targetData.targetUrl; 
 
+        // Funkcja pomocnicza do zapisu analityki używana przez wszystkie typy
+        const logAnalytics = async () => {
+          const incrementField = isQrCode ? 'scans' : 'clicks';
+          try {
+            const analyticsData = await analyticsPromise;
+            await Promise.allSettled([
+              updateDoc(targetDocRef, {
+                [incrementField]: increment(1),
+                lastClickedAt: new Date()
+              }),
+              addDoc(collection(db, 'analytics'), {
+                codeId: shortId,
+                workspaceId: targetData.workspaceId,
+                type: isQrCode ? 'qr' : 'smartlink',
+                utm: targetData.utm || null,
+                ...(analyticsData || {})
+              })
+            ]);
+          } catch (e) {
+            console.error(e);
+          }
+        };
+
+        if (targetData.contentType === 'text') {
+          // Fire and forget analytics, render text content immediately
+          logAnalytics();
+          setTextContent(targetData.textData || '<p>Brak treści</p>');
+          setStatus('');
+          return;
+        }
+
         if (targetData.contentType === 'vcard') {
           finalUrl = `data:text/vcard;charset=utf-8,${encodeURIComponent(finalUrl)}`;
           setStatus('Pobieranie wizytówki...');
@@ -87,31 +119,7 @@ export default function RedirectEngine() {
         if (finalUrl) {
           setStatus('Przekierowywanie...');
           
-          const incrementField = isQrCode ? 'scans' : 'clicks';
-          
-          const logAnalytics = async () => {
-            try {
-              const analyticsData = await analyticsPromise;
-              await Promise.allSettled([
-                updateDoc(targetDocRef, {
-                  [incrementField]: increment(1),
-                  lastClickedAt: new Date()
-                }),
-                addDoc(collection(db, 'analytics'), {
-                  codeId: shortId,
-                  workspaceId: targetData.workspaceId,
-                  type: isQrCode ? 'qr' : 'smartlink',
-                  utm: targetData.utm || null,
-                  ...(analyticsData || {})
-                })
-              ]);
-            } catch (e) {
-              console.error(e);
-            }
-          };
-
           // Dajemy Firebase maksymalnie 400ms na wysłanie pakietu logów w tle.
-          // Dzięki temu użytkownik nie odczuje zacięcia, a logi zostaną wysłane.
           await Promise.race([logAnalytics(), new Promise(resolve => setTimeout(resolve, 400))]);
           
           window.location.replace(finalUrl);
@@ -186,6 +194,13 @@ export default function RedirectEngine() {
           <h2 className="text-[1.35rem] font-semibold text-center mb-4 leading-snug">
             Ten kod QR został z jakiegoś<br />powodu dezaktywowany.
           </h2>
+        </div>
+      ) : textContent !== null ? (
+        <div className="bg-[#18181b] border border-border p-6 md:p-8 rounded-2xl max-w-2xl w-full text-white shadow-2xl animate-fade-in-up">
+          <div 
+            className="prose prose-invert prose-p:leading-relaxed prose-a:text-[#1ea2e4] max-w-none break-words" 
+            dangerouslySetInnerHTML={{ __html: textContent }} 
+          />
         </div>
       ) : !error ? (
         <div className="flex flex-col items-center gap-6">

@@ -1,12 +1,77 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Link as LinkIcon, Phone, MessageSquare, Type, FileText, Wifi, Image as ImageIcon, Trash, QrCode, Globe, Network } from 'lucide-react';
+import { X, Check, Link as LinkIcon, Phone, MessageSquare, Type, FileText, Wifi, Image as ImageIcon, Trash, QrCode, Globe, Network, ChevronLeft, ChevronRight } from 'lucide-react';
 import QRCodeStyling from 'qr-code-styling';
 import { HexColorPicker } from 'react-colorful';
 import { db, auth } from '../firebase';
 import { collection, addDoc, updateDoc, setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
 import UTMBuilderModal from './UTMBuilderModal';
 import { buildUrlWithUtm } from '../utils/analyticsHelpers';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+
+const DraggableTabsWrapper = ({ children }) => {
+  const scrollRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const scroll = (amount) => {
+    scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="relative group flex items-center ml-9 mb-6">
+      <button 
+        onClick={(e) => { e.preventDefault(); scroll(-150); }} 
+        className="absolute left-0 z-10 p-1 bg-[#18181b]/90 text-white rounded-r hidden group-hover:block border border-border shadow-md"
+      >
+        <ChevronLeft size={20} />
+      </button>
+      
+      <div 
+        ref={scrollRef}
+        className="flex gap-6 overflow-x-auto pb-2 w-full select-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
+        {children}
+      </div>
+
+      <button 
+        onClick={(e) => { e.preventDefault(); scroll(150); }} 
+        className="absolute right-0 z-10 p-1 bg-[#18181b]/90 text-white rounded-l hidden group-hover:block border border-border shadow-md"
+      >
+        <ChevronRight size={20} />
+      </button>
+    </div>
+  );
+};
 
 export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'create', initialData = null }) {
   const [title, setTitle] = useState('');
@@ -21,6 +86,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   const [emailData, setEmailData] = useState({ address: '', subject: '', body: '' });
   const [wifiData, setWifiData] = useState({ ssid: '', password: '', type: 'WPA' });
   const [vcardData, setVcardData] = useState({ firstName: '', lastName: '', phone: '', email: '', company: '', title: '', website: '' });
+  const [textData, setTextData] = useState('');
 
   const [styleType, setStyleType] = useState('rounded');
   const [dotsColor, setDotsColor] = useState('#000000');
@@ -57,6 +123,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         setEmailData(initialData.emailData || { address: '', subject: '', body: '' });
         setWifiData(initialData.wifiData || { ssid: '', password: '', type: 'WPA' });
         setVcardData(initialData.vcardData || { firstName: '', lastName: '', phone: '', email: '', company: '', title: '', website: '' });
+        setTextData(initialData.textData || '');
         setStyleType(initialData.styleType || 'rounded');
         setDotsColor(initialData.dotsColor || '#000000');
         setEyeColor(initialData.eyeColor || initialData.dotsColor || '#000000');
@@ -113,6 +180,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   const getQrDataString = () => {
     switch (contentType) {
       case 'url': return urlData || 'https://qrc-ai.com';
+      case 'text': return getFullUrl();
       case 'phone': return phoneData ? `tel:${phoneData}` : 'tel:';
       case 'email': return emailData.address ? `mailto:${emailData.address}` : 'mailto:';
       case 'wifi': return wifiData.ssid ? `WIFI:T:${wifiData.type};S:${wifiData.ssid};P:${wifiData.password};;` : 'WIFI:S:;;';
@@ -139,6 +207,8 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
       else if (!/^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/.test(urlData)) {
         errs.urlData = "Upewnij się, że link ma poprawny format";
       }
+    } else if (contentType === 'text') {
+      if (!textData || textData.trim() === '' || textData === '<p><br></p>') errs.textData = "Wpisz jakiś tekst";
     } else if (contentType === 'phone') {
       if (!phoneData) errs.phoneData = "";
       else if (!/^\+?[0-9\s\-()]{7,15}$/.test(phoneData)) {
@@ -185,6 +255,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
       emailData,
       wifiData,
       vcardData,
+      textData,
       styleType,
       dotsColor,
       eyeColor,
@@ -251,7 +322,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         cornersDotOptions: { type: styleType === 'square' ? 'square' : 'dot', color: eyeColor }
       });
     }
-  }, [contentType, urlData, phoneData, emailData, wifiData, vcardData, styleType, dotsColor, eyeColor, backgroundColor, codeId, logoBase64]);
+  }, [contentType, urlData, phoneData, emailData, wifiData, vcardData, textData, styleType, dotsColor, eyeColor, backgroundColor, codeId, logoBase64]);
 
   const getScannability = () => {
     const getLuminance = (hex) => {
@@ -412,13 +483,14 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                 Zawartość
               </h3>
               
-              <div className="ml-9 border-b border-border flex gap-6 overflow-x-auto pb-2 mb-6">
+              <DraggableTabsWrapper>
                  <Tab icon={<LinkIcon size={18}/>} label="URL / LINK" active={contentType === 'url'} onClick={() => setContentType('url')} />
+                 <Tab icon={<Type size={18}/>} label="TEKST" active={contentType === 'text'} onClick={() => setContentType('text')} />
                  <Tab icon={<FileText size={18}/>} label="WIZYTÓWKA" active={contentType === 'vcard'} onClick={() => setContentType('vcard')} />
                  <Tab icon={<Wifi size={18}/>} label="WIFI" active={contentType === 'wifi'} onClick={() => setContentType('wifi')} />
                  <Tab icon={<MessageSquare size={18}/>} label="EMAIL" active={contentType === 'email'} onClick={() => setContentType('email')} />
                  <Tab icon={<Phone size={18}/>} label="TELEFON" active={contentType === 'phone'} onClick={() => setContentType('phone')} />
-              </div>
+              </DraggableTabsWrapper>
 
               <div className="ml-9">
                 {contentType === 'url' && (
@@ -443,6 +515,27 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                       <Network size={14} />
                       UTM {utmData && (utmData.source || utmData.medium || utmData.campaign || utmData.content) ? '(Aktywne)' : ''}
                     </button>
+                  </div>
+                )}
+                {contentType === 'text' && (
+                  <div className="space-y-4">
+                    <div className={`quill-dark ${validationErrors.textData ? 'border-2 border-red-500 rounded-lg' : ''}`}>
+                      <ReactQuill 
+                        theme="snow" 
+                        value={textData} 
+                        onChange={setTextData} 
+                        placeholder="Wpisz i sformatuj swój tekst..."
+                        modules={{
+                          toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'clean']
+                          ],
+                        }}
+                      />
+                    </div>
+                    {validationErrors.textData && <p className="text-red-500 text-xs font-medium mt-1">{validationErrors.textData}</p>}
+                    <p className="text-gray-400 text-xs">Ten tekst zostanie wyświetlony na dedykowanej stronie po zeskanowaniu kodu.</p>
                   </div>
                 )}
                 {contentType === 'phone' && (
@@ -704,9 +797,17 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
 
 function Tab({ icon, label, active, onClick }) {
   return (
-    <div onClick={onClick} className={`flex flex-col items-center gap-2 cursor-pointer pb-2 border-b-2 whitespace-nowrap min-w-[100px] ${active ? 'border-[#1ea2e4] text-[#1ea2e4]' : 'border-transparent text-gray-400 hover:text-white'}`}>
+    <div onClick={onClick} className={`relative flex flex-col items-center gap-2 cursor-pointer pb-2 whitespace-nowrap min-w-[100px] transition-colors ${active ? 'text-[#1ea2e4]' : 'text-gray-400 hover:text-white'}`}>
       {icon}
       <span className="text-xs font-semibold">{label}</span>
+      {active && (
+        <motion.div
+          layoutId="qr-modal-active-tab"
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#1ea2e4]"
+          initial={false}
+          transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+        />
+      )}
     </div>
   );
 }
