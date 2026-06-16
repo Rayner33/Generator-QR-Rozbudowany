@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check } from 'lucide-react';
 import { db } from '../firebase';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, getDoc, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 export default function NotificationsModal({ isOpen, onClose, pendingInvites, currentUser, setActiveWorkspace }) {
@@ -12,22 +12,42 @@ export default function NotificationsModal({ isOpen, onClose, pendingInvites, cu
   const handleAccept = async (invite) => {
     setProcessingId(invite.id);
     try {
-      // Dodaj użytkownika do zespołu
-      await updateDoc(doc(db, "workspaces", invite.workspaceId), {
-        members: arrayUnion(currentUser.uid)
-      });
-      // Zmień status zaproszenia
-      await updateDoc(doc(db, "invites", invite.id), {
-        status: 'accepted'
-      });
+      if (invite.type === 'transfer_request') {
+        const workspaceRef = doc(db, "workspaces", invite.workspaceId);
+        const workspaceSnap = await getDoc(workspaceRef);
+        if (workspaceSnap.exists()) {
+          const workspaceData = workspaceSnap.data();
+          const oldOwnerId = workspaceData.ownerId;
+          
+          let newMembers = (workspaceData.members || []).filter(uid => uid !== currentUser.uid);
+          if (!newMembers.includes(oldOwnerId)) {
+            newMembers.push(oldOwnerId);
+          }
+          
+          await updateDoc(workspaceRef, {
+            ownerId: currentUser.uid,
+            [`memberRoles.${oldOwnerId}`]: 'member',
+            members: newMembers
+          });
+        }
+        await deleteDoc(doc(db, "invites", invite.id));
+      } else {
+        // Dodaj użytkownika do zespołu
+        await updateDoc(doc(db, "workspaces", invite.workspaceId), {
+          members: arrayUnion(currentUser.uid)
+        });
+        // Zmień status zaproszenia
+        await updateDoc(doc(db, "invites", invite.id), {
+          status: 'accepted'
+        });
+      }
       
       if (setActiveWorkspace) {
-        setActiveWorkspace({
-          id: invite.workspaceId,
-          name: invite.workspaceName,
-          type: 'team',
-          avatarStyle: invite.workspaceAvatarStyle
-        });
+        // Zamiast częściowych danych, pobierz pełen, odświeżony obiekt zespołu z bazy
+        const updatedSnap = await getDoc(doc(db, "workspaces", invite.workspaceId));
+        if (updatedSnap.exists()) {
+          setActiveWorkspace({ id: updatedSnap.id, ...updatedSnap.data() });
+        }
       }
       
       // Jeśli to ostatnie zaproszenie, zamknij modal
@@ -46,9 +66,13 @@ export default function NotificationsModal({ isOpen, onClose, pendingInvites, cu
   const handleReject = async (invite) => {
     setProcessingId(invite.id);
     try {
-      await updateDoc(doc(db, "invites", invite.id), {
-        status: 'rejected'
-      });
+      if (invite.type === 'transfer_request') {
+        await deleteDoc(doc(db, "invites", invite.id));
+      } else {
+        await updateDoc(doc(db, "invites", invite.id), {
+          status: 'rejected'
+        });
+      }
       if (pendingInvites.length <= 1) {
         onClose();
       }
@@ -102,9 +126,16 @@ export default function NotificationsModal({ isOpen, onClose, pendingInvites, cu
                     >
                       {invite.workspaceName ? invite.workspaceName.charAt(0).toUpperCase() : 'Z'}
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] text-gray-400 font-medium">Zaproszono cię do dołączenia do</span>
-                      <span className="text-xs font-bold text-white truncate w-32">{invite.workspaceName}</span>
+                    <div>
+                      <p className="text-sm font-semibold mb-0.5">
+                        {invite.type === 'transfer_request' ? 'Przekazanie Zespołu' : 'Zaproszenie do zespołu'}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {invite.type === 'transfer_request' 
+                          ? <span><span className="text-white font-medium">{invite.senderEmail}</span> chce przekazać Ci własność nad zespołem <strong className="text-white">{invite.workspaceName}</strong></span>
+                          : <span>Użytkownik <span className="text-white font-medium">{invite.senderEmail}</span> zaprasza do <strong className="text-white">{invite.workspaceName}</strong></span>
+                        }
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

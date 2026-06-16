@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { doc, getDoc, updateDoc, deleteDoc, arrayRemove, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, arrayRemove, collection, query, where, getDocs, writeBatch, addDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { HexColorPicker } from "react-colorful";
 import { Check, X, Search, MoreVertical, Trash2, Shield } from 'lucide-react';
@@ -11,7 +11,11 @@ import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 export default function WorkspaceSettings({ activeWorkspace, currentUser, workspaces }) {
   const navigate = useNavigate();
   const [mountedWorkspaceId] = useState(activeWorkspace?.id);
-  const [activeTab, setActiveTab] = useState('Ogólne');
+  const isOwner = activeWorkspace?.ownerId === currentUser.uid;
+  const isAdmin = activeWorkspace?.memberRoles?.[currentUser.uid] === 'admin';
+  const hasAdminRights = isOwner || isAdmin;
+  
+  const [activeTab, setActiveTab] = useState(isOwner ? 'Ogólne' : 'Członkowie');
   const [hoveredTab, setHoveredTab] = useState(null);
   const [name, setName] = useState(activeWorkspace?.name || '');
   const [avatarStyle, setAvatarStyle] = useState(activeWorkspace?.avatarStyle || PREDEFINED_GRADIENTS[0]);
@@ -19,6 +23,12 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   const [isSaving, setIsSaving] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  
+  // Przekazanie własności
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [selectedTransferUser, setSelectedTransferUser] = useState(null);
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [transferMessage, setTransferMessage] = useState('');
   const [membersDetails, setMembersDetails] = useState([]);
   const [saveMessage, setSaveMessage] = useState('');
   const [memberToRemove, setMemberToRemove] = useState(null);
@@ -33,9 +43,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   // Członkowie
   const [searchQuery, setSearchQuery] = useState('');
   
-  const isOwner = activeWorkspace?.ownerId === currentUser.uid;
-  const isAdmin = activeWorkspace?.memberRoles?.[currentUser.uid] === 'admin';
-  const hasAdminRights = isOwner || isAdmin;
+  // The isOwner and isAdmin are already initialized above, removing duplicates here
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -78,7 +86,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   useEffect(() => {
     async function fetchMembers() {
       if (!activeWorkspace) return;
-      const uids = [activeWorkspace.ownerId, ...(activeWorkspace.members || [])];
+      const uids = [...new Set([activeWorkspace.ownerId, ...(activeWorkspace.members || [])])];
       const details = [];
       for (const uid of uids) {
         if (!uid) continue;
@@ -146,8 +154,11 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         await batch.commit();
       } else {
         // Opuszczanie
+        const newRoles = { ...(activeWorkspace.memberRoles || {}) };
+        delete newRoles[currentUser.uid];
         await updateDoc(doc(db, "workspaces", activeWorkspace.id), {
-          members: arrayRemove(currentUser.uid)
+          members: arrayRemove(currentUser.uid),
+          memberRoles: newRoles
         });
       }
       navigate('/');
@@ -155,6 +166,35 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
       console.error("Błąd podczas akcji krytycznej:", error);
     }
     setIsConfirmModalOpen(false);
+  };
+
+  const handleTransferOwnership = async () => {
+    if (!selectedTransferUser) return;
+    setIsTransferring(true);
+    setTransferMessage('');
+    try {
+      await addDoc(collection(db, "invites"), {
+        email: selectedTransferUser.email,
+        workspaceId: activeWorkspace.id,
+        workspaceName: activeWorkspace.name,
+        senderEmail: currentUser.email,
+        status: "pending",
+        createdAt: new Date(),
+        type: "transfer_request",
+        targetUserId: selectedTransferUser.uid
+      });
+      setTransferMessage('Wysłano prośbę o przejęcie zespołu.');
+      setTimeout(() => {
+        setIsTransferModalOpen(false);
+        setSelectedTransferUser(null);
+        setTransferMessage('');
+      }, 2000);
+    } catch (e) {
+      console.error(e);
+      setTransferMessage('Wystąpił błąd podczas wysyłania prośby.');
+    } finally {
+      setIsTransferring(false);
+    }
   };
 
   const handleRoleChange = async (uid, newRole) => {
@@ -261,6 +301,23 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         </div>
       )}
 
+      {isOwner && (
+        <div className="bg-card border border-border rounded-xl p-8 mb-8 relative overflow-hidden">
+          <div className="relative z-10">
+            <h2 className="text-xl font-semibold mb-2">Przekaż zespół</h2>
+            <p className="text-gray-400 text-sm mb-6 max-w-md">
+              Możesz przekazać pełną własność nad tym zespołem jednemu z jego członków. Po akceptacji przez tę osobę, staniesz się zwykłym członkiem zespołu.
+            </p>
+            <button 
+              onClick={() => setIsTransferModalOpen(true)}
+              className="bg-[#18181b] border border-border text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-white/5 transition-colors"
+            >
+              Przekaż własność zespołu
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
         <div className="relative z-10">
@@ -296,7 +353,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-[#f97316] transition-colors"
           />
         </div>
-        {hasAdminRights && (
+        {isOwner && (
           <button onClick={() => setIsInviteModalOpen(true)} className="bg-white text-black font-semibold px-6 py-2.5 rounded-full text-sm hover:bg-gray-200 transition-colors shrink-0">
             Dodaj członków
           </button>
@@ -320,14 +377,14 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                   <p className="font-semibold text-sm flex items-center gap-2">
                     {member.name || member.email.split('@')[0]}
                     {isUserOwner && <span className="bg-blue-500/10 text-blue-500 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Właściciel</span>}
-                    {!isUserOwner && activeWorkspace?.memberRoles?.[member.uid] === 'admin' && <span className="bg-[#FF4C00]/10 text-[#FF4C00] text-[10px] uppercase font-bold px-2 py-0.5 rounded">Admin</span>}
+                    {!isUserOwner && activeWorkspace?.memberRoles?.[member.uid] === 'admin' && <span className="bg-[#FF4C00]/10 text-[#FF4C00] text-[10px] uppercase font-bold px-2 py-0.5 rounded">Menedżer</span>}
                     {!isUserOwner && activeWorkspace?.memberRoles?.[member.uid] !== 'admin' && <span className="bg-gray-500/10 text-gray-400 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Członek</span>}
                     {isCurrentUser && <span className="bg-blue-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded">Ty</span>}
                   </p>
                   <p className="text-xs text-gray-400">{member.email}</p>
                 </div>
               </div>
-              {hasAdminRights && !isUserOwner && !isCurrentUser && (
+              {isOwner && !isUserOwner && !isCurrentUser && (
                 <div className="relative dropdown-container">
                   <button 
                     onClick={(e) => {
@@ -355,7 +412,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                         }}
                         className="w-full flex items-center gap-2 text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/5 rounded-lg transition-colors"
                       >
-                        <Shield size={14} /> {activeWorkspace?.memberRoles?.[member.uid] === 'admin' ? 'Zrób członkiem' : 'Zrób Adminem'}
+                        <Shield size={14} /> {activeWorkspace?.memberRoles?.[member.uid] === 'admin' ? 'Zrób członkiem' : 'Zrób Menedżerem'}
                       </button>
                       <button 
                         onClick={() => {
@@ -388,8 +445,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
           </h2>
           <p className="text-gray-400 text-sm">
             {hasAdminRights 
-              ? 'Określ, jakie uprawnienia mają zaproszeni członkowie względem kodów i linków utworzonych przez innych współpracowników. Twoje uprawnienia jako Właściciela lub Admina są zawsze pełne.' 
-              : 'Jesteś zaproszonym członkiem. Poniższymi uprawnieniami zarządza wyłącznie właściciel lub administrator zespołu.'}
+              ? 'Określ, jakie uprawnienia mają zaproszeni członkowie względem kodów i linków utworzonych przez innych współpracowników. Twoje uprawnienia jako Właściciela lub Menedżera są zawsze pełne.' 
+              : 'Jesteś zaproszonym członkiem. Poniższymi uprawnieniami zarządza wyłącznie właściciel lub menedżer zespołu.'}
           </p>
         </div>
 
@@ -508,8 +565,11 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             <p className="text-sm text-gray-400 mb-6">Czy na pewno chcesz usunąć tego członka? Cofnie to jego dostęp do projektów i danych zespołu. Potwierdź, aby kontynuować</p>
             <button 
               onClick={async () => {
+                const newRoles = { ...(activeWorkspace.memberRoles || {}) };
+                delete newRoles[memberToRemove.uid];
                 await updateDoc(doc(db, "workspaces", activeWorkspace.id), {
-                  members: arrayRemove(memberToRemove.uid)
+                  members: arrayRemove(memberToRemove.uid),
+                  memberRoles: newRoles
                 });
                 setMembersDetails(prev => prev.filter(m => m.uid !== memberToRemove.uid));
                 setMemberToRemove(null);
@@ -527,6 +587,83 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
           </div>
         </div>
       )}
+
+      {/* Transfer Ownership Modal */}
+      <AnimatePresence>
+        {isTransferModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-md p-8 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                  Przekaż własność
+                </h2>
+                <button onClick={() => {setIsTransferModalOpen(false); setSelectedTransferUser(null); setTransferMessage('');}} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="mb-6 space-y-4">
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  Wybierz członka zespołu, któremu chcesz przekazać pełną własność nad zespołem <strong>{activeWorkspace.name}</strong>.
+                </p>
+                <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-xl">
+                  <p className="text-sm text-red-500 font-medium">
+                    ⚠️ Ta operacja jest nieodwracalna. Jeśli użytkownik zaakceptuje prośbę, natychmiast stracisz uprawnienia właściciela.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-8 max-h-[250px] overflow-y-auto custom-scrollbar pr-2">
+                {membersDetails.filter(m => m.uid !== currentUser.uid).map(member => (
+                  <button
+                    key={member.uid}
+                    onClick={() => setSelectedTransferUser(member)}
+                    className={`w-full flex items-center gap-4 p-3 rounded-xl border transition-all text-left ${selectedTransferUser?.uid === member.uid ? 'border-blue-500 bg-blue-500/10' : 'border-border bg-card hover:border-gray-500'}`}
+                  >
+                    <div className="w-10 h-10 flex items-center justify-center font-bold text-white rounded-lg shrink-0" style={{ background: member.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}>
+                      {member.name ? member.name.charAt(0).toUpperCase() : member.email.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm text-white">{member.name || member.email.split('@')[0]}</p>
+                      <p className="text-xs text-gray-400">{member.email}</p>
+                    </div>
+                  </button>
+                ))}
+                {membersDetails.filter(m => m.uid !== currentUser.uid).length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">Brak innych członków w zespole.</p>
+                )}
+              </div>
+
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => setIsTransferModalOpen(false)}
+                  className="flex-1 px-4 py-3 bg-[#18181b] hover:bg-[#27272a] text-white rounded-xl font-medium transition-colors"
+                >
+                  Anuluj
+                </button>
+                <button 
+                  onClick={handleTransferOwnership}
+                  disabled={isTransferring || !selectedTransferUser}
+                  className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-medium transition-colors disabled:opacity-50"
+                >
+                  {isTransferring ? 'Wysyłanie...' : 'Przekaż własność'}
+                </button>
+              </div>
+              {transferMessage && <p className={`mt-4 text-center text-sm font-medium ${transferMessage.includes('błąd') ? 'text-red-400' : 'text-green-400'}`}>{transferMessage}</p>}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <InviteMemberModal 
         isOpen={isInviteModalOpen}

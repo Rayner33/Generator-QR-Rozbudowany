@@ -25,7 +25,7 @@ Zarządza zespołami oraz przestrzenią personalną użytkowników.
 - `allowMembersEdit` (Boolean): Uprawnienia członków do edycji (Team)
 - `allowMembersArchive` (Boolean): Uprawnienia członków do archiwizacji (Team)
 - `allowMembersReset` (Boolean): Uprawnienia członków do resetowania statystyk (Team)
-- `memberRoles` (Map): Zestawienie ról dla użytkowników w formacie `{ [uid]: "owner" | "admin" | "member" }`
+- `memberRoles` (Map): Zestawienie ról dla użytkowników w formacie `{ [uid]: "admin" }` (rola Menedżera, brak wpisu oznacza zwykłego Członka. Właściciel jest zdefiniowany przez `ownerId`)
 - `createdAt` (Timestamp): Data utworzenia
 
 ### 2. `qrcodes` (Kody QR)
@@ -103,7 +103,7 @@ Aplikacja wykorzystuje `react-router-dom` (`<BrowserRouter>`, `<Routes>`) do obs
 5. **System Modali Tagów** (`TagManagerModal`, `TagEditModal`, `TagDeleteModal`): Wyspecjalizowane, bardzo nowoczesne komponenty oparte na schematach Glassmorphism do zarządzania (CRUD) tagami. Co najważniejsze, działają natywnie z głównym stanem bazy danych, dzięki czemu operacje na nich są w 100% reaktywne na żywo z brakiem "martwych stanów".
 6. **`Analytics.jsx`**: Ekran dedykowany globalnym statystykom i szczegółowym danym odnośnie użycia poszczególnych kodów z przestrzeni roboczej.
 7. **`RedirectEngine.jsx`**: Niewidzialny, inteligentny komponent działający poza głównym UI aplikacji. Odpowiada za przechwytywanie publicznego ruchu krótkich linków (`/:shortId`). Zlicza "na żywo" unikalne wizyty w tle i odsyła do fizycznych adresów końcowych.
-8. **Moduły Pracy Zespołowej i Uprawnień** (`WorkspaceSettings.jsx`, `NotificationsModal.jsx`, `InviteMemberModal.jsx`): Nowoczesny system zarządzania danymi na żywo oparty o odpytywanie kolekcji po adresach E-mail. Właściciele mogą zapraszać członków i definiować ich precyzyjne Uprawnienia. Potencjalni odbiorcy zgarniają dynamiczne powiadomienia na pasku Sidebar z bezpośrednim przełączeniem do projektu po akceptacji.
+8. **Moduły Pracy Zespołowej i Uprawnień** (`WorkspaceSettings.jsx`, `NotificationsModal.jsx`, `InviteMemberModal.jsx`): Nowoczesny system zarządzania danymi na żywo oparty o odpytywanie kolekcji po adresach E-mail. Właściciele mogą zapraszać członków, definiować ich precyzyjne uprawnienia, mianować na Menedżerów, a także całkowicie i trwale przekazywać im własność zespołu. Potencjalni odbiorcy zgarniają dynamiczne powiadomienia na pasku Sidebar z bezpośrednim przełączeniem do projektu po akceptacji.
 
 ## Model Bezpieczeństwa (Trójwarstwowy)
 

@@ -6,6 +6,14 @@
 - **Odświeżone UI Modalów:** 
   - Usunięto nieestetyczne systemowe suwaki z poziomych list zakładek (m.in. przy wyborze typów zawartości). Wprowadzono system "Drag to Scroll" z pojawiającymi się po najechaniu, dedykowanymi przyciskami (strzałkami) do przesuwania.
   - Zaimplementowano płynne, zaawansowane animacje w oparciu o silnik `framer-motion` (Magic Layout) dla znaczników aktywnej zakładki, ujednolicając tym samym czas i charakterystykę przeskoku (typ sprężynowy bez odbicia - *bounce: 0*) z resztą platformy.
+- **Przekazywanie Własności Zespołów:** Właściciel zespołu ma teraz możliwość trwałego i bezpiecznego przekazania praw własności nad zespołem dowolnemu członkowi. Proces opiera się na wysłaniu zaproszenia typu `transfer_request`, które wymaga akceptacji przez odbiorcę z poziomu "Dzwoneczka". Przyjęcie zaproszenia degraduje dotychczasowego właściciela do roli członka, zachowując bezwzględne bezpieczeństwo.
+- **Rola Menedżera (Restrykcje UI):** Zmieniono nazewnictwo "Admin" na "Menedżer". Menedżer zachowuje pełne prawa operacyjne nad kodami i statystykami, ale został pozbawiony dostępu do zarządzania samym zespołem (brak możliwości dodawania/usuwania członków, zmiany ról i edycji nazwy/koloru zespołu).
+
+### Poprawione
+- **Ukrywanie Tagów dla nieuprawnionych:** Zwykli członkowie zespołu bez prawa do edycji kodów nie widzą już przycisków dodawania ani modyfikacji Tagów (ukryto ikonę '+' oraz napis "Wybierz tagi").
+- **Stan UI (Real-time update) po akceptacji zaproszenia:** Rozwiązano problem konieczności odświeżania strony po zaakceptowaniu prośby. Zamiast nadpisywać stan aplikacji częściowymi danymi, komponent powiadomień błyskawicznie dociąga kompletny obiekt zespołu z bazy Firestore i automatycznie go wczytuje.
+- Zablokowano błąd duplikacji obiektów powielających render "Właściciela" poprzez ścisłe filtrowanie unikalnych `uids` w ustawieniach zespołu.
+- Usunięto błędy wizualne pustych separatorów z list rozwijanych (np. po przycisku "Duplikuj"), gdy dany członek zespołu nie ma dostępu do opcji Archiwizacji/Resetowania.
 
 ## [1.1.0] - 2026-06-12
 ### Dodane
