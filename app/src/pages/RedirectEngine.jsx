@@ -48,8 +48,21 @@ export default function RedirectEngine() {
           return;
         }
 
-        // 2. Sprawdzamy czy nie jest zarchiwizowany
-        if (targetData.archived) {
+        // 2. Sprawdzamy czy nie jest zarchiwizowany (sam kod lub cały jego zespół)
+        let isArchived = targetData.archived;
+        
+        if (!isArchived && targetData.workspaceId) {
+          try {
+            const wsSnap = await getDoc(doc(db, 'workspaces', targetData.workspaceId));
+            if (wsSnap.exists() && wsSnap.data().archived) {
+              isArchived = true;
+            }
+          } catch (e) {
+            console.error('Błąd weryfikacji zespołu:', e);
+          }
+        }
+
+        if (isArchived) {
           setDeactivatedData({ ...targetData, isQrCode });
           return;
         }

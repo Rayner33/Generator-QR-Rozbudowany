@@ -71,7 +71,7 @@ export function useWorkspaces(currentUser) {
         // Jednorazowe czyszczenie starych, wadliwych przestrzeni osobistych
         if (docSnap.data().name === "Personal" && docSnap.data().type !== "personal") {
            deleteDoc(docSnap.ref).catch(console.error);
-        } else {
+        } else if (!docSnap.data().archived) {
            wks.push({ id: docSnap.id, ...docSnap.data() });
         }
       });

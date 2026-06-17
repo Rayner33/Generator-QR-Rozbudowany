@@ -138,20 +138,10 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   const handleDeleteOrLeave = async () => {
     try {
       if (isOwner) {
-        // Kaskadowe usuwanie wszystkich powiązanych danych
-        const batch = writeBatch(db);
-        const wsId = activeWorkspace.id;
-
-        const collectionsToDelete = ['qrcodes', 'smartlinks', 'tags', 'analytics', 'invites'];
-        for (const col of collectionsToDelete) {
-          const q = query(collection(db, col), where('workspaceId', '==', wsId));
-          const snap = await getDocs(q);
-          snap.docs.forEach(d => batch.delete(d.ref));
-        }
-
-        // Usuń sam workspace
-        batch.delete(doc(db, 'workspaces', wsId));
-        await batch.commit();
+        // Zamiast kaskadowego usuwania, ustawiamy znacznik archiwizacji
+        await updateDoc(doc(db, "workspaces", activeWorkspace.id), {
+          archived: true
+        });
       } else {
         // Opuszczanie
         const newRoles = { ...(activeWorkspace.memberRoles || {}) };
@@ -322,18 +312,18 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
         <div className="relative z-10">
           <h2 className="text-xl font-semibold mb-2">
-            {isOwner ? 'Usuń zespół' : 'Opuść zespół'}
+            {isOwner ? 'Zarchiwizuj zespół' : 'Opuść zespół'}
           </h2>
           <p className="text-gray-400 text-sm mb-6 max-w-md">
             {isOwner 
-              ? 'Trwałe usunięcie zespołu spowoduje bezpowrotne wykasowanie wszystkich przypisanych do niego Kodów QR oraz Smart Linków.' 
+              ? 'Archiwizacja zespołu sprawi, że zniknie on z konta, a wszystkie przypisane do niego kody QR zostaną zdeztywowane. Odwrócenie tego procesu będzie wymagało asysty Administratora.' 
               : 'Po opuszczeniu zespołu stracisz dostęp do wszystkich zgromadzonych w nim Kodów QR oraz Smart Linków.'}
           </p>
           <button 
             onClick={() => setIsConfirmModalOpen(true)}
             className="bg-red-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-red-500 transition-colors"
           >
-            {isOwner ? 'Usuń zespół' : 'Opuść zespół'}
+            {isOwner ? 'Zarchiwizuj zespół' : 'Opuść zespół'}
           </button>
         </div>
       </div>
@@ -550,8 +540,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
       {isConfirmModalOpen && (
         <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
           <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
-            <h3 className="text-red-500 font-bold mb-2 uppercase">{isOwner ? 'Usuń zespół' : 'Opuść zespół'}</h3>
-            <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz {isOwner ? 'trwale usunąć ten zespół i wszystkie jego kody QR' : 'opuścić ten zespół'}? Tej operacji nie można cofnąć.</p>
+            <h3 className="text-red-500 font-bold mb-2 uppercase">{isOwner ? 'Zarchiwizuj zespół' : 'Opuść zespół'}</h3>
+            <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz {isOwner ? 'zarchiwizować ten zespół? Zniknie on z Twojego konta, a wszystkie jego kody przestaną działać. Tylko Administrator bazy może to cofnąć' : 'opuścić ten zespół'}? Tej operacji nie można cofnąć samemu.</p>
             <button onClick={handleDeleteOrLeave} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mb-2 transition-colors">ZATWIERDŹ</button>
             <button onClick={() => setIsConfirmModalOpen(false)} className="w-full bg-[#18181b] hover:bg-[#27272a] text-gray-300 font-bold py-3 rounded-lg transition-colors border border-border">ANULUJ</button>
           </div>

@@ -26,6 +26,7 @@ Zarządza zespołami oraz przestrzenią personalną użytkowników.
 - `allowMembersArchive` (Boolean): Uprawnienia członków do archiwizacji (Team)
 - `allowMembersReset` (Boolean): Uprawnienia członków do resetowania statystyk (Team)
 - `memberRoles` (Map): Zestawienie ról dla użytkowników w formacie `{ [uid]: "admin" }` (rola Menedżera, brak wpisu oznacza zwykłego Członka. Właściciel jest zdefiniowany przez `ownerId`)
+- `archived` (Boolean): Flaga bezpiecznej archiwizacji ("Soft Delete"), ukrywająca zespół i deaktywująca jego kody.
 - `createdAt` (Timestamp): Data utworzenia
 
 ### 2. `qrcodes` (Kody QR)
