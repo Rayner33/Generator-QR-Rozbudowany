@@ -44,11 +44,11 @@ service cloud.firestore {
     match /analytics/{docId} {
       allow list, read, delete, update: if isAppAdmin();
       allow create: if (
-        // Wymagane pola – dokładnie te, które zapisuje tracking.js
+        // Wymagane pola – dokładnie te, które zapisuje tracking.js oraz RedirectEngine
         request.resource.data.keys().hasOnly([
           'codeId', 'workspaceId', 'type', 'timestamp',
           'country', 'region', 'city', 'continent',
-          'os', 'browser', 'device', 'visitorHash'
+          'os', 'browser', 'device', 'visitorHash', 'utm'
         ]) &&
         request.resource.data.codeId is string &&
         request.resource.data.type in ['qr', 'smartlink'] &&
