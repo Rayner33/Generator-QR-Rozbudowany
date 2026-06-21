@@ -6,6 +6,7 @@ Projekt oparty jest na nowoczesnym i szybkim stosie technologicznym przeznaczony
 - **Frontend:** React.js (generowany przez Vite)
 - **Styling:** Tailwind CSS (z niestandardową konfiguracją w `tailwind.config.js`)
 - **Backend / Baza Danych:** Firebase (Authentication, Firestore Database)
+- **Zabezpieczenia Antybotowe:** Firebase App Check zintegrowany z `reCAPTCHA v3 Standard` (zapobieganie spamowaniu bazy i fałszowaniu statystyk)
 - **Generowanie QR:** Biblioteka `qr-code-styling` (pozwala na dynamiczne zmiany narożników, kolorów i osadzanie logotypów po stronie klienta bez komunikacji z serwerem)
 - **Wybór Kolorów:** `react-colorful` (nowoczesny i lekki komponent Color Picker)
 - **Ikony:** `lucide-react`

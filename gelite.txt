@@ -1,4 +1,0 @@
-# Zmień to:
-VITE_GEO_API_URL=http://localhost:3001/api/geo
-# Na właściwy adres produkcyjny:
-VITE_GEO_API_URL=https://geo.parys.pl/api/geo
