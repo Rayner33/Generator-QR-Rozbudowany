@@ -18,19 +18,18 @@ const app = initializeApp(firebaseConfig);
 
 // Inicjalizacja App Check (anty-bot) z reCAPTCHA v3
 if (typeof window !== "undefined" && import.meta.env.VITE_RECAPTCHA_SITE_KEY) {
-  // Włączenie trybu debugowania tylko dla środowiska lokalnego
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  }
-  
-  try {
-    initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
-      // Automatyczne odświeżanie tokenów w tle
-      isTokenAutoRefreshEnabled: true
-    });
-  } catch (error) {
-    console.error("Nie udało się zainicjalizować App Check:", error);
+  // Wyłączamy App Check na środowisku deweloperskim (localhost),
+  // ponieważ blokuje ono lokalne logowanie przez Google i spowalnia aplikację
+  if (!import.meta.env.DEV && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    try {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(import.meta.env.VITE_RECAPTCHA_SITE_KEY),
+        // Automatyczne odświeżanie tokenów w tle
+        isTokenAutoRefreshEnabled: true
+      });
+    } catch (error) {
+      console.error("Nie udało się zainicjalizować App Check:", error);
+    }
   }
 }
 
