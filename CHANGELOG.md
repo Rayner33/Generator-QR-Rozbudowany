@@ -5,6 +5,9 @@
 - **Bezpieczne usuwanie zespołów (Soft Delete):** Zastąpiono permanentne i kaskadowe usuwanie zespołów bezpieczną "Archiwizacją Zespołu". Zarchiwizowane zespoły zostają całkowicie ukryte z interfejsu (i przerywają działanie swoich kodów QR), ale wszystkie fizyczne dane pozostają zamrożone w bazie Firestore. Opcja ta zapobiega bezpowrotnej i przypadkowej stracie np. ulotek promocyjnych – odwrócenie procesu jest możliwe z poziomu bazy danych przez Administratora.
 - **Tarcza Antybotowa (Firebase App Check):** Wdrożono system zabezpieczeń oparty o `reCAPTCHA v3 Standard`, który niewidzialnie dla użytkownika autoryzuje każde zapytanie. Chroni to bazę statystyk przed fałszywym nabijaniem kliknięć przez automatyczne skrypty i wtyczki (scrapery), przy jednoczesnym zerowym wpływie na UX (brak obrazków do klikania).
 
+### Poprawione
+- **Odblokowanie analityki UTM:** Zidentyfikowano i załatano krytyczny rygor w Regułach Bezpieczeństwa Firestore (`firestore.rules`), który całkowicie blokował zapisywanie statystyk dla kodów posiadających parametry UTM. Zaktualizowano schemat weryfikacji, dopuszczając pole `utm` przy zachowaniu najwyższych standardów bezpieczeństwa.
+
 ## [1.2.0] - 2026-06-15
 ### Dodane
 - **Dynamiczne Kody Tekstowe (Mikro-strony):** Nowa funkcjonalność umożliwiająca tworzenie kodów QR przechowujących sformatowany tekst. Kody zachowują się jak kody dynamiczne (zliczają statystyki), kierując skanującego na dedykowaną, estetyczną, mobilną mikro-stronę w aplikacji. Zintegrowano lekki wizualny edytor WYSIWYG (`react-quill-new`) pozwalający na dodawanie pogrubień, list i linków z zachowaniem brandingu.
