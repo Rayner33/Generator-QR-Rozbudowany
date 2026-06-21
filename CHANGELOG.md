@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2026-06-21
+### Dodane
+- **Bezpieczne usuwanie zespołów (Soft Delete):** Zastąpiono permanentne i kaskadowe usuwanie zespołów bezpieczną "Archiwizacją Zespołu". Zarchiwizowane zespoły zostają całkowicie ukryte z interfejsu (i przerywają działanie swoich kodów QR), ale wszystkie fizyczne dane pozostają zamrożone w bazie Firestore. Opcja ta zapobiega bezpowrotnej i przypadkowej stracie np. ulotek promocyjnych – odwrócenie procesu jest możliwe z poziomu bazy danych przez Administratora.
+- **Tarcza Antybotowa (Firebase App Check):** Wdrożono system zabezpieczeń oparty o `reCAPTCHA v3 Standard`, który niewidzialnie dla użytkownika autoryzuje każde zapytanie. Chroni to bazę statystyk przed fałszywym nabijaniem kliknięć przez automatyczne skrypty i wtyczki (scrapery), przy jednoczesnym zerowym wpływie na UX (brak obrazków do klikania).
+
 ## [1.2.0] - 2026-06-15
 ### Dodane
 - **Dynamiczne Kody Tekstowe (Mikro-strony):** Nowa funkcjonalność umożliwiająca tworzenie kodów QR przechowujących sformatowany tekst. Kody zachowują się jak kody dynamiczne (zliczają statystyki), kierując skanującego na dedykowaną, estetyczną, mobilną mikro-stronę w aplikacji. Zintegrowano lekki wizualny edytor WYSIWYG (`react-quill-new`) pozwalający na dodawanie pogrubień, list i linków z zachowaniem brandingu.
@@ -8,8 +13,6 @@
   - Zaimplementowano płynne, zaawansowane animacje w oparciu o silnik `framer-motion` (Magic Layout) dla znaczników aktywnej zakładki, ujednolicając tym samym czas i charakterystykę przeskoku (typ sprężynowy bez odbicia - *bounce: 0*) z resztą platformy.
 - **Przekazywanie Własności Zespołów:** Właściciel zespołu ma teraz możliwość trwałego i bezpiecznego przekazania praw własności nad zespołem dowolnemu członkowi. Proces opiera się na wysłaniu zaproszenia typu `transfer_request`, które wymaga akceptacji przez odbiorcę z poziomu "Dzwoneczka". Przyjęcie zaproszenia degraduje dotychczasowego właściciela do roli członka, zachowując bezwzględne bezpieczeństwo.
 - **Rola Menedżera (Restrykcje UI):** Zmieniono nazewnictwo "Admin" na "Menedżer". Menedżer zachowuje pełne prawa operacyjne nad kodami i statystykami, ale został pozbawiony dostępu do zarządzania samym zespołem (brak możliwości dodawania/usuwania członków, zmiany ról i edycji nazwy/koloru zespołu).
-- **Bezpieczne usuwanie zespołów (Soft Delete):** Zastąpiono permanentne i kaskadowe usuwanie zespołów bezpieczną "Archiwizacją Zespołu". Zarchiwizowane zespoły zostają całkowicie ukryte z interfejsu (i przerywają działanie swoich kodów QR), ale wszystkie fizyczne dane pozostają zamrożone w bazie Firestore. Opcja ta zapobiega bezpowrotnej i przypadkowej stracie np. ulotek promocyjnych – odwrócenie procesu jest możliwe z poziomu bazy danych przez Administratora.
-- **Tarcza Antybotowa (Firebase App Check):** Wdrożono system zabezpieczeń oparty o `reCAPTCHA v3 Standard`, który niewidzialnie dla użytkownika autoryzuje każde zapytanie. Chroni to bazę statystyk przed fałszywym nabijaniem kliknięć przez automatyczne skrypty i wtyczki (scrapery), przy jednoczesnym zerowym wpływie na UX (brak obrazków do klikania).
 
 ### Poprawione
 - **Ukrywanie Tagów dla nieuprawnionych:** Zwykli członkowie zespołu bez prawa do edycji kodów nie widzą już przycisków dodawania ani modyfikacji Tagów (ukryto ikonę '+' oraz napis "Wybierz tagi").
