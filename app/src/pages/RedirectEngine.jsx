@@ -179,12 +179,9 @@ export default function RedirectEngine() {
         cornersDotOptions: { color: eyeColor, type: deactivatedData.styleType === 'square' ? 'square' : 'dot' }
       };
 
-      if (!qrCodeInstance.current) {
-        qrCodeInstance.current = new QRCodeStyling(options);
-        qrCodeInstance.current.append(qrRef.current);
-      } else {
-        qrCodeInstance.current.update(options);
-      }
+      const qrCode = new QRCodeStyling(options);
+      qrRef.current.innerHTML = '';
+      qrCode.append(qrRef.current);
     }
   }, [deactivatedData]);
 
