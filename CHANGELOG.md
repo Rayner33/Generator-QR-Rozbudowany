@@ -1,6 +1,9 @@
 # Changelog
 
 ## [1.3.1] - 2026-06-23
+### Dodane
+- **Dedykowany widok dla dezaktywowanych Smart Linków:** Wprowadzono warunkowe renderowanie (rozgałęzienie interfejsu) na stronie archiwum. Kiedy zarchiwizowany zostaje nie kod QR, a czysty Smart Link, system nie wyświetla już mylącego, wygenerowanego kodu QR. Zamiast tego renderowany jest estetyczny, responsywny "kafelek" tekstowy (z wyszarzoną domeną automatycznie dostosowującą się do adresu środowiska produkcyjnego i wyróżnionym, białym identyfikatorem), w pełni spójny z motywem platformy i opatrzony etykietą "Dezaktywowany".
+
 ### Poprawione
 - **Wygląd i spójność kodów QR:** Naprawiono błąd zaokrągleń ułamkowych we wbudowanej bibliotece SVG (fractional rounding margin), ujednolicając rozdzielczość bazową kodów we wszystkich oknach podglądu. Dzięki temu kody pozbawione są niepożądanych, asymetrycznych białych pasów wokół krawędzi.
 - **Proporcjonalne marginesy:** Sztywne, pikselowe klasy w CSS zostały zamienione na responsywne (procentowe) marginesy `p-[6.5%]`. Pozwala to na idealnie zachowane, geometryczne proporcje białego tła wobec kropek QR niezależnie od tego, jak duży jest ekran. Identyczny proporcjonalny margines został dodany do logiki pobieranych i generowanych plików PNG/SVG.
