@@ -196,15 +196,15 @@ export default function RedirectEngine() {
 
           <div className="relative mb-12">
             <div 
-              className="p-[6.5%] rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative"
+              ref={qrRef}
+              className="w-[250px] h-[250px] p-[6.5%] rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative flex items-center justify-center [&>*]:w-full [&>*]:h-full"
               style={{ backgroundColor: deactivatedData.backgroundColor || '#ffffff' }}
             >
-              <div ref={qrRef} className="w-[200px] h-[200px] flex items-center justify-center [&>*]:w-full [&>*]:h-full" />
-              
-              <div className="absolute top-0 right-0 -mr-6 -mt-4 transform rotate-12 z-10">
-                <div className="bg-[#ff3b30] text-white text-sm font-bold uppercase tracking-wider py-1.5 px-4 rounded-lg shadow-xl border border-red-500/50">
-                  Dezaktywowany
-                </div>
+            </div>
+            
+            <div className="absolute top-0 right-0 -mr-6 -mt-4 transform rotate-12 z-10 pointer-events-none">
+              <div className="bg-[#ff3b30] text-white text-sm font-bold uppercase tracking-wider py-1.5 px-4 rounded-lg shadow-xl border border-red-500/50">
+                Dezaktywowany
               </div>
             </div>
           </div>
