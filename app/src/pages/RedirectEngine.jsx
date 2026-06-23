@@ -153,25 +153,30 @@ export default function RedirectEngine() {
 
   useEffect(() => {
     if (deactivatedData && qrRef.current) {
-      const qrDataUrl = deactivatedData.url || deactivatedData.targetUrl || 'https://qrcode-ai.com';
+      const dotsColor = deactivatedData.dotsColor || "#000000";
+      const eyeColor = deactivatedData.eyeColor || dotsColor;
+      const backgroundColor = deactivatedData.backgroundColor || "#ffffff";
       
+      let qrData = `${window.location.origin}/${shortId}`;
+      if (deactivatedData.contentType === 'wifi') {
+        const { ssid, password, type } = deactivatedData.wifiData || {};
+        const auth = type === 'nopass' ? '' : `T:${type};`;
+        qrData = `WIFI:S:${ssid};${auth}P:${password};;`;
+      }
+
       const options = {
         width: 200,
         height: 200,
         type: 'svg',
+        data: qrData,
+        image: deactivatedData.logoBase64 || undefined,
         margin: 0,
-        data: qrDataUrl,
-        dotsOptions: {
-          color: deactivatedData.dotsColor || '#000000',
-          type: deactivatedData.styleType || 'square'
-        },
-        cornersSquareOptions: {
-          color: deactivatedData.eyeColor || deactivatedData.dotsColor || '#000000',
-          type: deactivatedData.styleType || 'square'
-        },
-        backgroundOptions: {
-          color: deactivatedData.backgroundColor || '#ffffff'
-        }
+        qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
+        imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 5, crossOrigin: "anonymous" },
+        dotsOptions: { color: dotsColor, type: deactivatedData.styleType || "rounded" },
+        backgroundOptions: { color: backgroundColor },
+        cornersSquareOptions: { color: eyeColor, type: deactivatedData.styleType === 'dots' ? 'dot' : (deactivatedData.styleType === 'square' ? 'square' : 'extra-rounded') },
+        cornersDotOptions: { color: eyeColor, type: deactivatedData.styleType === 'square' ? 'square' : 'dot' }
       };
 
       if (!qrCodeInstance.current) {
@@ -193,8 +198,11 @@ export default function RedirectEngine() {
           </div>
 
           <div className="relative mb-12">
-            <div className="bg-white p-4 rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative">
-              <div ref={qrRef} className="w-[200px] h-[200px] rounded-xl overflow-hidden" />
+            <div 
+              className="p-4 rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative"
+              style={{ backgroundColor: deactivatedData.backgroundColor || '#ffffff' }}
+            >
+              <div ref={qrRef} className="w-[200px] h-[200px] flex items-center justify-center [&>*]:w-full [&>*]:h-full" />
               
               <div className="absolute top-0 right-0 -mr-6 -mt-4 transform rotate-12 z-10">
                 <div className="bg-[#ff3b30] text-white text-sm font-bold uppercase tracking-wider py-1.5 px-4 rounded-lg shadow-xl border border-red-500/50">
