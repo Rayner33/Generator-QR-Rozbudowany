@@ -288,8 +288,8 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   useEffect(() => {
     if (!qrCode.current) {
       qrCode.current = new QRCodeStyling({
-        width: 600,
-        height: 600,
+        width: 1000,
+        height: 1000,
         type: "svg",
         data: getQrDataToEncode(),
         image: logoBase64 || undefined,

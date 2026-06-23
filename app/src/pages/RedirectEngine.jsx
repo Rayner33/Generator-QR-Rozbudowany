@@ -165,8 +165,8 @@ export default function RedirectEngine() {
       }
 
       const options = {
-        width: 200,
-        height: 200,
+        width: 1000,
+        height: 1000,
         type: 'svg',
         data: qrData,
         image: deactivatedData.logoBase64 || undefined,
