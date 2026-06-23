@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1] - 2026-06-23
+### Poprawione
+- **Wygląd i spójność kodów QR:** Naprawiono błąd zaokrągleń ułamkowych we wbudowanej bibliotece SVG (fractional rounding margin), ujednolicając rozdzielczość bazową kodów we wszystkich oknach podglądu. Dzięki temu kody pozbawione są niepożądanych, asymetrycznych białych pasów wokół krawędzi.
+- **Proporcjonalne marginesy:** Sztywne, pikselowe klasy w CSS zostały zamienione na responsywne (procentowe) marginesy `p-[6.5%]`. Pozwala to na idealnie zachowane, geometryczne proporcje białego tła wobec kropek QR niezależnie od tego, jak duży jest ekran. Identyczny proporcjonalny margines został dodany do logiki pobieranych i generowanych plików PNG/SVG.
+- **Ekran kodu zarchiwizowanego:** Wyeliminowano błąd związany z duplikowaniem kodu QR w drzewie DOM w trakcie cyklu montowania Reacta. Wygląd kodu został ujednolicony z podglądem z kreatora (poprawny URL i dodane logo).
+- **Link pobieranych kodów:** Usunięto stary ciąg testowy z funkcji pobierania. Graficzny plik, który pobiera klient, przechowuje teraz prawidłowy skrócony i funkcjonujący adres.
+
 ## [1.3.0] - 2026-06-21
 ### Dodane
 - **Bezpieczne usuwanie zespołów (Soft Delete):** Zastąpiono permanentne i kaskadowe usuwanie zespołów bezpieczną "Archiwizacją Zespołu". Zarchiwizowane zespoły zostają całkowicie ukryte z interfejsu (i przerywają działanie swoich kodów QR), ale wszystkie fizyczne dane pozostają zamrożone w bazie Firestore. Opcja ta zapobiega bezpowrotnej i przypadkowej stracie np. ulotek promocyjnych – odwrócenie procesu jest możliwe z poziomu bazy danych przez Administratora.
