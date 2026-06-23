@@ -195,12 +195,21 @@ export default function RedirectEngine() {
           </div>
 
           <div className="relative mb-12">
-            <div 
-              ref={qrRef}
-              className="w-[250px] h-[250px] p-[6.5%] rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative flex items-center justify-center [&>*]:w-full [&>*]:h-full"
-              style={{ backgroundColor: deactivatedData.backgroundColor || '#ffffff' }}
-            >
-            </div>
+            {!deactivatedData.isQrCode ? (
+              <div className="bg-[#18181b] border border-[#27272a] px-8 py-5 rounded-2xl shadow-2xl relative flex items-center justify-center min-w-[280px]">
+                <span className="text-3xl font-bold tracking-wide flex items-center">
+                  <span className="text-gray-400">{window.location.host}/</span>
+                  <span className="text-white">{shortId}</span>
+                </span>
+              </div>
+            ) : (
+              <div 
+                ref={qrRef}
+                className="w-[250px] h-[250px] p-[6.5%] rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative flex items-center justify-center [&>*]:w-full [&>*]:h-full"
+                style={{ backgroundColor: deactivatedData.backgroundColor || '#ffffff' }}
+              >
+              </div>
+            )}
             
             <div className="absolute top-0 right-0 -mr-6 -mt-4 transform rotate-12 z-10 pointer-events-none">
               <div className="bg-[#ff3b30] text-white text-sm font-bold uppercase tracking-wider py-1.5 px-4 rounded-lg shadow-xl border border-red-500/50">
@@ -210,7 +219,11 @@ export default function RedirectEngine() {
           </div>
 
           <h2 className="text-[1.35rem] font-semibold text-center mb-4 leading-snug">
-            Ten kod QR został z jakiegoś<br />powodu dezaktywowany.
+            {deactivatedData.isQrCode ? (
+              <>Ten kod QR został z jakiegoś<br />powodu dezaktywowany.</>
+            ) : (
+              <>Ten smart link został z jakiegoś<br />powodu dezaktywowany.</>
+            )}
           </h2>
         </div>
       ) : textContent !== null ? (
