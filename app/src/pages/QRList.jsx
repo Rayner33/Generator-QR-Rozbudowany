@@ -131,7 +131,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
       const auth = type === 'nopass' ? '' : `T:${type};`;
       return `WIFI:S:${ssid};${auth}P:${password};;`;
     }
-    return `${window.location.origin}/U${code.id.slice(0, 5)}v4S`;
+    return `${window.location.origin}/${code.id}`;
   };
 
   const handleDownload = (code, extension) => {
