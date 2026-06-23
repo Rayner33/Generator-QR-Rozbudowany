@@ -144,7 +144,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
       height: 1024,
       data: getQrDataToEncode(code),
       image: code.logoBase64 || undefined,
-      margin: 10,
+      margin: 66,
       qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
       imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 10, crossOrigin: "anonymous" },
       dotsOptions: { color: dotsColor, type: code.styleType || "rounded" },
