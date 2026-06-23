@@ -748,7 +748,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
           <div className="w-[450px] bg-sidebar border-l border-border flex flex-col items-center justify-center p-8 relative">
              <div className="w-full aspect-square rounded-3xl flex items-center justify-center relative overflow-hidden shadow-2xl" style={{ backgroundColor }}>
                {/* Kontener dla qr-code-styling */}
-               <div ref={qrRef} className="w-full h-full flex items-center justify-center p-6 [&>*]:w-full [&>*]:h-full"></div>
+               <div ref={qrRef} className="w-full h-full flex items-center justify-center p-[6.5%] [&>*]:w-full [&>*]:h-full"></div>
              </div>
              
              <div className="mt-10 w-full max-w-sm">

@@ -667,5 +667,5 @@ function QRPreviewItem({ code }) {
     qrCode.append(qrRef.current);
   }, [code]);
 
-  return <div ref={qrRef} className="w-full h-full flex items-center justify-center p-1.5 [&>*]:w-full [&>*]:h-full" style={{ backgroundColor: code.backgroundColor || '#ffffff' }} />;
+  return <div ref={qrRef} className="w-full h-full flex items-center justify-center p-[6.5%] [&>*]:w-full [&>*]:h-full" style={{ backgroundColor: code.backgroundColor || '#ffffff' }} />;
 }

@@ -199,7 +199,7 @@ export default function RedirectEngine() {
 
           <div className="relative mb-12">
             <div 
-              className="p-4 rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative"
+              className="p-[6.5%] rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative"
               style={{ backgroundColor: deactivatedData.backgroundColor || '#ffffff' }}
             >
               <div ref={qrRef} className="w-[200px] h-[200px] flex items-center justify-center [&>*]:w-full [&>*]:h-full" />
