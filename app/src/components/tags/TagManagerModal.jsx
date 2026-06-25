@@ -14,6 +14,7 @@ export default function TagManagerModal({ activeWorkspace, codeId, assignedTagId
   const [editingTag, setEditingTag] = useState(null);
   const [deletingTag, setDeletingTag] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [hoveredTagId, setHoveredTagId] = useState(null);
 
   // Top assigned tags
   const assignedTags = useMemo(() => {
@@ -97,18 +98,27 @@ export default function TagManagerModal({ activeWorkspace, codeId, assignedTagId
     return (
       <div 
         key={tag.id} 
-        className={`group flex items-center justify-between hover:bg-white/5 rounded-xl px-2 py-1.5 transition-colors ${!isAssigned ? 'cursor-pointer' : ''}`} 
+        onMouseEnter={() => setHoveredTagId(tag.id)}
+        className={`group relative flex items-center justify-between rounded-xl px-2 py-1.5 transition-colors ${!isAssigned ? 'cursor-pointer' : ''}`} 
         onClick={() => !isAssigned && handleToggleTag(tag.id, false)}
       >
+        {hoveredTagId === tag.id && (
+          <motion.div 
+            layoutId="tag-manager-hover"
+            className="absolute inset-0 bg-white/5 rounded-xl pointer-events-none"
+            initial={false}
+            transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+          />
+        )}
         <div 
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${styleObj.className} ${isAssigned ? 'opacity-40 cursor-default' : ''}`}
+          className={`relative z-10 flex items-center gap-1.5 px-3 py-1 rounded-full ${styleObj.className} ${isAssigned ? 'opacity-40 cursor-default' : ''}`}
           style={styleObj.style}
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
           <span className="text-xs font-semibold">{tag.name}</span>
         </div>
 
-        <div className={`flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100`} onClick={e => e.stopPropagation()}>
+        <div className={`relative z-10 flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100`} onClick={e => e.stopPropagation()}>
           <button onClick={() => setEditingTag(tag)} className="p-1.5 text-gray-400 hover:text-white bg-black/50 rounded-md transition-colors"><Edit2 size={12} /></button>
           <button onClick={() => setDeletingTag(tag)} className="p-1.5 text-gray-400 hover:text-red-500 bg-black/50 rounded-md transition-colors"><Trash2 size={12} /></button>
         </div>
@@ -150,18 +160,30 @@ export default function TagManagerModal({ activeWorkspace, codeId, assignedTagId
           <div className="border-t border-white/5" />
 
           <div className="relative flex-1">
-            <div className="overflow-y-auto max-h-[220px] p-2 pb-6 custom-scrollbar">
+            <div 
+              className="overflow-y-auto max-h-[220px] p-2 pb-6 custom-scrollbar"
+              onMouseLeave={() => setHoveredTagId(null)}
+            >
               {search.trim() && !exactMatchExists && (
                 <button 
+                  onMouseEnter={() => setHoveredTagId('create')}
                   onClick={handleCreateAndAssign}
                   disabled={isCreating}
-                  className="w-full flex items-center justify-between hover:bg-white/5 rounded-xl px-2 py-1.5 transition-colors mb-1"
+                  className="group relative w-full flex items-center justify-between rounded-xl px-2 py-1.5 transition-colors mb-1"
                 >
-                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-600/50 text-gray-300">
+                  {hoveredTagId === 'create' && (
+                    <motion.div 
+                      layoutId="tag-manager-hover"
+                      className="absolute inset-0 bg-white/5 rounded-xl pointer-events-none"
+                      initial={false}
+                      transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                    />
+                  )}
+                  <div className="relative z-10 flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-600/50 text-gray-300">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
                     <span className="text-xs font-semibold">{search}</span>
                   </div>
-                  <span className="text-xs text-blue-400 font-semibold px-2">Utwórz</span>
+                  <span className="relative z-10 text-xs text-blue-400 font-semibold px-2">Utwórz</span>
                 </button>
               )}
 
