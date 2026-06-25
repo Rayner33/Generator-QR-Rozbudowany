@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.2] - 2026-06-25
+### Dodane
+- **Niestandardowe Kolory Tagów (HEX):** Całkowicie przebudowano silnik renderowania tagów, znosząc ograniczenie do sztywno zdefiniowanej palety kolorów Tailwind. Tagi obsługują teraz dowolny kolor z palety 16 milionów barw HEX.
+- **Wbudowany Color Picker:** W oknie tworzenia i edycji tagów zintegrowano nowy wizualny selektor barw (`react-colorful`) pozwalający na precyzyjne ustawienie dowolnego odcienia za pomocą "tęczowego kółeczka". Opcja ta posiada własny, estetyczny przycisk z pastelowym, stożkowym gradientem.
+- **Animacje w Menedżerze Tagów:** Przeprojektowano listę dostępnych tagów w oknie zarządzania, wprowadzając płynne, sprzętowo akcelerowane podświetlanie (hover) oparte o `framer-motion` (Magic Layout). Element gładko "ślizga się" między rzędami podążając za kursorem. Dodano niestandardowy pasek przewijania oraz efekt zanikania (fade-out gradient) przy dolnej krawędzi długiej listy.
+- **Routing SPA na serwerach Apache (LiteSpeed):** Dodano dedykowany plik `.htaccess` z regułami przepisywania (URL Rewriting), rozwiązując problem błędu 404 (Not Found) podczas bezpośredniego wchodzenia w linki statystyk (np. `/oCtmq`) lub po odświeżeniu strony w środowisku produkcyjnym.
+- **Zewnętrzne meta-dane:** Zmieniono systemową nazwę aplikacji (wyświetlaną na kartach w przeglądarce) z domyślnego "app" na "QR PARYS" oraz zaktualizowano atrybut językowy dokumentu HTML na polski (`pl`).
+
+### Poprawione
+- **Stabilność renderowania tagów:** Usunięto błąd powodujący natychmiastowy "czarny ekran" w aplikacji React w momencie przypisywania tagów, wynikający z brakującego importu ikon (`ReferenceError`). Poprawiono również rozszczepienie stylizacji na listach filtrów, aby ikony checkmark poprawnie dziedziczyły wybrany niestandardowy kolor tekstu.
+- **Wsparcie autoryzacyjne (Firebase):** Zweryfikowano i dodano produkcyjną domenę logowania Google Auth do autoryzowanych domen w GCP, odblokowując możliwość pomyślnego uwierzytelniania na nowym adresie `qr.parys.pl`.
 ## [1.3.1] - 2026-06-23
 ### Dodane
 - **Dedykowany widok dla dezaktywowanych Smart Linków:** Wprowadzono warunkowe renderowanie (rozgałęzienie interfejsu) na stronie archiwum. Kiedy zarchiwizowany zostaje nie kod QR, a czysty Smart Link, system nie wyświetla już mylącego, wygenerowanego kodu QR. Zamiast tego renderowany jest estetyczny, responsywny "kafelek" tekstowy (z wyszarzoną domeną automatycznie dostosowującą się do adresu środowiska produkcyjnego i wyróżnionym, białym identyfikatorem), w pełni spójny z motywem platformy i opatrzony etykietą "Dezaktywowany".
