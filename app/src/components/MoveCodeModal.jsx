@@ -8,8 +8,6 @@ export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activ
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  if (!isOpen || !code) return null;
-
   const availableWorkspaces = workspaces.filter(w => w.id !== activeWorkspace.id && !w.archived);
 
   const handleSave = async () => {
@@ -31,25 +29,23 @@ export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activ
 
   return (
     <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm"
-        onClick={onClose}
-      >
+      {isOpen && code && (
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative"
-          onClick={e => e.stopPropagation()}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-black/80 flex flex-col items-center justify-center p-4 backdrop-blur-sm"
+          onClick={onClose}
         >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
-          
-          <div className="p-6">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex items-center gap-3">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
                   <FolderOutput className="text-blue-500" size={20} />
                 </div>
@@ -58,10 +54,6 @@ export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activ
                   <p className="text-sm text-gray-400 mt-0.5">Wybierz docelowy obszar roboczy</p>
                 </div>
               </div>
-              <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-            </div>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -126,7 +118,19 @@ export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activ
             </div>
           </div>
         </motion.div>
+
+        <motion.button 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          transition={{ delay: 0.1 }}
+          onClick={onClose} 
+          className="mt-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition-colors"
+        >
+          <X size={24} />
+        </motion.button>
       </motion.div>
+      )}
     </AnimatePresence>
   );
 }
