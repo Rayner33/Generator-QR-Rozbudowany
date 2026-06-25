@@ -376,7 +376,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
           return (
         <div key={code.id} className="bg-card border border-border rounded-xl p-3 flex items-stretch justify-between hover:border-gray-600 transition-colors">
           <div className="flex items-center gap-5 flex-1 min-w-0 pr-4">
-            <div className="w-28 h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white">
+            <div className="w-28 h-28 rounded-xl shrink-0 border border-border overflow-hidden">
               <QRPreviewItem code={code} />
             </div>
             
