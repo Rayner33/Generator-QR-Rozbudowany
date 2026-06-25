@@ -8,6 +8,7 @@ import { dropdownAnimation } from '../utils/animations';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
+import pkg from '../../package.json';
 
 export default function Sidebar({ activePath, workspaces, activeWorkspace, setActiveWorkspace, onOpenWorkspaceModal, pendingInvites, onOpenNotifications }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -201,6 +202,10 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
           />
         )}
       </nav>
+
+      <div className="pb-4 pt-2 text-center">
+        <span className="text-[10px] text-gray-600 font-semibold tracking-widest">v{pkg.version}</span>
+      </div>
     </aside>
   );
 }
