@@ -75,10 +75,11 @@ export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activ
                           : 'border-border bg-[#18181b] hover:border-gray-600'
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-white/10" style={w.type === 'personal' ? { background: w.avatarStyle } : { backgroundColor: w.avatarColor }}>
-                        <span className="text-white font-bold text-xs">
-                          {w.name ? w.name.substring(0, 2).toUpperCase() : 'W'}
-                        </span>
+                      <div 
+                        className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
+                        style={{ background: w.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
+                      >
+                        {w.name ? w.name.charAt(0).toUpperCase() : 'W'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold text-white truncate">{w.name}</div>
