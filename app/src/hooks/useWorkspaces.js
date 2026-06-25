@@ -80,9 +80,14 @@ export function useWorkspaces(currentUser) {
 
       setWorkspaces(wks);
 
-      // Jeśli nie ma aktywnego workspace'u (np. przy wczytywaniu), spróbuj ustawić personalny
+      // Jeśli nie ma aktywnego workspace'u (np. przy wczytywaniu), spróbuj wczytać z localStorage lub ustawić personalny
       setActiveWorkspace(prev => {
         if (!prev) {
+          const savedWorkspaceId = localStorage.getItem('lastActiveWorkspaceId');
+          if (savedWorkspaceId) {
+            const saved = wks.find(w => w.id === savedWorkspaceId);
+            if (saved) return saved;
+          }
           return wks.find(w => w.type === 'personal' || w.name === 'Personal') || wks[0] || null;
         }
         // Aktualizuj bieżący workspace (np. jeśli zmieniła się w nim nazwa)
@@ -92,6 +97,12 @@ export function useWorkspaces(currentUser) {
 
     return () => unsubscribe();
   }, [currentUser]);
+
+  useEffect(() => {
+    if (activeWorkspace) {
+      localStorage.setItem('lastActiveWorkspaceId', activeWorkspace.id);
+    }
+  }, [activeWorkspace]);
 
   useEffect(() => {
     if (!currentUser?.email) return;
