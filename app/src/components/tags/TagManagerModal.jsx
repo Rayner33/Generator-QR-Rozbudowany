@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, Edit2, Trash2 } from 'lucide-react';
+import { X, Search, Edit2, Trash2, Check } from 'lucide-react';
 import { collection, addDoc, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { renderTagStyle } from '../../utils/tagColors';

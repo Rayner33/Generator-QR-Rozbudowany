@@ -87,7 +87,7 @@ export default function TagEditModal({ tag, onClose }) {
                 onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
                 className="w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 relative"
                 style={{
-                  background: selectedColor?.startsWith('#') ? selectedColor : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                  background: selectedColor?.startsWith('#') ? selectedColor : 'conic-gradient(#ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d2baff, #ffb3ba)',
                   boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.2)'
                 }}
               >
