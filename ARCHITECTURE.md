@@ -11,6 +11,7 @@ Projekt oparty jest na nowoczesnym i szybkim stosie technologicznym przeznaczony
 - **Wybór Kolorów:** `react-colorful` (nowoczesny i lekki komponent Color Picker)
 - **Ikony:** `lucide-react`
 - **Wykresy / Analityka:** `chart.js` oraz `react-chartjs-2`
+- **Serwer WWW:** Nginx (z wdrożonym plikiem `nginx.conf` obsługującym przepisywanie ścieżek SPA, tzw. fallback na `index.html`)
 
 ## Struktura Bazy Danych (Firestore)
 
