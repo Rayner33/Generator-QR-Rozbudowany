@@ -21,13 +21,17 @@ export const renderTagStyle = (colorId) => {
         color: colorId,
         borderColor: colorId,
         backgroundColor: `${colorId}1A`
-      }
+      },
+      textClass: '',
+      textColor: colorId
     };
   }
   
   const style = getTagColorInfo(colorId);
   return {
     className: `border bg-opacity-10 ${style.bg.replace('bg-', 'bg-').replace(']', ']/10')} ${style.text} ${style.border}`,
-    style: {}
+    style: {},
+    textClass: style.text,
+    textColor: undefined
   };
 };

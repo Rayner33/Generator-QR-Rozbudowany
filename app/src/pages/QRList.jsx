@@ -262,7 +262,8 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                       onClick={() => { 
                         setActiveTagFilters(prev => prev.includes(tag.id) ? prev.filter(id => id !== tag.id) : [...prev, tag.id]); 
                       }} 
-                      className={`relative flex items-center w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${isSelected ? 'bg-white/10' : ''}`}
+                      className={`relative flex items-center w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${styleObj.textClass} ${isSelected ? 'bg-white/10' : ''}`}
+                      style={{ color: styleObj.textColor }}
                     >
                       {hoveredTagId === tag.id && !isSelected && (
                         <motion.div 
@@ -274,13 +275,13 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                       )}
                       <div className="flex items-center w-full relative z-10 pointer-events-none">
                         {isSelected ? (
-                        <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center border-[2px] border-current shrink-0 mr-3" style={styleObj.style}>
+                        <div className="w-[18px] h-[18px] rounded-full flex items-center justify-center border-[2px] border-current shrink-0 mr-3">
                           <div className="w-2 h-2 rounded-full bg-current"></div>
                         </div>
                       ) : (
-                        <div className="w-[18px] h-[18px] rounded-full border-[2px] border-current shrink-0 mr-3 opacity-80" style={styleObj.style} />
+                        <div className="w-[18px] h-[18px] rounded-full border-[2px] border-current shrink-0 mr-3 opacity-80" />
                       )}
-                      <span className="font-semibold" style={{ color: styleObj.style.color }}>{tag.name}</span>
+                      <span className="font-semibold">{tag.name}</span>
                       </div>
                     </button>
                   );
