@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderOutput, AlertTriangle, Check } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../firebase';
 
 export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activeWorkspace, collectionName = 'qrcodes' }) {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState('');
