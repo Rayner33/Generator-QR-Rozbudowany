@@ -97,25 +97,20 @@ export default function TagManagerModal({ activeWorkspace, codeId, assignedTagId
     return (
       <div 
         key={tag.id} 
-        className={`group flex items-center justify-between p-2 rounded-xl transition-colors ${isAssigned ? 'bg-white/5' : 'hover:bg-white/5'}`}
+        className={`group flex items-center justify-between hover:bg-white/5 rounded-xl px-2 py-2 transition-colors ${!isAssigned ? 'cursor-pointer' : ''}`} 
+        onClick={() => !isAssigned && handleToggleTag(tag.id, false)}
       >
         <div 
-          className="flex-1 flex items-center gap-3 cursor-pointer"
-          onClick={() => handleToggleTag(tag.id, isAssigned)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${styleObj.className} ${isAssigned ? 'opacity-40 cursor-default' : ''}`}
+          style={styleObj.style}
         >
-          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${isAssigned ? 'bg-[#1ea2e4] border-[#1ea2e4]' : 'border-gray-500'}`}>
-            {isAssigned && <Check size={14} className="text-white" />}
-          </div>
-          
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${styleObj.className}`} style={styleObj.style}>
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
-            <span className="text-xs font-medium">{tag.name}</span>
-          </div>
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+          <span className="text-xs font-semibold">{tag.name}</span>
         </div>
-        
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={() => setEditingTag(tag)} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"><Edit2 size={14} /></button>
-          <button onClick={() => setDeletingTag(tag)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"><Trash2 size={14} /></button>
+
+        <div className={`flex items-center gap-1 transition-opacity opacity-0 group-hover:opacity-100`} onClick={e => e.stopPropagation()}>
+          <button onClick={() => setEditingTag(tag)} className="p-1.5 text-gray-400 hover:text-white bg-black/50 rounded-md transition-colors"><Edit2 size={12} /></button>
+          <button onClick={() => setDeletingTag(tag)} className="p-1.5 text-gray-400 hover:text-red-500 bg-black/50 rounded-md transition-colors"><Trash2 size={12} /></button>
         </div>
       </div>
     );
