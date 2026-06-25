@@ -284,7 +284,7 @@ export default function Analytics({ activeWorkspace }) {
           >
             <button 
               onClick={() => setIsTimeframeDropdownOpen(!isTimeframeDropdownOpen)}
-              className={`relative flex items-center justify-between gap-2 px-4 py-2.5 w-full rounded-lg text-sm transition-colors border bg-[#18181b] ${isTimeframeDropdownOpen ? 'border-gray-500 text-white' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
+              className={`relative flex items-center justify-between gap-2 px-4 py-2.5 w-full rounded-lg text-sm transition-all border bg-[#18181b] ${isTimeframeDropdownOpen ? 'border-gray-500 text-white bg-white/5' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white hover:bg-white/5'}`}
             >
               <span className="truncate flex-1 text-left">
                 {timeframe === '7d' ? 'Ostatnie 7 dni' : timeframe === '30d' ? 'Ostatnie 30 dni' : timeframe === '1y' ? 'Ostatni rok' : 'Cały okres'}
@@ -335,7 +335,7 @@ export default function Analytics({ activeWorkspace }) {
           >
             <button 
               onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-              className={`flex items-center justify-center px-4 py-2.5 rounded-lg text-sm border bg-[#18181b] shrink-0 transition-colors ${isFilterDropdownOpen ? 'border-gray-500 text-white' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
+              className={`flex items-center justify-center px-4 py-2.5 rounded-lg text-sm border bg-[#18181b] shrink-0 transition-all ${isFilterDropdownOpen ? 'border-gray-500 text-white bg-white/5' : 'border-border text-gray-300 hover:border-gray-500 hover:text-white hover:bg-white/5'}`}
             >
               <Filter size={16} className="mr-2" />
               <span className="hidden sm:inline">Filtruj</span>
