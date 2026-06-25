@@ -68,6 +68,8 @@ export default function Analytics({ activeWorkspace }) {
   const [dropdownSearch, setDropdownSearch] = useState('');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [isTimeframeDropdownOpen, setIsTimeframeDropdownOpen] = useState(false);
+  const [hoveredTimeframeItem, setHoveredTimeframeItem] = useState(null);
+  const [hoveredDropdownItem, setHoveredDropdownItem] = useState(null);
 
   const filterTimeoutRef = useRef(null);
   const timeframeTimeoutRef = useRef(null);
@@ -300,7 +302,10 @@ export default function Analytics({ activeWorkspace }) {
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute top-full left-0 pt-2 w-full z-50"
                   >
-                    <div className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden p-1 flex flex-col">
+                    <div 
+                      className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden p-1 flex flex-col"
+                      onMouseLeave={() => setHoveredTimeframeItem(null)}
+                    >
                       {[
                         { val: '7d', label: 'Ostatnie 7 dni' },
                         { val: '30d', label: 'Ostatnie 30 dni' },
@@ -309,14 +314,18 @@ export default function Analytics({ activeWorkspace }) {
                       ].map((opt) => (
                         <button 
                           key={opt.val}
+                          onMouseEnter={() => setHoveredTimeframeItem(opt.val)}
                           onClick={() => {
                             setTimeframe(opt.val);
                             setIsTimeframeDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${timeframe === opt.val ? `bg-[${themeColor}]/10 text-[${themeColor}]` : 'text-gray-300 hover:bg-white/5'}`}
+                          className={`relative w-full text-left px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 ${timeframe === opt.val ? `bg-[${themeColor}]/10 text-[${themeColor}]` : 'text-gray-300'}`}
                           style={timeframe === opt.val ? { color: themeColor, backgroundColor: themeBg } : {}}
                         >
-                          {opt.label}
+                          {hoveredTimeframeItem === opt.val && timeframe !== opt.val && (
+                            <motion.div layoutId="analytics-timeframe-hover" className="absolute inset-0 bg-white/5 rounded-lg pointer-events-none" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                          )}
+                          <span className="relative z-10">{opt.label}</span>
                         </button>
                       ))}
                     </div>
@@ -361,8 +370,9 @@ export default function Analytics({ activeWorkspace }) {
                         />
                       </div>
                       <div 
-                        className="overflow-y-auto no-scrollbar max-h-[320px] space-y-0.5 pb-2" 
+                        className="overflow-y-auto no-scrollbar max-h-[320px] space-y-0.5 pb-2 relative" 
                         style={{ maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)' }}
+                        onMouseLeave={() => setHoveredDropdownItem(null)}
                       >
                         {[
                           { label: 'Kody QR', icon: <QrCode size={14} />, type: 'top', mainTab: 'qr' },
@@ -378,30 +388,37 @@ export default function Analytics({ activeWorkspace }) {
                           { label: 'Medium', icon: <Network size={14} />, type: 'utm', subTab: 'Medium' },
                           { label: 'Campaign', icon: <Network size={14} />, type: 'utm', subTab: 'Campaign' },
                           { label: 'Content', icon: <Network size={14} />, type: 'utm', subTab: 'Content' }
-                        ].filter(opt => opt.label.toLowerCase().includes(dropdownSearch.toLowerCase())).map((opt, i) => (
-                          <button 
-                            key={i}
-                            onClick={() => {
-                              if (opt.type === 'top') {
-                                setSelectedMainTab(opt.mainTab);
-                                setModalType('top');
-                              } else if (opt.type === 'geo') {
-                                setGeoTab(opt.subTab);
-                                setModalType('geo');
-                              } else if (opt.type === 'tech') {
-                                setTechTab(opt.subTab);
-                                setModalType('tech');
-                              } else if (opt.type === 'utm') {
-                                setUtmTab(opt.subTab);
-                                setModalType('utm');
-                              }
-                              setIsFilterDropdownOpen(false);
-                            }}
-                            className={`w-full text-left px-3 py-2.5 text-sm text-gray-300 rounded-lg transition-colors flex items-center gap-2 ${opt.mainTab === 'qr' ? 'hover:bg-[#1ea2e4]/10 hover:text-[#1ea2e4]' : opt.mainTab === 'smartlink' ? 'hover:bg-[#8b5cf6]/10 hover:text-[#8b5cf6]' : 'hover:bg-white/5 hover:text-white'}`}
-                          >
-                            {opt.icon} {opt.label}
-                          </button>
-                        ))}
+                        ].filter(opt => opt.label.toLowerCase().includes(dropdownSearch.toLowerCase())).map((opt, i) => {
+                          const isActive = opt.type === 'top' && selectedMainTab === opt.mainTab;
+                          return (
+                            <button 
+                              key={i}
+                              onMouseEnter={() => setHoveredDropdownItem(opt.label)}
+                              onClick={() => {
+                                if (opt.type === 'top') {
+                                  setSelectedMainTab(opt.mainTab);
+                                  setModalType('top');
+                                } else if (opt.type === 'geo') {
+                                  setGeoTab(opt.subTab);
+                                  setModalType('geo');
+                                } else if (opt.type === 'tech') {
+                                  setTechTab(opt.subTab);
+                                  setModalType('tech');
+                                } else if (opt.type === 'utm') {
+                                  setUtmTab(opt.subTab);
+                                  setModalType('utm');
+                                }
+                                setIsFilterDropdownOpen(false);
+                              }}
+                              className={`relative w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${isActive ? (opt.mainTab === 'qr' ? 'bg-[#1ea2e4]/10 text-[#1ea2e4]' : 'bg-[#8b5cf6]/10 text-[#8b5cf6]') : 'text-gray-300'}`}
+                            >
+                              {hoveredDropdownItem === opt.label && !isActive && (
+                                <motion.div layoutId="analytics-dropdown-hover" className="absolute inset-0 bg-white/5 rounded-lg pointer-events-none" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
+                              )}
+                              <span className="relative z-10 flex items-center gap-2">{opt.icon} {opt.label}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   </motion.div>
