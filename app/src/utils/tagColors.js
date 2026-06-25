@@ -12,3 +12,22 @@ export const TAG_COLORS = [
 export const getTagColorInfo = (colorId) => {
   return TAG_COLORS.find(c => c.id === colorId) || TAG_COLORS[3]; // Domyślnie fioletowy
 };
+
+export const renderTagStyle = (colorId) => {
+  if (colorId?.startsWith('#')) {
+    return {
+      className: 'border bg-opacity-10',
+      style: {
+        color: colorId,
+        borderColor: colorId,
+        backgroundColor: `${colorId}1A`
+      }
+    };
+  }
+  
+  const style = getTagColorInfo(colorId);
+  return {
+    className: `border bg-opacity-10 ${style.bg.replace('bg-', 'bg-').replace(']', ']/10')} ${style.text} ${style.border}`,
+    style: {}
+  };
+};

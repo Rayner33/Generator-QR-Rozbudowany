@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Check } from 'lucide-react';
-import { TAG_COLORS, getTagColorInfo } from '../../utils/tagColors';
+import { HexColorPicker } from 'react-colorful';
+import { TAG_COLORS, renderTagStyle } from '../../utils/tagColors';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 
@@ -9,6 +10,18 @@ export default function TagEditModal({ tag, onClose }) {
   const [name, setName] = useState(tag.name);
   const [selectedColor, setSelectedColor] = useState(tag.color);
   const [isSaving, setIsSaving] = useState(false);
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const colorPickerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target)) {
+        setIsColorPickerOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -25,7 +38,7 @@ export default function TagEditModal({ tag, onClose }) {
     setIsSaving(false);
   };
 
-  const tagStyle = getTagColorInfo(selectedColor);
+  const tagStyleObj = renderTagStyle(selectedColor);
 
   return (
     <motion.div 
@@ -37,7 +50,7 @@ export default function TagEditModal({ tag, onClose }) {
         className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col shadow-2xl relative" onClick={e => e.stopPropagation()}
       >
         <div className="flex justify-center mb-6">
-           <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full bg-opacity-10 border ${tagStyle.bg.replace('bg-', 'bg-').replace(']', ']/10')} ${tagStyle.text} ${tagStyle.border}`}>
+           <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${tagStyleObj.className}`} style={tagStyleObj.style}>
              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
              <span className="text-xs font-medium">{name || 'Nazwa tagu'}</span>
            </div>
@@ -58,7 +71,7 @@ export default function TagEditModal({ tag, onClose }) {
 
         <div className="mb-6">
           <label className="text-[10px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">Kolor</label>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {TAG_COLORS.map(color => (
               <button
                 key={color.id}
@@ -68,6 +81,36 @@ export default function TagEditModal({ tag, onClose }) {
                 {selectedColor === color.id && <Check size={14} className="text-black" />}
               </button>
             ))}
+            
+            <div className="relative ml-2">
+              <button
+                onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
+                className="w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 relative"
+                style={{
+                  background: selectedColor?.startsWith('#') ? selectedColor : 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                  boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.2)'
+                }}
+              >
+                {selectedColor?.startsWith('#') && <Check size={14} className={['#ffffff', '#fff'].includes(selectedColor?.toLowerCase()) ? "text-black" : "text-white"} />}
+              </button>
+
+              {isColorPickerOpen && (
+                <div ref={colorPickerRef} className="absolute bottom-full mb-3 right-0 z-[130] p-3 bg-[#18181b] border border-border rounded-xl shadow-xl">
+                  <HexColorPicker 
+                    color={selectedColor?.startsWith('#') ? selectedColor : '#ffffff'} 
+                    onChange={setSelectedColor} 
+                  />
+                  <div className="mt-3 flex justify-end">
+                    <button 
+                      onClick={() => setIsColorPickerOpen(false)}
+                      className="text-xs text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      ZAMKNIJ
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
