@@ -107,6 +107,7 @@ Aplikacja wykorzystuje `react-router-dom` (`<BrowserRouter>`, `<Routes>`) do obs
 6. **`Analytics.jsx`**: Ekran dedykowany globalnym statystykom i szczegółowym danym odnośnie użycia poszczególnych kodów z przestrzeni roboczej.
 7. **`RedirectEngine.jsx`**: Niewidzialny, inteligentny komponent działający poza głównym UI aplikacji. Odpowiada za przechwytywanie publicznego ruchu krótkich linków (`/:shortId`). Zlicza "na żywo" unikalne wizyty w tle i odsyła do fizycznych adresów końcowych.
 8. **Moduły Pracy Zespołowej i Uprawnień** (`WorkspaceSettings.jsx`, `NotificationsModal.jsx`, `InviteMemberModal.jsx`): Nowoczesny system zarządzania danymi na żywo oparty o odpytywanie kolekcji po adresach E-mail. Właściciele mogą zapraszać członków, definiować ich precyzyjne uprawnienia, mianować na Menedżerów, a także całkowicie i trwale przekazywać im własność zespołu. Potencjalni odbiorcy zgarniają dynamiczne powiadomienia na pasku Sidebar z bezpośrednim przełączeniem do projektu po akceptacji.
+9. **Transfer Zasobów (`MoveCodeModal.jsx`)**: System bezstratnego przenoszenia kodów QR i Smart Linków pomiędzy przestrzeniami roboczymi (z osobistej do zespołu lub pomiędzy zespołami). Automatycznie separuje i czyści lokalne tagi starej przestrzeni, zapobiegając usterkom kategoryzacji. Zabezpieczony rygorystycznymi uprawnieniami edycji.
 
 ## Model Bezpieczeństwa (Trójwarstwowy)
 

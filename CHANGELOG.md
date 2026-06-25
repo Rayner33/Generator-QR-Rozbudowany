@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.3] - 2026-06-25
+### Dodane
+- **Transfer Kodów i Smart Linków:** Wprowadzono bezstratny system przenoszenia własności zasobów (kodów QR oraz Smart Linków) pomiędzy przestrzeniami roboczymi (np. z przestrzeni osobistej do przestrzeni zespołu). Opcja uwzględnia ścisłe uprawnienia edycji i natychmiast przenosi całą zebraną do tej pory analitykę.
+- **Bezpieczne Oczyszczanie Tagów:** Podczas transferu zasobów pomiędzy zespołami, system inteligentnie czyści poprzednio przypisane tagi, ponieważ nowa przestrzeń robocza posiada własny, niezależny system etykietowania.
+- **Wersjonowanie w interfejsie:** Zintegrowano automatyczny znacznik wersji aplikacji na dole paska bocznego (Sidebar), wczytywany dynamicznie z pliku `package.json`.
+- **Zamykanie Modali w tle (Backdrop Click):** Wdrożono ujednolicone zamykanie okien ostrzegawczych (np. przed Archiwizacją, Resetem statystyk) poprzez kliknięcie w dowolne miejsce w tle, zwiększając ergonomię użytkowania na wszystkich ekranach.
+
+### Poprawione
+- **Stylistyka okien modalnych:** Ujednolicono wizualnie okno nowej funkcji Transferu (brak gradientu, zewnętrzny "X", zachowane animacje znikania) z resztą platformy.
+- **Produkcyjny Build SPA:** Poprawiono błędny import bazy danych Firebase w nowym oknie Transferu, co odblokowało możliwość bezbłędnego zbudowania produkcyjnej paczki SPA (Vite/Rolldown).
+
+
 ## [1.3.2] - 2026-06-25
 ### Dodane
 - **Niestandardowe Kolory Tagów (HEX):** Całkowicie przebudowano silnik renderowania tagów, znosząc ograniczenie do sztywno zdefiniowanej palety kolorów Tailwind. Tagi obsługują teraz dowolny kolor z palety 16 milionów barw HEX.
