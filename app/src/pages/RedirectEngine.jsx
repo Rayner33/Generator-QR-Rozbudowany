@@ -96,7 +96,29 @@ export default function RedirectEngine() {
         if (targetData.contentType === 'text') {
           // Fire and forget analytics, render text content immediately
           logAnalytics();
-          setTextContent(targetData.textData || '<p>Brak treści</p>');
+          let parsedTextData = targetData.textData || '<p>Brak treści</p>';
+          if (parsedTextData.includes('<a ')) {
+            try {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(parsedTextData, 'text/html');
+              const links = doc.querySelectorAll('a');
+              links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('mailto:') && !href.startsWith('tel:') && !href.startsWith('/')) {
+                  link.setAttribute('href', 'https://' + href);
+                }
+                // Optionally ensure links open in new tab so they don't break out of app context if needed
+                if (href && !link.hasAttribute('target')) {
+                  link.setAttribute('target', '_blank');
+                  link.setAttribute('rel', 'noopener noreferrer');
+                }
+              });
+              parsedTextData = doc.body.innerHTML;
+            } catch (e) {
+              console.error('Error parsing HTML links', e);
+            }
+          }
+          setTextContent(parsedTextData);
           setStatus('');
           return;
         }
