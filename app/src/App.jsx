@@ -108,6 +108,7 @@ function App() {
                   {activeWorkspace && (
                       <QRList 
                         activeWorkspace={activeWorkspace} 
+                        workspaces={workspaces}
                         onEdit={(code) => openModal('edit', code)} 
                         onDuplicate={(code) => openModal('duplicate', code)} 
                         onAnalytics={(code) => navigate(`/analytics?codeId=${code.id}&type=qr`)}
@@ -134,6 +135,7 @@ function App() {
                   {activeWorkspace && (
                       <SmartLinksList 
                         activeWorkspace={activeWorkspace} 
+                        workspaces={workspaces}
                         onEdit={(link) => openSmartLinkModal('edit', link)} 
                         onDuplicate={(link) => openSmartLinkModal('duplicate', link)} 
                         onAnalytics={(link) => navigate(`/analytics?codeId=${link.id}&type=smartlink`)}

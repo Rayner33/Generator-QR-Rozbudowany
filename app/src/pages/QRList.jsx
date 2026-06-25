@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, MoreVertical, QrCode, Check, X, Wifi, Scan, ArrowRight } from 'lucide-react';
+import { Download, MoreVertical, QrCode, Check, X, Wifi, Scan, ArrowRight, FolderOutput } from 'lucide-react';
 import TagManagerModal from '../components/tags/TagManagerModal';
+import MoveCodeModal from '../components/MoveCodeModal';
 import { renderTagStyle } from '../utils/tagColors';
 import { buildUrlWithUtm } from '../utils/analyticsHelpers';
 import { Line } from 'react-chartjs-2';
@@ -47,7 +48,7 @@ const sparklineOptions = {
   }
 };
 
-export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalytics }) {
+export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicate, onAnalytics }) {
   const { currentUser } = useAuth();
   const [codes, setCodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,6 +75,7 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
   // Modale potwierdzające
   const [codeToArchive, setCodeToArchive] = useState(null);
   const [codeToReset, setCodeToReset] = useState(null);
+  const [codeToMove, setCodeToMove] = useState(null);
 
   // Zamykanie dropdowna przy kliknięciu gdziekolwiek
   useEffect(() => {
@@ -502,11 +504,18 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
                                   <span className="relative z-10 pointer-events-none">Edytuj</span>
                                 </button>
                               )}
-                              <button onMouseEnter={() => setHoveredAction('duplicate')} onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className={`relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors ${(canArchive || canReset) ? 'border-b border-border mb-1 pb-2' : ''}`}>
+                              <button onMouseEnter={() => setHoveredAction('duplicate')} onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className={`relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors ${!(canArchive || canReset) && canEdit ? 'border-b border-border mb-1 pb-2' : ''}`}>
                                 {hoveredAction === 'duplicate' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
                                 <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                                 <span className="relative z-10 pointer-events-none">Duplikuj</span>
                               </button>
+                              {canEdit && (
+                                <button onMouseEnter={() => setHoveredAction('move')} onClick={() => { setCodeToMove(code); setOpenDropdownId(null); }} className={`relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors ${(canArchive || canReset) ? 'border-b border-border mb-1 pb-2' : ''}`}>
+                                  {hoveredAction === 'move' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                  <FolderOutput className="w-4 h-4 relative z-10 pointer-events-none" />
+                                  <span className="relative z-10 pointer-events-none">Przenieś</span>
+                                </button>
+                              )}
                               {canArchive && (
                                 <button onMouseEnter={() => setHoveredAction('archive')} onClick={() => { setCodeToArchive(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 transition-colors">
                                   {hoveredAction === 'archive' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
@@ -585,6 +594,14 @@ export default function QRList({ activeWorkspace, onEdit, onDuplicate, onAnalyti
         </div>
         );
         })}
+      <MoveCodeModal
+        isOpen={!!codeToMove}
+        onClose={() => setCodeToMove(null)}
+        code={codeToMove}
+        workspaces={workspaces}
+        activeWorkspace={activeWorkspace}
+        collectionName="qrcodes"
+      />
     </div>
     )}
 
