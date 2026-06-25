@@ -125,7 +125,7 @@ export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activ
           exit={{ opacity: 0, y: 10 }}
           transition={{ delay: 0.1 }}
           onClick={onClose} 
-          className="mt-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition-colors"
+          className="mt-6 w-12 h-12 shrink-0 bg-white rounded-full flex items-center justify-center text-black hover:bg-gray-200 transition-colors shadow-lg"
         >
           <X size={24} />
         </motion.button>
