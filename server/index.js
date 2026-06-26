@@ -54,8 +54,15 @@ app.get('/api/geo', (req, res) => {
       isLocalhost: false
     });
   } else {
-    // Gdyby baza nie znała adresu IP
-    res.status(404).json({ error: 'Lokalizacja nieznana', ip: ip });
+    // Gdyby baza nie znała adresu IP (np. lokalne IP, nowe IP) zwracamy 200 z "Unknown" aby uniknąć czerwonych błędów w konsoli
+    res.status(200).json({ 
+      ip: ip,
+      country: 'Unknown',
+      region: 'Unknown',
+      city: 'Unknown',
+      continent: 'Unknown',
+      error: 'Lokalizacja nieznana'
+    });
   }
 });
 
