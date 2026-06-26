@@ -24,7 +24,13 @@ export async function getAnalyticsData() {
   try {
     const geoApiUrl = import.meta.env.VITE_GEO_API_URL;
     if (!geoApiUrl) throw new Error('Brak konfiguracji VITE_GEO_API_URL');
-    const geoResponse = await fetch(geoApiUrl);
+    
+    // Wysyłamy zapytanie z naszym tajnym kluczem API
+    const geoResponse = await fetch(geoApiUrl, {
+      headers: {
+        'x-api-key': 'ParysGeoSecret_2026!xyz'
+      }
+    });
     if (geoResponse.ok) {
       const data = await geoResponse.json();
       geo = {

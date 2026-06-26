@@ -5,9 +5,35 @@ const { Reader } = require('@maxmind/geoip2-node');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Włączenie CORS (zezwala wszystkim domenom na dostęp do API)
-app.use(cors());
+// Konfiguracja CORS (zezwala tylko określonym domenom na dostęp z poziomu przeglądarki)
+const allowedOrigins = ['https://qr.parys.pl', 'http://localhost:5173', 'http://localhost:3000'];
+app.use(cors({
+    origin: function (origin, callback) {
+        // Zezwól jeśli domena jest na liście, lub jeśli to zapytanie bezpośrednie (brak origin, np. curl/postman)
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Niedozwolone przez CORS'));
+        }
+    }
+}));
 app.use(express.json());
+
+// Proste zabezpieczenie kluczem API (chroni przed botami i skryptami)
+const API_SECRET_KEY = 'ParysGeoSecret_2026!xyz'; // Możesz to zmienić na własne i trudniejsze hasło
+
+app.use((req, res, next) => {
+    // Sprawdzamy, czy w nagłówkach znajduje się nasz tajny klucz
+    const clientKey = req.headers['x-api-key'];
+    
+    // Jeśli klucza brak lub jest błędny, odrzucamy połączenie
+    if (clientKey !== API_SECRET_KEY) {
+        return res.status(403).json({ error: 'Brak dostępu. Nieprawidłowy klucz API.' });
+    }
+    
+    // Jeśli wszystko ok, przepuszczamy zapytanie dalej
+    next();
+});
 
 // Ufamy proxy (Nginx, Cloudflare), co jest kluczowe do poprawnego odczytywania IP
 app.set('trust proxy', true);
