@@ -12,8 +12,8 @@ app.use(express.json());
 app.set('trust proxy', true);
 
 app.get('/api/geo', (req, res) => {
-  // Pobieramy IP
-  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
+  // Pobieramy IP (obsługa Cloudflare, proxy i Nginx)
+  let ip = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
   
   // Oczyszczanie, np. gdy x-forwarded-for ma więcej adresów
   if (ip && ip.includes(',')) {
