@@ -139,6 +139,15 @@ app.get('/api/geo/:ip', (req, res) => {
     }
 });
 
+// Globalny łapacz błędów (ukrywa techniczne ścieżki serwera przed użytkownikiem m.in. dla błędów CORS)
+app.use((err, req, res, next) => {
+    if (err.message === 'Niedozwolone przez CORS') {
+        return res.status(403).json({ error: 'Brak dostępu. Domena nieautoryzowana (CORS).' });
+    }
+    // Dla innych błędów wyrzucamy generyczny komunikat
+    res.status(500).json({ error: 'Wewnętrzny błąd serwera.' });
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Serwer GeoLite2 Production Microservice uruchomiony na porcie ${PORT}`);
 });
