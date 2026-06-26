@@ -1,7 +1,15 @@
 # Changelog
 
-## [1.3.3] - 2026-06-25
+## [1.3.4] - 2026-06-26
 ### Dodane
+- **Produkcyjny Mikroserwis GeoLite2:** Opracowano i zaimplementowano dedykowany, wydajny mikroserwis Node.js dla środowiska produkcyjnego wykorzystujący oficjalną bazę GeoLite2-City firmy MaxMind. Serwer automatycznie obsługuje ekstrakcję prawdziwego adresu IP odwiedzającego (uwzględniając maskowanie Nginx Proxy oraz Cloudflare).
+- **Zabezpieczenia API Geolokalizacji:** Wdrożono dwuwarstwowy system zabezpieczeń: restrykcje CORS (uniemożliwiające łączenie się z API z innych domen niż zaufane, np. `qr.parys.pl`) oraz ukryty w nagłówkach HTTP klucz API (`x-api-key`) skutecznie chroniący serwer przed zautomatyzowanymi botami indeksującymi i masowymi zapytaniami z poziomu terminala.
+- **Graceful Fallback w Geolokalizacji:** Opracowano system łagodnego radzenia sobie z nierozpoznanymi (np. prywatnymi, maskowanymi) adresami IP. Mikroserwis zamiast generować typowe błędy połączenia (HTTP 404/400) widoczne na czerwono w konsoli przeglądarki, gładko zwraca prawidłowy status 200 z informacją "Unknown", utrzymując nienaganną czystość konsoli deweloperskiej platformy.
+
+### Poprawione
+- **Parsowanie Linków w Kodach Tekstowych:** Wdrożono pre-procesowanie danych wprowadzonych w edytorze tekstowym WYSIWYG przed ich wyrenderowaniem. System za pomocą natywnego parsera DOM automatycznie wykrywa i transformuje wadliwe hiperłącza względne (np. `www.parys.pl`) dodając do nich niezbędny protokół `https://`. Dodano również atrybut `target="_blank"`, gwarantując, że linki otworzą się w nowej karcie bez przerywania sesji użytkownika na czytanej stronie skanowanego kodu.
+
+## [1.3.3] - 2026-06-25
 - **Transfer Kodów i Smart Linków:** Wprowadzono bezstratny system przenoszenia własności zasobów (kodów QR oraz Smart Linków) pomiędzy przestrzeniami roboczymi (np. z przestrzeni osobistej do przestrzeni zespołu). Opcja uwzględnia ścisłe uprawnienia edycji i natychmiast przenosi całą zebraną do tej pory analitykę.
 - **Bezpieczne Oczyszczanie Tagów:** Podczas transferu zasobów pomiędzy zespołami, system inteligentnie czyści poprzednio przypisane tagi, ponieważ nowa przestrzeń robocza posiada własny, niezależny system etykietowania.
 - **Wersjonowanie w interfejsie:** Zintegrowano automatyczny znacznik wersji aplikacji na dole paska bocznego (Sidebar), wczytywany dynamicznie z pliku `package.json`.
