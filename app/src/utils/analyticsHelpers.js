@@ -85,7 +85,24 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
     'Wroclaw': 'Wrocław',
     'Gdansk': 'Gdańsk',
     'Poznan': 'Poznań',
-    'Lodz': 'Łódź'
+    'Lodz': 'Łódź',
+
+    // Regiony / Województwa
+    'Mazovia': 'Mazowieckie',
+    'Lesser Poland': 'Małopolskie',
+    'Greater Poland': 'Wielkopolskie',
+    'Pomerania': 'Pomorskie',
+    'West Pomerania': 'Zachodniopomorskie',
+    'Silesia': 'Śląskie',
+    'Lower Silesia': 'Dolnośląskie',
+    'Kuyavia-Pomerania': 'Kujawsko-Pomorskie',
+    'Subcarpathia': 'Podkarpackie',
+    'Podlasie': 'Podlaskie',
+    'Holy Cross': 'Świętokrzyskie',
+    'Warmia-Masuria': 'Warmińsko-Mazurskie',
+    
+    // Inne
+    'Unknown': 'Nieznane'
   };
 
   const getAggregatedData = (field) => {
@@ -95,6 +112,9 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
       if (geoNormalizationMap[val]) {
         val = geoNormalizationMap[val];
       }
+      // Automatyczna zamiana pustych / null na 'Nieznane'
+      if (!val || val.trim() === '') val = 'Nieznane';
+      
       counts[val] = (counts[val] || 0) + 1;
     });
     const total = Object.values(counts).reduce((a, b) => a + b, 0);
