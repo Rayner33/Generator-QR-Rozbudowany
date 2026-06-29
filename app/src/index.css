@@ -98,10 +98,10 @@
   line-height: 1.4 !important;
   margin-top: 0.75rem !important;
   margin-bottom: 0.5rem !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 .quill-dark .ql-editor h2 strong, .quill-dark .ql-editor h2 b {
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
 /* Stylizowanie cytatów (blockquote) wewnątrz edytora */
