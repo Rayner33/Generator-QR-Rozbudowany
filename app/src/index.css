@@ -81,6 +81,22 @@
   margin-bottom: 0 !important; /* Usunięcie odstępów, by zwykły enter działał jak shift+enter */
 }
 
+/* Ujednolicenie nagłówków H1 i H2 */
+.quill-dark .ql-editor h1 {
+  font-size: 1.5rem !important; /* Delikatniejsze H1 (odpowiednik text-2xl) */
+  line-height: 1.3 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 700 !important;
+}
+.quill-dark .ql-editor h2 {
+  font-size: 1.25rem !important; /* Trochę mniejsze H2 (odpowiednik text-xl) */
+  line-height: 1.4 !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
 /* Stylizowanie cytatów (blockquote) wewnątrz edytora */
 .quill-dark .ql-editor blockquote {
   border-left: 4px solid #FF4C00;
