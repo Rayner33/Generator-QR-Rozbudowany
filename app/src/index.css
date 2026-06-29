@@ -87,14 +87,21 @@
   line-height: 1.3 !important;
   margin-top: 1rem !important;
   margin-bottom: 0.5rem !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
 }
+.quill-dark .ql-editor h1 strong, .quill-dark .ql-editor h1 b {
+  font-weight: 500 !important;
+}
+
 .quill-dark .ql-editor h2 {
   font-size: 1.25rem !important; /* Trochę mniejsze H2 (odpowiednik text-xl) */
   line-height: 1.4 !important;
   margin-top: 0.75rem !important;
   margin-bottom: 0.5rem !important;
-  font-weight: 500 !important;
+  font-weight: 400 !important;
+}
+.quill-dark .ql-editor h2 strong, .quill-dark .ql-editor h2 b {
+  font-weight: 400 !important;
 }
 
 /* Stylizowanie cytatów (blockquote) wewnątrz edytora */
