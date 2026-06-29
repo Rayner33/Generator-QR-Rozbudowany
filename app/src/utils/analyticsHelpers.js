@@ -50,10 +50,26 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
   }));
 
   // 3. Geo & Tech Aggregation
+  // Słownik normalizujący stare logi (np. z geoip-lite) z nowymi logami (MaxMind)
+  const geoNormalizationMap = {
+    'EU': 'Europe',
+    'NA': 'North America',
+    'SA': 'South America',
+    'AS': 'Asia',
+    'AF': 'Africa',
+    'OC': 'Oceania',
+    'Warszawa': 'Warsaw',
+    'Kraków': 'Krakow',
+    'Wroclaw': 'Wrocław'
+  };
+
   const getAggregatedData = (field) => {
     const counts = {};
     filteredLogs.forEach(log => {
-      const val = log[field] || 'Nieznane';
+      let val = log[field] || 'Nieznane';
+      if (geoNormalizationMap[val]) {
+        val = geoNormalizationMap[val];
+      }
       counts[val] = (counts[val] || 0) + 1;
     });
     const total = Object.values(counts).reduce((a, b) => a + b, 0);
