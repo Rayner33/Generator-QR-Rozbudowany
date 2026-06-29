@@ -393,7 +393,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
                       onClick={(e) => e.stopPropagation()}
-                      className="absolute right-0 top-full mt-1 w-40 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 p-1 origin-top-right"
+                      className="absolute right-0 top-full mt-1 w-44 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 p-1 origin-top-right"
                     >
                       <button 
                         onClick={() => {
