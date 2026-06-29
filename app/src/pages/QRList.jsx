@@ -239,20 +239,20 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
         
         <div className="flex items-center gap-4 w-full md:w-auto">
         <div 
-          className="relative flex-1 md:flex-none"
+          className="relative w-[35%] md:w-auto md:flex-none"
           onMouseEnter={() => clearTimeout(tagsTimeoutRef.current)}
           onMouseLeave={() => { tagsTimeoutRef.current = setTimeout(() => setIsTagsDropdownOpen(false), 250); }}
         >
           <button 
             onClick={(e) => { e.stopPropagation(); setIsTagsDropdownOpen(!isTagsDropdownOpen); setIsFilterOpen(false); setOpenDropdownId(null); }}
-            className={`flex items-center justify-center md:justify-start w-full gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${activeTagFilters.length > 0 ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
+            className={`flex items-center justify-center md:justify-start w-full gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 rounded-lg text-sm transition-colors border ${activeTagFilters.length > 0 ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
-            {activeTagFilters.length > 0 ? (activeTagFilters.length === 1 ? (allTags.find(t => t.id === activeTagFilters[0])?.name || 'Tagi') : `Tagi (${activeTagFilters.length})`) : 'Tagi'}
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+            <span className="whitespace-nowrap truncate">{activeTagFilters.length > 0 ? (activeTagFilters.length === 1 ? (allTags.find(t => t.id === activeTagFilters[0])?.name || 'Tagi') : `Tagi (${activeTagFilters.length})`) : 'Tagi'}</span>
             {activeTagFilters.length > 0 ? (
-              <X size={14} className="ml-1 cursor-pointer hover:text-red-500" onClick={(e) => { e.stopPropagation(); setActiveTagFilters([]); }} />
+              <X size={14} className="ml-1 shrink-0 cursor-pointer hover:text-red-500" onClick={(e) => { e.stopPropagation(); setActiveTagFilters([]); }} />
             ) : (
-              <svg className={`w-4 h-4 transition-transform ${isTagsDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+              <svg className={`w-4 h-4 shrink-0 transition-transform ${isTagsDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
             )}
           </button>
           
@@ -324,11 +324,11 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
         >
           <button 
             onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); setIsTagsDropdownOpen(false); setOpenDropdownId(null); }}
-            className={`flex items-center justify-center md:justify-start w-full gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors border ${sortFilter === 'archived' ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
+            className={`flex items-center justify-center md:justify-start w-full gap-2 px-3 md:px-4 py-2.5 rounded-lg text-sm transition-colors border ${sortFilter === 'archived' ? 'bg-black text-white border-blue-600' : 'bg-[#18181b] border-border text-gray-300 hover:border-gray-500 hover:text-white'}`}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
-            {getFilterLabel()}
-            <svg className={`w-4 h-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
+            <span className="whitespace-nowrap truncate">{getFilterLabel()}</span>
+            <svg className={`w-4 h-4 shrink-0 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
           </button>
           
           <AnimatePresence>
