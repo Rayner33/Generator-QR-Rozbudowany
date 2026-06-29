@@ -532,19 +532,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                             [{ 'align': [] }],
                             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                             ['link', 'clean']
-                          ],
-                          keyboard: {
-                            bindings: {
-                              shift_enter: {
-                                key: 13,
-                                shiftKey: true,
-                                handler: function (range, context) {
-                                  this.quill.insertEmbed(range.index, 'break', true, 'user');
-                                  this.quill.setSelection(range.index + 1, 'silent');
-                                }
-                              }
-                            }
-                          }
+                          ]
                         }}
                       />
                     </div>

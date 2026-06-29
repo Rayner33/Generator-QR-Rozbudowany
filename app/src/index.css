@@ -78,7 +78,7 @@
 /* Fix dla placeholdera i odstępów (nadpisanie Tailwind Prose) */
 .quill-dark .ql-editor p {
   margin-top: 0 !important;
-  margin-bottom: 0.5em !important;
+  margin-bottom: 0 !important; /* Usunięcie odstępów, by zwykły enter działał jak shift+enter */
 }
 
 /* Tooltip for Links */
