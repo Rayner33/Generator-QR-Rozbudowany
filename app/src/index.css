@@ -67,10 +67,18 @@
 .quill-dark .ql-editor.ql-blank::before {
   color: #52525b; /* text-gray-600 */
   font-style: normal;
+  top: 12px;
+  left: 15px;
 }
 
 .quill-dark .ql-editor {
   @apply prose prose-invert max-w-none;
+}
+
+/* Fix dla placeholdera i odstępów (nadpisanie Tailwind Prose) */
+.quill-dark .ql-editor p {
+  margin-top: 0 !important;
+  margin-bottom: 0.5em !important;
 }
 
 /* Tooltip for Links */

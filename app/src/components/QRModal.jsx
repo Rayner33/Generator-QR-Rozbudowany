@@ -139,6 +139,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         setEmailData({ address: '', subject: '', body: '' });
         setWifiData({ ssid: '', password: '', type: 'WPA' });
         setVcardData({ firstName: '', lastName: '', phone: '', email: '', company: '', title: '', website: '' });
+        setTextData('');
         setStyleType('rounded');
         setDotsColor('#000000');
         setEyeColor('#000000');
@@ -528,9 +529,22 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                         modules={{
                           toolbar: [
                             ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'align': [] }],
                             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                             ['link', 'clean']
                           ],
+                          keyboard: {
+                            bindings: {
+                              shift_enter: {
+                                key: 13,
+                                shiftKey: true,
+                                handler: function (range, context) {
+                                  this.quill.insertEmbed(range.index, 'break', true, 'user');
+                                  this.quill.setSelection(range.index + 1, 'silent');
+                                }
+                              }
+                            }
+                          }
                         }}
                       />
                     </div>
