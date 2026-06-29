@@ -362,8 +362,10 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
           
           return (
         <div key={code.id} className="bg-card border border-border rounded-xl p-0 md:p-3 flex flex-col md:flex-row md:items-stretch justify-between hover:border-gray-600 transition-colors relative">
-            <div className="order-1 md:order-1 w-14 h-14 rounded-full shrink-0 border border-border overflow-hidden bg-white flex items-center justify-center shadow-inner hidden md:flex md:mr-5">
-              <FaviconPreviewItem url={code.url} />
+            <div className="order-1 md:order-1 flex justify-center md:justify-start p-4 pb-0 md:p-0 border-b border-border md:border-none md:mr-5">
+              <div className="w-16 h-16 md:w-14 md:h-14 rounded-full shrink-0 border border-border overflow-hidden bg-white flex items-center justify-center shadow-inner">
+                <FaviconPreviewItem url={code.url} />
+              </div>
             </div>
             
             {/* Info Box */}
@@ -473,7 +475,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                           setCopiedLinkId(code.id);
                           setTimeout(() => setCopiedLinkId(null), 2000);
                         }}
-                        className="hidden md:flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-gray-200 transition-colors"
+                        className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-gray-200 transition-colors"
                       >
                         <Copy size={14} /> Kopiuj link
                       </button>
@@ -533,6 +535,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                     </>
                   )}
                 </div>
+                </div>
                 <div className="hidden md:flex items-center gap-2 mt-2">
                   <span className="text-xs text-gray-500">{code.date}</span>
                   {activeWorkspace?.type === 'team' && code.createdBy && teamMembers[code.createdBy] && (
@@ -545,8 +548,6 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                     </div>
                   )}
                 </div>
-             </div>
-             
              </div>
              
              {/* Desktop Chart Button */}
