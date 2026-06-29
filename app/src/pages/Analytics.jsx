@@ -6,14 +6,14 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, 
   LineElement, Title, Tooltip, Legend, Filler 
 } from 'chart.js';
-import { Download, Filter, Search, X, QrCode, Link as LinkIcon, MousePointerClick, ChevronDown, Globe, Monitor, Network } from 'lucide-react';
+import { Download, Filter, Search, X, QrCode, Link as LinkIcon, MousePointerClick, ChevronDown, Globe, Monitor, Network, Menu } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 import { useAnalytics } from '../hooks/useAnalytics';
 import { processAnalytics } from '../utils/analyticsHelpers';
 
-export default function Analytics({ activeWorkspace }) {
+export default function Analytics({ activeWorkspace, onMenuClick }) {
   const { logs, qrcodes, smartlinks, loading } = useAnalytics(activeWorkspace?.id);
   const [searchParams, setSearchParams] = useSearchParams();
   const urlCodeId = searchParams.get('codeId');
@@ -253,7 +253,12 @@ export default function Analytics({ activeWorkspace }) {
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-semibold">Analityka</h1>
+          <div className="flex items-center gap-4">
+            <button onClick={onMenuClick} className="md:hidden flex items-center justify-center p-2 bg-card border border-border rounded-xl text-white hover:bg-white/5 transition-colors">
+              <Menu size={24} />
+            </button>
+            <h1 className="text-2xl md:text-3xl font-semibold">Analityka</h1>
+          </div>
           
           <div className="flex bg-[#0a0a0b] rounded-lg border border-border p-1">
             {mainTabs.map(tab => (

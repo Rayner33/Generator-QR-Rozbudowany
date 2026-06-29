@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { updateProfile, signOut } from 'firebase/auth';
 import { doc, updateDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { Check } from 'lucide-react';
+import { Check, Menu } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 
-export default function Account({ currentUser, workspaces }) {
+export default function Account({ currentUser, workspaces, onMenuClick }) {
   const [username, setUsername] = useState('');
   const [avatarStyle, setAvatarStyle] = useState(PREDEFINED_GRADIENTS[0]);
   const [isSaving, setIsSaving] = useState(false);
@@ -85,7 +85,12 @@ export default function Account({ currentUser, workspaces }) {
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-semibold mb-6">Konto</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={onMenuClick} className="md:hidden flex items-center justify-center p-2 bg-card border border-border rounded-xl text-white hover:bg-white/5 transition-colors">
+          <Menu size={24} />
+        </button>
+        <h1 className="text-2xl md:text-3xl font-semibold">Konto</h1>
+      </div>
       
       {/* Tabs */}
       <div className="flex items-center gap-8 border-b border-border mb-8">

@@ -3,12 +3,12 @@ import { db } from '../firebase';
 import { doc, getDoc, updateDoc, deleteDoc, arrayRemove, collection, query, where, getDocs, writeBatch, addDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { HexColorPicker } from "react-colorful";
-import { Check, X, Search, MoreVertical, Trash2, Shield } from 'lucide-react';
+import { Check, X, Search, MoreVertical, Trash2, Shield, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import InviteMemberModal from '../components/InviteMemberModal';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 
-export default function WorkspaceSettings({ activeWorkspace, currentUser, workspaces }) {
+export default function WorkspaceSettings({ activeWorkspace, currentUser, workspaces, onMenuClick }) {
   const navigate = useNavigate();
   const [mountedWorkspaceId] = useState(activeWorkspace?.id);
   const isOwner = activeWorkspace?.ownerId === currentUser.uid;
@@ -499,7 +499,12 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
 
   return (
     <div className="w-full">
-      <h1 className="text-3xl font-semibold mb-6">Ustawienia zespołu</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <button onClick={onMenuClick} className="md:hidden flex items-center justify-center p-2 bg-card border border-border rounded-xl text-white hover:bg-white/5 transition-colors">
+          <Menu size={24} />
+        </button>
+        <h1 className="text-2xl md:text-3xl font-semibold">Ustawienia zespołu</h1>
+      </div>
       
       <div className="flex items-center gap-2 border-b border-border mb-8 pb-0">
         {['Ogólne', 'Członkowie', 'Uprawnienia'].map((tab) => (

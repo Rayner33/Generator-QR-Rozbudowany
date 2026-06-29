@@ -100,24 +100,17 @@ function App() {
         onClose={() => setIsMobileMenuOpen(false)}
       />
       <main className="flex-1 flex flex-col overflow-y-auto relative">
-        {/* Global Mobile Header */}
-        <div className="md:hidden flex items-center p-4 border-b border-border bg-sidebar shrink-0 z-20 sticky top-0">
-          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 mr-2 text-gray-300 hover:text-white transition-colors">
-            <Menu size={26} />
-          </button>
-          <div className="flex items-center gap-2 font-semibold text-lg tracking-wide">
-            {/* Logo/ikona aplikacji */}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg>
-            <span>PARYS QR</span>
-          </div>
-        </div>
-
         <div className="p-4 md:p-8 max-w-6xl mx-auto w-full">
           <Routes>
             <Route path="/" element={
               <>
                 <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8 flex justify-between items-center">
-                  Kody QR
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden flex items-center justify-center p-2 bg-card border border-border rounded-xl text-white hover:bg-white/5 transition-colors">
+                      <Menu size={24} />
+                    </button>
+                    <span>Kody QR</span>
+                  </div>
                   <button 
                     onClick={() => openModal('create')}
                     disabled={!activeWorkspace}
@@ -144,7 +137,12 @@ function App() {
             <Route path="/links" element={
               <>
                 <h1 className="text-2xl md:text-3xl font-semibold mb-6 md:mb-8 flex justify-between items-center">
-                  Smart Linki
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden flex items-center justify-center p-2 bg-card border border-border rounded-xl text-white hover:bg-white/5 transition-colors">
+                      <Menu size={24} />
+                    </button>
+                    <span>Smart Linki</span>
+                  </div>
                   <button 
                     onClick={() => openSmartLinkModal('create')}
                     disabled={!activeWorkspace}
@@ -168,9 +166,9 @@ function App() {
                 </div>
               </>
             } />
-            <Route path="/analytics" element={<Analytics activeWorkspace={activeWorkspace} />} />
-            <Route path="/account" element={<Account currentUser={currentUser} workspaces={workspaces} />} />
-            <Route path="/settings" element={<WorkspaceSettings activeWorkspace={activeWorkspace} currentUser={currentUser} workspaces={workspaces} />} />
+            <Route path="/analytics" element={<Analytics activeWorkspace={activeWorkspace} onMenuClick={() => setIsMobileMenuOpen(true)} />} />
+            <Route path="/account" element={<Account currentUser={currentUser} workspaces={workspaces} onMenuClick={() => setIsMobileMenuOpen(true)} />} />
+            <Route path="/settings" element={<WorkspaceSettings activeWorkspace={activeWorkspace} currentUser={currentUser} workspaces={workspaces} onMenuClick={() => setIsMobileMenuOpen(true)} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
