@@ -81,6 +81,21 @@
   margin-bottom: 0 !important; /* Usunięcie odstępów, by zwykły enter działał jak shift+enter */
 }
 
+/* Stylizowanie cytatów (blockquote) wewnątrz edytora */
+.quill-dark .ql-editor blockquote {
+  border-left: 4px solid #FF4C00;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+  color: #a1a1aa;
+  background-color: rgba(255, 76, 0, 0.05);
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
 /* Tooltip for Links */
 .quill-dark .ql-snow .ql-tooltip {
   @apply bg-[#18181b] border-border text-gray-300 rounded-lg shadow-xl shadow-black/50 px-4 py-2;
