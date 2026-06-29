@@ -8,7 +8,7 @@ import { buildUrlWithUtm } from '../utils/analyticsHelpers';
 import { Line } from 'react-chartjs-2';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, writeBatch } from 'firebase/firestore';
 import { dropdownAnimation } from '../utils/animations';
 import {
   Chart as ChartJS,
@@ -133,9 +133,25 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
     updateDoc(doc(db, "smartlinks", code.id), { archived: false });
   };
 
-  const handleResetAnalytics = (code) => {
-    updateDoc(doc(db, "smartlinks", code.id), { clicks: 0 });
-    setCodeToReset(null);
+  const handleResetAnalytics = async (code) => {
+    try {
+      await updateDoc(doc(db, "smartlinks", code.id), { clicks: 0 });
+      
+      const logsQuery = query(collection(db, "analytics_logs"), where("codeId", "==", code.id));
+      const logsSnapshot = await getDocs(logsQuery);
+      
+      if (!logsSnapshot.empty) {
+        const batch = writeBatch(db);
+        logsSnapshot.docs.forEach((logDoc) => {
+          batch.delete(logDoc.ref);
+        });
+        await batch.commit();
+      }
+    } catch (error) {
+      console.error("Błąd podczas czyszczenia bazy logów:", error);
+    } finally {
+      setCodeToReset(null);
+    }
   };
 
   const processedCodes = codes

@@ -9,7 +9,7 @@ import { Line } from 'react-chartjs-2';
 import QRCodeStyling from 'qr-code-styling';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, writeBatch } from 'firebase/firestore';
 import QRModal from '../components/QRModal';
 import { dropdownAnimation } from '../utils/animations';
 import {
@@ -168,9 +168,27 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
     updateDoc(doc(db, "qrcodes", code.id), { archived: false });
   };
 
-  const handleResetAnalytics = (code) => {
-    updateDoc(doc(db, "qrcodes", code.id), { scans: 0 });
-    setCodeToReset(null);
+  const handleResetAnalytics = async (code) => {
+    try {
+      // 1. Zresetuj licznik główny
+      await updateDoc(doc(db, "qrcodes", code.id), { scans: 0 });
+      
+      // 2. Usuń wszystkie fizyczne logi z kolekcji, aby wyczyścić wykresy
+      const logsQuery = query(collection(db, "analytics_logs"), where("codeId", "==", code.id));
+      const logsSnapshot = await getDocs(logsQuery);
+      
+      if (!logsSnapshot.empty) {
+        const batch = writeBatch(db);
+        logsSnapshot.docs.forEach((logDoc) => {
+          batch.delete(logDoc.ref);
+        });
+        await batch.commit();
+      }
+    } catch (error) {
+      console.error("Błąd podczas czyszczenia bazy logów:", error);
+    } finally {
+      setCodeToReset(null);
+    }
   };
 
   const processedCodes = codes
