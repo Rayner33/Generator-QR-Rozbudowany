@@ -394,18 +394,17 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
           const canReset = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersReset;
           
           return (
-        <div key={code.id} className="bg-card border border-border rounded-xl p-0 md:p-3 flex flex-col md:flex-row md:items-stretch justify-between hover:border-gray-600 transition-colors overflow-hidden">
-          <div className="flex flex-col md:flex-row md:items-center gap-0 md:gap-5 flex-1 min-w-0 md:pr-4">
+        <div key={code.id} className="bg-card border border-border rounded-xl p-0 md:p-3 flex flex-col md:flex-row md:items-stretch justify-between hover:border-gray-600 transition-colors relative">
             
             {/* QR Image */}
-            <div className="order-1 flex justify-center p-6 md:p-0 border-b border-border md:border-none">
+            <div className="order-1 md:order-1 flex justify-center p-6 md:p-0 border-b border-border md:border-none md:mr-5">
               <div className="w-[160px] h-[160px] md:w-28 md:h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white/5 md:bg-transparent">
                 <QRPreviewItem code={code} />
               </div>
             </div>
             
             {/* Info Box */}
-            <div className="order-3 md:order-2 flex flex-col flex-1 min-w-0 p-4 md:p-0">
+            <div className="order-3 md:order-2 flex flex-col flex-1 min-w-0 p-4 md:p-0 md:pr-4">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-lg truncate">{code.title || 'Brak tytułu'}</span>
                 {canEdit && (
@@ -478,17 +477,16 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                 )}
               </div>
             </div>
-          </div>
           
           {/* Actions & Chart Container */}
-          <div className="order-2 md:order-3 flex flex-row md:flex-col items-center md:items-end justify-between md:justify-between p-3 md:p-0 md:py-0.5 border-b border-border md:border-none gap-2 md:gap-6 w-full md:w-auto shrink-0 relative bg-white/5 md:bg-transparent">
-             <div className="flex flex-col items-end justify-between py-0.5 w-full md:w-auto">
-               <div className="flex items-center justify-between md:justify-end gap-2 relative w-full">
+          <div className="order-2 md:order-3 flex flex-row md:flex-row items-center md:items-stretch justify-between md:justify-start p-3 md:p-0 md:py-0.5 border-b border-border md:border-none gap-2 md:gap-6 w-full md:w-auto shrink-0 relative bg-transparent">
+             <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-between py-0 md:py-0.5 w-full md:w-auto">
+               <div className="flex items-center justify-between md:justify-end gap-2 relative w-full md:w-auto">
                  
                  {/* Mobile simplified Chart Button */}
                  <button 
                    onClick={(e) => { e.stopPropagation(); onAnalytics && onAnalytics(code); }}
-                   className="md:hidden flex items-center gap-1.5 bg-transparent border border-gray-600 text-gray-300 px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-white/10 transition-colors shrink-0"
+                   className="md:hidden flex items-center gap-1.5 bg-transparent border border-[#1ea2e4] text-[#1ea2e4] px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-[#1ea2e4]/10 transition-colors shrink-0"
                  >
                    <Scan size={14} /> <span className="whitespace-nowrap">{code.scans || 0} Skany</span>
                  </button>
@@ -632,7 +630,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
           </div>
           
           {/* Mobile Tags */}
-          <div className="order-4 md:hidden p-3 bg-[#0a0a0b]">
+          <div className="order-4 md:hidden p-3 bg-[#0a0a0b] rounded-b-xl border-t border-border">
             <div className="flex flex-wrap items-center gap-2">
               {code.tags && code.tags.some(tagId => allTags.some(t => t.id === tagId)) ? (
                 <>
