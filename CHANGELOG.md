@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.3.5] - 2026-06-29
+### Dodane
+- **Normalizacja Danych Analitycznych:** Zintegrowano zaawansowany słownik normalizujący, który w locie (po stronie klienta) tłumaczy i łączy stare wpisy z bazy geoip-lite z nowymi, profesjonalnymi logami MaxMind. Rozwiązano problem duplikacji (np. równoczesnego wyświetlania statystyk dla "EU" i "Europe" czy "Warszawa" i "Warsaw"). Od teraz wszystkie dane geograficzne (kontynenty, kraje, duże miasta) prezentowane są w ujednoliconej, zoptymalizowanej i w 100% spolszczonej formie na wykresach.
+
+### Poprawione
+- **Edytor Tekstu WYSIWYG (Quill):** Kompleksowo zoptymalizowano zachowanie edytora wykorzystywanego w trybie kodów QR typu "TEXT". Do paska narzędzi dodano brakującą opcję justowania/wyśrodkowania tekstu. Wyeliminowano problem zapamiętywania treści z poprzednio tworzonych kodów poprzez wymuszone czyszczenie stanu formularza (React State Reset).
+- **Zarządzanie marginesami w Edytorze:** Usunięto błąd układania się tekstu zastępczego (placeholder) poza krawędziami tekstu. Wyzerowano ukryte, nadmierne marginesy klasy Tailwind Prose dla akapitów (`<p>`), dzięki czemu natywny klawisz "Enter" zachowuje się teraz tak płynnie jak dawny miękki Shift+Enter (bez nienaturalnych pustych luk), co ułatwia wpisywanie skompresowanych bloków kontaktowych (np. danych teleadresowych).
+- **Spójność Wizualna Renderowania Text QR:** Wdrożono specjalną klasę korygującą `prose-p:my-0` na stronie docelowej (`RedirectEngine`), dzięki czemu formatowanie odstępów akapitów odczytywanych po zeskanowaniu kodu pokrywa się idealnie, piksel-w-piksel z widokiem podglądu z panelu edycji.
+- **Błędy CORS na Produkcji (Ukrywanie Stack Trace):** Wprowadzono do produkcyjnego mikroserwisu Node.js mechanizm łagodnego wyłapywania i transformacji (Global Error Handling) wyjątków rzucanych przez bibliotekę `cors`. Serwer w razie zapytania z nieznanej domeny nie "wypluwa" już wewnętrznych, technicznych ścieżek aplikacji, lecz bezpiecznie zwraca wystandaryzowany komunikat JSON.
+- **UI Zarządzania Zespołem:** Zwiększono domyślną szerokość okna podręcznego w panelu opcji członków przestrzeni roboczej (`w-40` -> `w-44`), by nazwa akcji "Zrób Menedżerem" mieściła się w jednej linii nie psując kompozycji menu.
+
 ## [1.3.4] - 2026-06-26
 ### Dodane
 - **Produkcyjny Mikroserwis GeoLite2:** Opracowano i zaimplementowano dedykowany, wydajny mikroserwis Node.js dla środowiska produkcyjnego wykorzystujący oficjalną bazę GeoLite2-City firmy MaxMind. Serwer automatycznie obsługuje ekstrakcję prawdziwego adresu IP odwiedzającego (uwzględniając maskowanie Nginx Proxy oraz Cloudflare).
