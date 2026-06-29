@@ -10,7 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 import pkg from '../../package.json';
 
-export default function Sidebar({ activePath, workspaces, activeWorkspace, setActiveWorkspace, onOpenWorkspaceModal, pendingInvites, onOpenNotifications }) {
+export default function Sidebar({ activePath, workspaces, activeWorkspace, setActiveWorkspace, onOpenWorkspaceModal, pendingInvites, onOpenNotifications, isOpen, onClose }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hoveredNav, setHoveredNav] = useState(null);
   const [hoveredWs, setHoveredWs] = useState(null);
@@ -41,12 +41,12 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
   });
 
   return (
-    <aside className="w-64 bg-sidebar border-r border-border flex flex-col relative z-20">
+    <aside className={`fixed inset-y-0 left-0 w-64 bg-sidebar border-r border-border flex flex-col z-40 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Top Header Row */}
       <div className="px-4 pt-6 pb-4 flex items-center justify-between">
         <QrCode size={36} className="text-white" />
         <button 
-          onClick={() => navigate('/account')}
+          onClick={() => { navigate('/account'); onClose?.(); }}
           className="flex items-center justify-center w-8 h-8 rounded-full bg-card border border-border hover:border-gray-500 transition-colors text-gray-300 hover:text-white shadow-sm" 
           title="Moje konto"
         >
@@ -91,7 +91,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
               {sortedWorkspaces.map(ws => (
                 <div 
                   key={ws.id} 
-                  onClick={() => { setActiveWorkspace(ws); setIsDropdownOpen(false); }}
+                  onClick={() => { setActiveWorkspace(ws); setIsDropdownOpen(false); onClose?.(); }}
                   onMouseEnter={() => setHoveredWs(ws.id)}
                   className="relative p-2 flex items-center justify-between cursor-pointer transition-colors group rounded-lg"
                 >
@@ -130,6 +130,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                   onClick={() => {
                     setIsDropdownOpen(false);
                     onOpenWorkspaceModal();
+                    onClose?.();
                   }}
                   onMouseEnter={() => setHoveredWs('create')}
                   className="relative p-2 flex items-center gap-3 cursor-pointer transition-colors rounded-lg group"
@@ -170,7 +171,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
           icon={<QrCode size={20} />} 
           label="Kody QR" 
           active={activePath === '/'} 
-          onClick={() => navigate('/')}
+          onClick={() => { navigate('/'); onClose?.(); }}
           onMouseEnter={() => setHoveredNav('/')}
           hoveredNav={hoveredNav}
         />
@@ -178,7 +179,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
           icon={<LinkIcon size={20} />} 
           label="Smart Linki" 
           active={activePath === '/links'} 
-          onClick={() => navigate('/links')}
+          onClick={() => { navigate('/links'); onClose?.(); }}
           onMouseEnter={() => setHoveredNav('/links')}
           hoveredNav={hoveredNav}
         />
@@ -187,7 +188,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
           icon={<PieChart size={20} />} 
           label="Analityka" 
           active={activePath === '/analytics'} 
-          onClick={() => navigate('/analytics')}
+          onClick={() => { navigate('/analytics'); onClose?.(); }}
           onMouseEnter={() => setHoveredNav('/analytics')}
           hoveredNav={hoveredNav}
         />
@@ -196,7 +197,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
             icon={<Settings size={20} />} 
             label="Ustawienia" 
             active={activePath === '/settings'} 
-            onClick={() => navigate('/settings')}
+            onClick={() => { navigate('/settings'); onClose?.(); }}
             onMouseEnter={() => setHoveredNav('/settings')}
             hoveredNav={hoveredNav}
           />
