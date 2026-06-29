@@ -104,6 +104,15 @@
   font-weight: 700 !important;
 }
 
+/* Sztywne ujednolicenie nagłówków na stronie docelowej (RedirectEngine) */
+.prose h1, .prose h2 {
+  font-weight: 700 !important;
+}
+.prose h1 strong, .prose h1 b,
+.prose h2 strong, .prose h2 b {
+  font-weight: 700 !important;
+}
+
 /* Stylizowanie cytatów (blockquote) wewnątrz edytora */
 .quill-dark .ql-editor blockquote {
   border-left: 4px solid #FF4C00;
