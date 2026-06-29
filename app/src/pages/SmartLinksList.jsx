@@ -365,7 +365,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
             
             {/* Info Box */}
             <div className="order-3 md:order-1 flex flex-row items-center md:items-start flex-1 min-w-0 p-4 md:p-0 md:pr-4 gap-3 md:gap-4 border-b border-border md:border-none">
-              <div className="w-[42px] h-[42px] rounded-full shrink-0 border border-border flex items-center justify-center overflow-hidden bg-transparent">
+              <div className="w-[42px] h-[42px] rounded-full shrink-0 flex items-center justify-center overflow-hidden bg-transparent">
                 <FaviconPreviewItem url={code.url} />
               </div>
               <div className="flex flex-col flex-1 min-w-0">
@@ -703,7 +703,7 @@ function FaviconPreviewItem({ url }) {
     <img 
       src={faviconUrl} 
       alt="Favicon" 
-      className="w-8 h-8 rounded-full object-cover" 
+      className="w-full h-full object-contain" 
       onError={() => setError(true)}
     />
   );
