@@ -258,7 +258,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
           
           <AnimatePresence>
           {isTagsDropdownOpen && (
-            <motion.div key="tags-dropdown" {...dropdownAnimation} className="absolute top-full right-0 pt-2 w-56 z-50 origin-top" onClick={e => e.stopPropagation()}>
+            <motion.div key="tags-dropdown" {...dropdownAnimation} className="absolute top-full left-0 pt-2 w-56 z-50 origin-top" onClick={e => e.stopPropagation()}>
               <div className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden">
               <div className="p-2 border-b border-white/5">
                 <input 

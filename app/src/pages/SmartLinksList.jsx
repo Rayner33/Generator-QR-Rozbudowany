@@ -223,7 +223,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
             <motion.div 
               key="tags-dropdown"
               {...dropdownAnimation}
-              className="absolute top-full right-0 pt-2 w-56 z-50 origin-top" 
+              className="absolute top-full left-0 pt-2 w-56 z-50 origin-top" 
               onClick={e => e.stopPropagation()}
             >
               <div className="bg-[#0a0a0b] border border-border rounded-xl shadow-2xl overflow-hidden">
