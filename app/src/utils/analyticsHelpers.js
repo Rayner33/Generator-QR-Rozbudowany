@@ -50,17 +50,42 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
   }));
 
   // 3. Geo & Tech Aggregation
-  // Słownik normalizujący stare logi (np. z geoip-lite) z nowymi logami (MaxMind)
+  // Słownik normalizujący i tłumaczący na język polski (dla starych logów geoip-lite i anglojęzycznych wpisów MaxMind)
   const geoNormalizationMap = {
-    'EU': 'Europe',
-    'NA': 'North America',
-    'SA': 'South America',
-    'AS': 'Asia',
-    'AF': 'Africa',
+    // Kontynenty
+    'EU': 'Europa',
+    'Europe': 'Europa',
+    'NA': 'Ameryka Północna',
+    'North America': 'Ameryka Północna',
+    'SA': 'Ameryka Południowa',
+    'South America': 'Ameryka Południowa',
+    'AS': 'Azja',
+    'Asia': 'Azja',
+    'AF': 'Afryka',
+    'Africa': 'Afryka',
     'OC': 'Oceania',
-    'Warszawa': 'Warsaw',
-    'Kraków': 'Krakow',
-    'Wroclaw': 'Wrocław'
+    'Oceania': 'Oceania',
+    'Antarctica': 'Antarktyda',
+    
+    // Popularne Kraje (MaxMind domyślnie wysyła po angielsku)
+    'Poland': 'Polska',
+    'Germany': 'Niemcy',
+    'United Kingdom': 'Wielka Brytania',
+    'United States': 'Stany Zjednoczone',
+    'France': 'Francja',
+    'Italy': 'Włochy',
+    'Spain': 'Hiszpania',
+    'Czechia': 'Czechy',
+    'Slovakia': 'Słowacja',
+    'Ukraine': 'Ukraina',
+    
+    // Miasta (Naprawa braku polskich znaków lub łączenie duplikatów)
+    'Warsaw': 'Warszawa',
+    'Krakow': 'Kraków',
+    'Wroclaw': 'Wrocław',
+    'Gdansk': 'Gdańsk',
+    'Poznan': 'Poznań',
+    'Lodz': 'Łódź'
   };
 
   const getAggregatedData = (field) => {
