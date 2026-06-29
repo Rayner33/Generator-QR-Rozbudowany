@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.0] - 2026-06-29
+### Dodane
+- **Pełna responsywność i dostosowanie do wersji mobilnych (Mobile First UI):** Całkowicie przebudowano i zoptymalizowano interfejs kluczowych ekranów, aby aplikacja działała i wyglądała perfekcyjnie na smartfonach i tabletach.
+- Zmodyfikowano układy poszczególnych elementów, takich jak menu opcji (3 kropki), widoki analityki, tagi i informacje tekstowe (data, autor), tak aby intuicyjnie układały się w stosy (kolumny) na małych ekranach.
+- Przystosowano kontrolki u góry listy (Wyszukiwarka, Tagi, Filtry), upewniając się, że nie zachodzą na siebie i dopasowują się szerokością.
+
+### Poprawione
+- **Kosmetyka wersji Desktop (PC):** Usunięto nieestetyczne szare pola, integrując czarne, wtopione w tło przyciski tagów na listach kodów. Dodatkowo zapewniono marginesy dolne list ułatwiające nawigację na dole ekranu.
+- **Równowaga kontenerów tekstowych:** Wyrównano wizualnie wertykalne odstępy dla kodów w formacie "TEKST" na dedykowanej stronie przekierowania, ignorując wbudowany górny margines pierwszych nagłówków.
+
 ## [1.3.6] - 2026-06-29
 ### Dodane
 - **Rozbudowa Edytora Tekstowego (Quill):** Wzbogacono pasek narzędzi w kodach typu "Tekst" o nowe, kluczowe funkcjonalności dla twórców: dedykowane przyciski nagłówków (H1 i H2) dla jasnej struktury, formatowanie cytatów (Blockquote) oparte na eleganckim, firmowym pomarańczowym akcencie PARYS, oraz zaawansowaną paletę kolorowania tekstu i jego tła. W palecie barw zintegrowano i umiejscowiono na priorytetowych pozycjach trzy kluczowe kolory identyfikacji wizualnej platformy (Pomarańczowy, Niebieski, Fioletowy).
