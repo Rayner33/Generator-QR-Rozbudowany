@@ -361,13 +361,13 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
           const canReset = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersReset;
           
           return (
-        <div key={code.id} className="bg-card border border-border rounded-xl p-3 flex items-stretch justify-between hover:border-gray-600 transition-colors">
-          <div className="flex items-center gap-5 flex-1 min-w-0 pr-4 pl-2 min-h-[112px]">
-            <div className="w-14 h-14 rounded-full shrink-0 border border-border overflow-hidden bg-white flex items-center justify-center shadow-inner">
+        <div key={code.id} className="bg-card border border-border rounded-xl p-0 md:p-3 flex flex-col md:flex-row md:items-stretch justify-between hover:border-gray-600 transition-colors overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center gap-0 md:gap-5 flex-1 min-w-0 md:pr-4">
+            <div className="w-14 h-14 rounded-full shrink-0 border border-border overflow-hidden bg-white flex items-center justify-center shadow-inner hidden md:flex">
               <FaviconPreviewItem url={code.url} />
             </div>
             
-            <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex flex-col flex-1 min-w-0 p-4 md:p-0">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-lg truncate">{code.title}</span>
                 {canEdit && (
@@ -399,7 +399,9 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                   {buildUrlWithUtm(code.url, code.utm)}
                 </a>
               </div>
-              <div className="flex flex-wrap items-center gap-2 mt-3">
+              
+              {/* Desktop Tags */}
+              <div className="hidden md:flex flex-wrap items-center gap-2 mt-3">
                 {code.tags && code.tags.some(tagId => allTags.some(t => t.id === tagId)) ? (
                   <>
                     {code.tags.map(tagId => {
@@ -434,11 +436,24 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                   </button>
                 )}
               </div>
+              </div>
             </div>
           </div>
-          <div className="flex items-stretch gap-6">
-             <div className="flex flex-col items-end justify-between py-0.5">
-                <div className="flex items-center gap-2 relative">
+          
+          {/* Actions & Chart Container */}
+          <div className="flex flex-row md:flex-col items-center md:items-end justify-between p-3 md:p-0 md:py-0.5 border-t border-border md:border-none gap-2 md:gap-6 w-full md:w-auto shrink-0 relative bg-white/5 md:bg-transparent">
+             <div className="flex flex-col items-end justify-between py-0.5 w-full md:w-auto">
+                <div className="flex items-center justify-between md:justify-end gap-2 relative w-full">
+                  
+                 {/* Mobile simplified Chart Button */}
+                 <button 
+                   onClick={(e) => { e.stopPropagation(); onAnalytics && onAnalytics(code); }}
+                   className="md:hidden flex items-center gap-1.5 bg-black text-white border border-white/10 px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-black/80 transition-colors shrink-0"
+                 >
+                   <Scan size={14} /> <span>{code.scans || 0}</span>
+                 </button>
+                 
+                 <div className="flex items-center gap-2">
                   {sortFilter === 'archived' ? (
                     canArchive ? (
                       <button 
@@ -460,7 +475,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                           setCopiedLinkId(code.id);
                           setTimeout(() => setCopiedLinkId(null), 2000);
                         }}
-                        className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-gray-200 transition-colors"
+                        className="hidden md:flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-gray-200 transition-colors"
                       >
                         <Copy size={14} /> Kopiuj link
                       </button>
@@ -534,9 +549,12 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                 </div>
              </div>
              
+             </div>
+             
+             {/* Desktop Chart Button */}
              <button 
                onClick={(e) => { e.stopPropagation(); onAnalytics && onAnalytics(code); }}
-               className="w-44 h-full min-h-[72px] bg-[#0a0a0b] hover:bg-[#18181b] rounded-xl border border-border p-3 flex flex-col justify-between relative overflow-hidden group transition-all text-left cursor-pointer shrink-0"
+               className="hidden md:flex w-44 h-full min-h-[72px] bg-[#0a0a0b] hover:bg-[#18181b] rounded-xl border border-border p-3 flex-col justify-between relative overflow-hidden group transition-all text-left cursor-pointer shrink-0"
              >
                {/* Default View */}
                <div className="flex flex-col justify-between h-full z-10 relative transition-opacity duration-300 group-hover:opacity-0">
@@ -574,6 +592,45 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                </div>
             </button>
           </div>
+          
+          {/* Mobile Tags */}
+          <div className="order-4 md:hidden p-3 bg-black/20 border-t border-border">
+            <div className="flex flex-wrap items-center gap-2">
+              {code.tags && code.tags.some(tagId => allTags.some(t => t.id === tagId)) ? (
+                <>
+                  {code.tags.map(tagId => {
+                    const tag = allTags.find(t => t.id === tagId);
+                    if (!tag) return null;
+                    const styleObj = renderTagStyle(tag.color);
+                    return (
+                      <button 
+                        key={tag.id} 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveTagFilters(prev => prev.includes(tag.id) ? prev : [...prev, tag.id]);
+                        }}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-black/20 bg-black text-white hover:opacity-80 transition-opacity`}
+                      >
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                        <span className="text-[10px] font-bold uppercase tracking-wider">{tag.name}</span>
+                      </button>
+                    );
+                  })}
+                  {canEdit && (
+                    <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="text-gray-500 hover:text-white p-1 rounded-full transition-colors bg-[#18181b] border border-border">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  )}
+                </>
+              ) : canEdit && (
+                <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors bg-[#18181b] border border-border px-3 py-1 rounded-lg">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                  Wybierz tagi
+                </button>
+              )}
+            </div>
+          </div>
+          
         </div>
         );
         })}
