@@ -353,7 +353,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
         {sortFilter === 'archived' ? 'Brak zarchiwizowanych Smart Linków.' : 'Brak zapisanych Smart Linków. Kliknij "Utwórz smart link" aby zacząć.'}
       </div>
     ) : (
-      <div className="space-y-4">
+      <div className="space-y-4 pb-[200px]">
         {processedCodes.map(code => {
           const isOwner = activeWorkspace?.ownerId === currentUser.uid;
           const isAdmin = activeWorkspace?.memberRoles?.[currentUser.uid] === 'admin';
@@ -427,13 +427,13 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                       );
                     })}
                     {canEdit && (
-                      <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="text-gray-500 hover:text-white p-1 rounded-full transition-colors bg-[#18181b] border border-border">
+                      <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="text-gray-500 hover:text-white p-1 rounded-full transition-colors bg-[#0a0a0b] border border-border">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                       </button>
                     )}
                   </>
                 ) : canEdit && (
-                  <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors bg-[#18181b] border border-border px-3 py-1 rounded-lg">
+                  <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors bg-[#0a0a0b] border border-border px-3 py-1 rounded-lg">
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
                     Wybierz tagi
                   </button>
@@ -619,13 +619,13 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                     );
                   })}
                   {canEdit && (
-                    <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="text-gray-500 hover:text-white p-1 rounded-full transition-colors bg-[#18181b] border border-border">
+                    <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="text-gray-500 hover:text-white p-1 rounded-full transition-colors bg-[#0a0a0b] border border-border">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                     </button>
                   )}
                 </>
               ) : canEdit && (
-                <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors bg-[#18181b] border border-border px-3 py-1 rounded-lg">
+                <button onClick={(e) => { e.stopPropagation(); setCodeForTagManager(code); }} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors bg-[#0a0a0b] border border-border px-3 py-1 rounded-lg">
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
                   Wybierz tagi
                 </button>
