@@ -1,3 +1,58 @@
+// Słownik normalizujący i tłumaczący na język polski (dla starych logów geoip-lite i anglojęzycznych wpisów MaxMind)
+const geoNormalizationMap = {
+  // Kontynenty
+  'EU': 'Europa',
+  'Europe': 'Europa',
+  'NA': 'Ameryka Północna',
+  'North America': 'Ameryka Północna',
+  'SA': 'Ameryka Południowa',
+  'South America': 'Ameryka Południowa',
+  'AS': 'Azja',
+  'Asia': 'Azja',
+  'AF': 'Afryka',
+  'Africa': 'Afryka',
+  'OC': 'Oceania',
+  'Oceania': 'Oceania',
+  'Antarctica': 'Antarktyda',
+  
+  // Popularne Kraje (MaxMind domyślnie wysyła po angielsku)
+  'Poland': 'Polska',
+  'Germany': 'Niemcy',
+  'United Kingdom': 'Wielka Brytania',
+  'United States': 'Stany Zjednoczone',
+  'France': 'Francja',
+  'Italy': 'Włochy',
+  'Spain': 'Hiszpania',
+  'Czechia': 'Czechy',
+  'Slovakia': 'Słowacja',
+  'Ukraine': 'Ukraina',
+  
+  // Miasta (Naprawa braku polskich znaków lub łączenie duplikatów)
+  'Warsaw': 'Warszawa',
+  'Krakow': 'Kraków',
+  'Wroclaw': 'Wrocław',
+  'Gdansk': 'Gdańsk',
+  'Poznan': 'Poznań',
+  'Lodz': 'Łódź',
+
+  // Regiony / Województwa
+  'Mazovia': 'Mazowieckie',
+  'Lesser Poland': 'Małopolskie',
+  'Greater Poland': 'Wielkopolskie',
+  'Pomerania': 'Pomorskie',
+  'West Pomerania': 'Zachodniopomorskie',
+  'Silesia': 'Śląskie',
+  'Lower Silesia': 'Dolnośląskie',
+  'Kuyavia-Pomerania': 'Kujawsko-Pomorskie',
+  'Subcarpathia': 'Podkarpackie',
+  'Podlasie': 'Podlaskie',
+  'Holy Cross': 'Świętokrzyskie',
+  'Warmia-Masuria': 'Warmińsko-Mazurskie',
+  
+  // Inne
+  'Unknown': 'Nieznane'
+};
+
 export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, activeFilters, geoTab, techTab, utmTab) {
   // 1. Time filtering
   const now = new Date();
@@ -21,7 +76,16 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
           const utmKey = filter.id.split('.')[1];
           return log.utm && log.utm[utmKey] === filter.value;
         }
-        return log[filter.id] === filter.value;
+
+        let logValue = log[filter.id] || 'Nieznane';
+        if (['continent', 'country', 'region', 'city'].includes(filter.id)) {
+          if (geoNormalizationMap[logValue]) {
+            logValue = geoNormalizationMap[logValue];
+          }
+          if (!logValue || logValue.trim() === '') logValue = 'Nieznane';
+        }
+
+        return logValue === filter.value;
       });
     });
   }
@@ -50,61 +114,6 @@ export function processAnalytics(logs, activeItems, timeframe, selectedMainTab, 
   }));
 
   // 3. Geo & Tech Aggregation
-  // Słownik normalizujący i tłumaczący na język polski (dla starych logów geoip-lite i anglojęzycznych wpisów MaxMind)
-  const geoNormalizationMap = {
-    // Kontynenty
-    'EU': 'Europa',
-    'Europe': 'Europa',
-    'NA': 'Ameryka Północna',
-    'North America': 'Ameryka Północna',
-    'SA': 'Ameryka Południowa',
-    'South America': 'Ameryka Południowa',
-    'AS': 'Azja',
-    'Asia': 'Azja',
-    'AF': 'Afryka',
-    'Africa': 'Afryka',
-    'OC': 'Oceania',
-    'Oceania': 'Oceania',
-    'Antarctica': 'Antarktyda',
-    
-    // Popularne Kraje (MaxMind domyślnie wysyła po angielsku)
-    'Poland': 'Polska',
-    'Germany': 'Niemcy',
-    'United Kingdom': 'Wielka Brytania',
-    'United States': 'Stany Zjednoczone',
-    'France': 'Francja',
-    'Italy': 'Włochy',
-    'Spain': 'Hiszpania',
-    'Czechia': 'Czechy',
-    'Slovakia': 'Słowacja',
-    'Ukraine': 'Ukraina',
-    
-    // Miasta (Naprawa braku polskich znaków lub łączenie duplikatów)
-    'Warsaw': 'Warszawa',
-    'Krakow': 'Kraków',
-    'Wroclaw': 'Wrocław',
-    'Gdansk': 'Gdańsk',
-    'Poznan': 'Poznań',
-    'Lodz': 'Łódź',
-
-    // Regiony / Województwa
-    'Mazovia': 'Mazowieckie',
-    'Lesser Poland': 'Małopolskie',
-    'Greater Poland': 'Wielkopolskie',
-    'Pomerania': 'Pomorskie',
-    'West Pomerania': 'Zachodniopomorskie',
-    'Silesia': 'Śląskie',
-    'Lower Silesia': 'Dolnośląskie',
-    'Kuyavia-Pomerania': 'Kujawsko-Pomorskie',
-    'Subcarpathia': 'Podkarpackie',
-    'Podlasie': 'Podlaskie',
-    'Holy Cross': 'Świętokrzyskie',
-    'Warmia-Masuria': 'Warmińsko-Mazurskie',
-    
-    // Inne
-    'Unknown': 'Nieznane'
-  };
-
   const getAggregatedData = (field) => {
     const counts = {};
     filteredLogs.forEach(log => {
