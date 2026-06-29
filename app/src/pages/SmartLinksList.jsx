@@ -448,7 +448,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                    onClick={(e) => { e.stopPropagation(); onAnalytics && onAnalytics(code); }}
                    className="md:hidden flex items-center gap-1.5 bg-transparent border border-[#9333ea] text-[#9333ea] px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-[#9333ea]/10 transition-colors shrink-0"
                  >
-                   <Scan size={14} /> <span>{code.scans || 0}</span>
+                   <MousePointerClick size={14} /> <span className="whitespace-nowrap">{code.clicks || 0} Kliknięcia</span>
                  </button>
                  
                  <div className="flex items-center gap-2">
