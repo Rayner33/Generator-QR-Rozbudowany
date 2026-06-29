@@ -137,7 +137,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
     try {
       await updateDoc(doc(db, "smartlinks", code.id), { clicks: 0 });
       
-      const logsQuery = query(collection(db, "analytics_logs"), where("codeId", "==", code.id));
+      const logsQuery = query(collection(db, "analytics"), where("codeId", "==", code.id));
       const logsSnapshot = await getDocs(logsQuery);
       
       if (!logsSnapshot.empty) {

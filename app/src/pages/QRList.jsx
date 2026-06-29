@@ -174,7 +174,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
       await updateDoc(doc(db, "qrcodes", code.id), { scans: 0 });
       
       // 2. Usuń wszystkie fizyczne logi z kolekcji, aby wyczyścić wykresy
-      const logsQuery = query(collection(db, "analytics_logs"), where("codeId", "==", code.id));
+      const logsQuery = query(collection(db, "analytics"), where("codeId", "==", code.id));
       const logsSnapshot = await getDocs(logsQuery);
       
       if (!logsSnapshot.empty) {
