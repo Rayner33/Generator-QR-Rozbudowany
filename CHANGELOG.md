@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.6] - 2026-06-29
+### Dodane
+- **Rozbudowa Edytora Tekstowego (Quill):** Wzbogacono pasek narzędzi w kodach typu "Tekst" o nowe, kluczowe funkcjonalności dla twórców: dedykowane przyciski nagłówków (H1 i H2) dla jasnej struktury, formatowanie cytatów (Blockquote) oparte na eleganckim, firmowym pomarańczowym akcencie PARYS, oraz zaawansowaną paletę kolorowania tekstu i jego tła. W palecie barw zintegrowano i umiejscowiono na priorytetowych pozycjach trzy kluczowe kolory identyfikacji wizualnej platformy (Pomarańczowy, Niebieski, Fioletowy).
+
+### Poprawione
+- **Optymalizacja Nagłówków w Edytorze:** Zaprojektowano od nowa grubości i marginesy nagłówków H1 i H2, zmniejszając ich nadmierne rozmiary domyślne na korzyść subtelniejszego, wyrównanego wyglądu (Waga H1/H2 równa 700). Zmiany estetyczne wiernie odwzorowano zarówno w samym edytorze w panelu, jak i na ostatecznej stronie tekstowej dla użytkownika.
+- **Odporność na "Puchnięcie" Pogrubień w Tailwind Prose:** Wyeliminowano błąd krytyczny po stronie frameworka Tailwind na stronach docelowych, w którym tagi `<strong>` oraz `<b>` wewnątrz nagłówków nadmiernie powiększały wagę czcionki (do 900). Zastosowano radykalne, wymuszone reguły CSS zapewniające absolutną stabilność tekstów na urządzeniach mobilnych.
+- **Naprawa Funkcji Resetu Analityki:** Rozwiązano błąd uniemożliwiający fizyczne usunięcie archiwalnych danych z chmury po kliknięciu "Resetuj Analitykę" (błędna ścieżka kolekcji: `analytics_logs` zamiast poprawnej `analytics`).
+
 ## [1.3.5] - 2026-06-29
 ### Dodane
 - **Normalizacja Danych Analitycznych:** Zintegrowano zaawansowany słownik normalizujący, który w locie (po stronie klienta) tłumaczy i łączy stare wpisy z bazy geoip-lite z nowymi, profesjonalnymi logami MaxMind. Rozwiązano problem duplikacji (np. równoczesnego wyświetlania statystyk dla "EU" i "Europe" czy "Warszawa" i "Warsaw"). Od teraz wszystkie dane geograficzne (kontynenty, kraje, duże miasta) prezentowane są w ujednoliconej, zoptymalizowanej i w 100% spolszczonej formie na wykresach.
