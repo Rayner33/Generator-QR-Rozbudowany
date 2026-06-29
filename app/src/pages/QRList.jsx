@@ -477,7 +477,6 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                   </button>
                 )}
               </div>
-              </div>
             </div>
           </div>
           
@@ -575,11 +574,19 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                    </>
                  )}
                </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-             
+               </div>
+               <div className="hidden md:flex items-center gap-2 mt-2">
+                 <span className="text-xs text-gray-500">{code.date}</span>
+                 {activeWorkspace?.type === 'team' && code.createdBy && teamMembers[code.createdBy] && (
+                   <div 
+                     className="w-5 h-5 flex items-center justify-center font-bold text-white shadow-sm shrink-0 cursor-help"
+                     style={{ background: teamMembers[code.createdBy].avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%', fontSize: '10px' }}
+                     title={teamMembers[code.createdBy].name || teamMembers[code.createdBy].email || 'Użytkownik'}
+                   >
+                     {teamMembers[code.createdBy].name ? teamMembers[code.createdBy].name.charAt(0).toUpperCase() : (teamMembers[code.createdBy].email ? teamMembers[code.createdBy].email.charAt(0).toUpperCase() : 'U')}
+                   </div>
+                 )}
+               </div>
              </div>
              
              {/* Desktop Chart Button */}

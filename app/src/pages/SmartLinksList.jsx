@@ -436,7 +436,6 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                   </button>
                 )}
               </div>
-              </div>
             </div>
           </div>
           
@@ -535,7 +534,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                     </>
                   )}
                 </div>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="hidden md:flex items-center gap-2 mt-2">
                   <span className="text-xs text-gray-500">{code.date}</span>
                   {activeWorkspace?.type === 'team' && code.createdBy && teamMembers[code.createdBy] && (
                     <div 
