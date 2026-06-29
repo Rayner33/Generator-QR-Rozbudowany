@@ -251,7 +251,7 @@ export default function RedirectEngine() {
       ) : textContent !== null ? (
         <div className="bg-[#18181b] border border-border p-6 md:p-8 rounded-2xl max-w-2xl w-full text-white shadow-2xl animate-fade-in-up">
           <div 
-            className="prose prose-invert prose-p:leading-relaxed prose-a:text-[#1ea2e4] max-w-none break-words" 
+            className="prose prose-invert prose-p:my-0 prose-p:leading-relaxed prose-a:text-[#1ea2e4] max-w-none break-words" 
             dangerouslySetInnerHTML={{ __html: textContent }} 
           />
         </div>
