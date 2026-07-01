@@ -11,7 +11,7 @@ import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, writeBatch } from 'firebase/firestore';
 import QRModal from '../components/QRModal';
-import { dropdownAnimation } from '../utils/animations';
+import { dropdownAnimation, staggerContainer, staggerItem } from '../utils/animations';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -386,7 +386,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
         {sortFilter === 'archived' ? 'Brak zarchiwizowanych kodów.' : 'Brak zapisanych kodów. Kliknij "Utwórz kod QR" aby zacząć.'}
       </div>
     ) : (
-      <div className="space-y-4 pb-[200px]">
+      <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-4 pb-[200px]">
         {processedCodes.map(code => {
           const isOwner = activeWorkspace?.ownerId === currentUser.uid;
           const isAdmin = activeWorkspace?.memberRoles?.[currentUser.uid] === 'admin';
@@ -396,7 +396,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
           const canReset = isOwner || isAdmin || isCreator || activeWorkspace?.allowMembersReset;
           
           return (
-        <div key={code.id} className="bg-card border border-border rounded-xl p-0 md:p-3 flex flex-col md:flex-row md:items-stretch justify-between hover:border-gray-600 transition-colors relative">
+        <motion.div variants={staggerItem} key={code.id} className="bg-card border border-border rounded-xl p-0 md:p-3 flex flex-col md:flex-row md:items-stretch justify-between hover:border-gray-600 transition-colors relative">
             
             {/* QR Image */}
             <div className="order-1 md:order-1 flex justify-center p-6 md:p-0 border-b border-border md:border-none md:mr-5">
@@ -667,7 +667,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
             </div>
           </div>
           
-        </div>
+        </motion.div>
         );
         })}
       <MoveCodeModal
@@ -678,7 +678,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
         activeWorkspace={activeWorkspace}
         collectionName="qrcodes"
       />
-    </div>
+    </motion.div>
     )}
 
 

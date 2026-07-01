@@ -12,6 +12,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 import { useAnalytics } from '../hooks/useAnalytics';
 import { processAnalytics } from '../utils/analyticsHelpers';
+import { dropdownAnimation, staggerContainer, staggerItem } from '../utils/animations';
 
 export default function Analytics({ activeWorkspace, onMenuClick }) {
   const { logs, qrcodes, smartlinks, loading } = useAnalytics(activeWorkspace?.id);
@@ -469,14 +470,14 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                {isQr ? 'SKANY' : 'KLIKNIĘCIA'}
             </span>
           </div>
-          <div 
+          <motion.div variants={staggerContainer} initial="hidden" animate="show"
             className="p-2 flex-1 overflow-hidden group/list space-y-1"
             style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
           >
             {topItems.map((item, i) => {
               const isActive = activeFilters.some(f => f.id === 'codeId' && f.value === item.id);
               return (
-              <div 
+              <motion.div variants={staggerItem}
                 key={i} 
                 onClick={() => addFilter('codeId', item.id, item.name)}
                 className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
@@ -497,9 +498,9 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                     <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )})}
-          </div>
+          </motion.div>
           {topItems.length > 7 && (
             <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
               <button 
@@ -528,7 +529,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
               </button>
             ))}
           </div>
-          <div 
+          <motion.div variants={staggerContainer} initial="hidden" animate="show"
             className="p-2 flex-1 overflow-hidden group/list space-y-1"
             style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
           >
@@ -536,7 +537,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
               const field = geoTab === 'Kontynenty' ? 'continent' : geoTab === 'Kraje' ? 'country' : geoTab === 'Regiony' ? 'region' : 'city';
               const isActive = activeFilters.some(f => f.id === field && f.value === item.name);
               return (
-              <div 
+              <motion.div variants={staggerItem}
                 key={i} 
                 onClick={() => addFilter(field, item.name, `${geoTab}: ${item.name}`)}
                 className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
@@ -557,9 +558,9 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                     <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )})}
-          </div>
+          </motion.div>
           {geoData.length > 7 && (
             <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
               <button 
@@ -588,7 +589,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
               </button>
             ))}
           </div>
-          <div 
+          <motion.div variants={staggerContainer} initial="hidden" animate="show"
             className="p-2 flex-1 overflow-hidden group/list space-y-1"
             style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
           >
@@ -596,7 +597,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
               const field = techTab === 'Urządzenia' ? 'device' : techTab === 'Przeglądarki' ? 'browser' : 'os';
               const isActive = activeFilters.some(f => f.id === field && f.value === item.name);
               return (
-              <div 
+              <motion.div variants={staggerItem}
                 key={i} 
                 onClick={() => addFilter(field, item.name, `${techTab}: ${item.name}`)}
                 className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
@@ -617,9 +618,9 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                     <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )})}
-          </div>
+          </motion.div>
           {techData.length > 7 && (
             <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
               <button 
@@ -654,7 +655,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
               UTM
             </span>
           </div>
-          <div 
+          <motion.div variants={staggerContainer} initial="hidden" animate="show"
             className="p-2 flex-1 overflow-hidden group/list space-y-1"
             style={{ maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)' }}
           >
@@ -662,7 +663,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
               const field = `utm.${utmTab.toLowerCase()}`;
               const isActive = activeFilters.some(f => f.id === field && f.value === item.name);
               return (
-              <div 
+              <motion.div variants={staggerItem}
                 key={i} 
                 onClick={() => addFilter(field, item.name, `UTM ${utmTab}: ${item.name}`)}
                 className="relative flex items-center justify-between py-1.5 px-3 rounded-lg transition-colors cursor-pointer group/item hover:bg-white/5 overflow-hidden z-0"
@@ -683,9 +684,9 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                     <span className="text-sm font-medium w-12 text-right leading-none drop-shadow-md" style={{ color: item.percentage >= 80 ? 'white' : themeColor }}>{parseFloat(item.percentage) === 100 ? '100' : item.percentage}%</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )})}
-          </div>
+          </motion.div>
           {utmData.length > 7 && (
             <div className="absolute bottom-0 left-0 right-0 h-24 flex items-end justify-center pb-4 z-10 pointer-events-none">
               <button 

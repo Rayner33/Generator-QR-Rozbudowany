@@ -7,6 +7,7 @@ import { Check, X, Search, MoreVertical, Trash2, Shield, Menu } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import InviteMemberModal from '../components/InviteMemberModal';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
+import { staggerContainer, staggerItem } from '../utils/animations';
 
 export default function WorkspaceSettings({ activeWorkspace, currentUser, workspaces, onMenuClick }) {
   const navigate = useNavigate();
@@ -350,12 +351,12 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         )}
       </div>
 
-      <div className="space-y-2">
+      <motion.div variants={staggerContainer} initial="hidden" animate="show" className="space-y-2">
         {membersDetails.filter(m => m.email.toLowerCase().includes(searchQuery.toLowerCase()) || m.name.toLowerCase().includes(searchQuery.toLowerCase())).map(member => {
           const isUserOwner = member.uid === activeWorkspace.ownerId;
           const isCurrentUser = member.uid === currentUser.uid;
           return (
-            <div key={member.uid} className="flex items-center justify-between p-4 bg-card border border-border rounded-xl group hover:border-gray-600 transition-colors">
+            <motion.div variants={staggerItem} key={member.uid} className="flex items-center justify-between p-4 bg-card border border-border rounded-xl group hover:border-gray-600 transition-colors">
               <div className="flex items-center gap-4">
                 <div 
                   className="w-10 h-10 flex items-center justify-center font-bold text-white shadow-sm shrink-0"
@@ -418,10 +419,10 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                   </AnimatePresence>
                 </div>
               )}
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 
