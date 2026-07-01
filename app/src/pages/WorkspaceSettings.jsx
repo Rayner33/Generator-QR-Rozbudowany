@@ -278,7 +278,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
           </div>
         </motion.div>
       ) : (
-        <div className="bg-card border border-border rounded-xl p-8 mb-8 flex items-center gap-8">
+        <motion.div variants={staggerItem} className="bg-card border border-border rounded-xl p-8 mb-8 flex items-center gap-8">
           <div 
             className="w-24 h-24 flex items-center justify-center text-white font-bold text-4xl shadow-lg border-4 border-border shrink-0"
             style={{ background: avatarStyle, borderRadius: '30%' }}
@@ -289,11 +289,11 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             <h2 className="text-xl font-bold mb-2">{name}</h2>
             <p className="text-gray-400 text-sm">Jesteś zaproszonym członkiem tego zespołu. Nie masz uprawnień do zmiany nazwy ani kolorystyki.</p>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {isOwner && (
-        <div className="bg-card border border-border rounded-xl p-8 mb-8 relative overflow-hidden">
+        <motion.div variants={staggerItem} className="bg-card border border-border rounded-xl p-8 mb-8 relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-xl font-semibold mb-2">Przekaż zespół</h2>
             <p className="text-gray-400 text-sm mb-6 max-w-md">
@@ -306,7 +306,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
               Przekaż własność zespołu
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       <motion.div variants={staggerItem} className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
