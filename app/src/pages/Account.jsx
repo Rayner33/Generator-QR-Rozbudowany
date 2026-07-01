@@ -5,6 +5,8 @@ import { auth, db } from '../firebase';
 import { Check, Menu } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
+import { motion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '../utils/animations';
 
 export default function Account({ currentUser, workspaces, onMenuClick }) {
   const [username, setUsername] = useState('');
@@ -98,7 +100,8 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
       </div>
 
       {/* User Data Section */}
-      <div className="bg-card border border-border rounded-xl p-8 mb-8">
+      <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-8">
+      <motion.div variants={staggerItem} className="bg-card border border-border rounded-xl p-8">
         <h2 className="text-xl font-semibold mb-2">Dane osobowe</h2>
         <p className="text-gray-400 text-sm mb-8">Zaktualizuj swoje dane. Możesz zmienić tylko nazwę użytkownika i awatar.</p>
 
@@ -173,24 +176,23 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
              {saveMessage && <span className={`ml-4 text-sm font-medium ${saveMessage.includes('błąd') ? 'text-red-400' : 'text-green-400'}`}>{saveMessage}</span>}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Logout Section */}
-      <div className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
+      <motion.div variants={staggerItem} className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
         <div className="relative z-10">
-           <h2 className="text-xl font-semibold mb-2">Wyloguj</h2>
-           <p className="text-gray-400 text-sm mb-6">Odłącz konto i wyloguj się z sesji</p>
-           
-           <button 
-             onClick={handleLogout}
-             className="bg-red-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-red-500 transition-colors"
-           >
-             Wyloguj
-           </button>
+          <h2 className="text-xl font-semibold mb-2">Wylogowanie</h2>
+          <p className="text-gray-400 text-sm mb-6 max-w-md">Możesz wylogować się ze swojego konta na tym urządzeniu. Zostaniesz przeniesiony do ekranu logowania.</p>
+          <button 
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-red-500 transition-colors"
+          >
+            Wyloguj się
+          </button>
         </div>
-      </div>
-
+      </motion.div>
+      </motion.div>
     </div>
   );
 }

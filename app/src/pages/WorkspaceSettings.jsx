@@ -205,9 +205,9 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   };
 
   const renderGeneralTab = () => (
-    <div className="w-full">
+    <motion.div variants={staggerContainer} initial="hidden" animate="show" className="w-full">
       {hasAdminRights ? (
-        <div className="bg-card border border-border rounded-xl p-8 mb-8">
+        <motion.div variants={staggerItem} className="bg-card border border-border rounded-xl p-8 mb-8">
           <h2 className="text-xl font-semibold mb-2">Dane zespołu</h2>
           <p className="text-gray-400 text-sm mb-8">Zaktualizuj profil swojego zespołu. Możesz zmienić nazwę i paletę kolorystyczną.</p>
 
@@ -276,7 +276,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
               {saveMessage && <span className={`ml-4 text-sm font-medium ${saveMessage.includes('błąd') ? 'text-red-400' : 'text-green-400'}`}>{saveMessage}</span>}
             </div>
           </div>
-        </div>
+        </motion.div>
       ) : (
         <div className="bg-card border border-border rounded-xl p-8 mb-8 flex items-center gap-8">
           <div 
@@ -309,7 +309,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         </div>
       )}
 
-      <div className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
+      <motion.div variants={staggerItem} className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
         <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
         <div className="relative z-10">
           <h2 className="text-xl font-semibold mb-2">
@@ -327,8 +327,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             {isOwner ? 'Zarchiwizuj zespół' : 'Opuść zespół'}
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 
   const renderMembersTab = () => (
@@ -427,8 +427,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
   );
 
   const renderPermissionsTab = () => (
-    <div className="w-full">
-      <div className="bg-card border border-border rounded-xl p-8 mb-8">
+    <motion.div variants={staggerContainer} initial="hidden" animate="show" className="w-full">
+      <motion.div variants={staggerItem} className="bg-card border border-border rounded-xl p-8 mb-8">
         <div className="mb-8">
           <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
             <Shield className="w-5 h-5 text-[#FF4C00]" />
@@ -494,8 +494,8 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             {saveMessage && <span className={`ml-4 text-sm font-medium ${saveMessage.includes('błąd') ? 'text-red-400' : 'text-green-400'}`}>{saveMessage}</span>}
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 
   return (
