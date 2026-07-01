@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.1] - 2026-07-01
+### Dodane
+- **Animacje kaskadowe (Stagger Animations):** Wdrożono nowoczesny, ujednolicony system animacji (oparty o framer-motion) na wszystkich listach w aplikacji. Elementy na listach Kodów QR, Smart Linków, w blokach analityki oraz w oknach ustawień (zespołu i konta użytkownika) ładują się teraz kaskadowo z płynnym, "sprężystym" efektem, nadając aplikacji jeszcze bardziej profesjonalny i "żywy" charakter. Szybkość ładowania zestrojona z opóźnieniem 50ms na każdy kolejny element.
+
 ## [1.4.0] - 2026-06-29
 ### Dodane
 - **Pełna responsywność i dostosowanie do wersji mobilnych (Mobile First UI):** Całkowicie przebudowano i zoptymalizowano interfejs kluczowych ekranów, aby aplikacja działała i wyglądała perfekcyjnie na smartfonach i tabletach.
