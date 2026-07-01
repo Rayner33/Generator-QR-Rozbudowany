@@ -76,7 +76,7 @@ export default function TagEditModal({ tag, onClose }) {
               <button
                 key={color.id}
                 onClick={() => setSelectedColor(color.id)}
-                className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${color.bg}`}
+                className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${color.bg}`}
               >
                 {selectedColor === color.id && <Check size={14} className="text-black" />}
               </button>
@@ -85,7 +85,7 @@ export default function TagEditModal({ tag, onClose }) {
             <div className="relative ml-2">
               <button
                 onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
-                className="w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding relative"
+                className="w-6 h-6 rounded-full flex items-center justify-center transition-transform hover:scale-110 relative"
                 style={{
                   background: selectedColor?.startsWith('#') ? selectedColor : 'conic-gradient(#ffb3ba, #ffdfba, #ffffba, #baffc9, #bae1ff, #d2baff, #ffb3ba)',
                   boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.2)'
