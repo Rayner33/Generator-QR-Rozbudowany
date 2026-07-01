@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import InviteMemberModal from '../components/InviteMemberModal';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 import { staggerContainer, staggerItem, modalAnimation } from '../utils/animations';
+import { getInitials } from '../utils/stringUtils';
 
 export default function WorkspaceSettings({ activeWorkspace, currentUser, workspaces, onMenuClick }) {
   const navigate = useNavigate();
@@ -217,7 +218,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                 className="w-24 h-24 flex items-center justify-center text-white font-bold text-4xl shadow-lg border-4 border-border shrink-0"
                 style={{ background: avatarStyle, borderRadius: '30%' }}
               >
-                {name.charAt(0).toUpperCase()}
+                {getInitials(name, 'W')}
               </div>
 
               <div>
@@ -283,7 +284,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             className="w-24 h-24 flex items-center justify-center text-white font-bold text-4xl shadow-lg border-4 border-border shrink-0"
             style={{ background: avatarStyle, borderRadius: '30%' }}
           >
-            {name.charAt(0).toUpperCase()}
+            {getInitials(name, 'W')}
           </div>
           <div>
             <h2 className="text-xl font-bold mb-2">{name}</h2>
@@ -362,7 +363,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                   className="w-10 h-10 flex items-center justify-center font-bold text-white shadow-sm shrink-0"
                   style={{ background: member.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
                 >
-                  {member.name ? member.name.charAt(0).toUpperCase() : (member.email ? member.email.charAt(0).toUpperCase() : 'U')}
+                  {getInitials(member.name || member.email, 'U')}
                 </div>
                 <div>
                   <p className="font-semibold text-sm flex items-center gap-2">
@@ -653,7 +654,7 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
                     className={`w-full flex items-center gap-4 p-3 rounded-xl border transition-all text-left ${selectedTransferUser?.uid === member.uid ? 'border-blue-500 bg-blue-500/10' : 'border-border bg-card hover:border-gray-500'}`}
                   >
                     <div className="w-10 h-10 flex items-center justify-center font-bold text-white rounded-lg shrink-0" style={{ background: member.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}>
-                      {member.name ? member.name.charAt(0).toUpperCase() : member.email.charAt(0).toUpperCase()}
+                      {getInitials(member.name || member.email, 'U')}
                     </div>
                     <div>
                       <p className="font-semibold text-sm text-white">{member.name || member.email.split('@')[0]}</p>

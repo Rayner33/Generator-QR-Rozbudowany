@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, writeBatch } from 'firebase/firestore';
 import QRModal from '../components/QRModal';
 import { dropdownAnimation, staggerContainer, staggerItem } from '../utils/animations';
+import { getInitials } from '../utils/stringUtils';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -590,7 +591,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                      style={{ background: teamMembers[code.createdBy].avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%', fontSize: '10px' }}
                      title={teamMembers[code.createdBy].name || teamMembers[code.createdBy].email || 'Użytkownik'}
                    >
-                     {teamMembers[code.createdBy].name ? teamMembers[code.createdBy].name.charAt(0).toUpperCase() : (teamMembers[code.createdBy].email ? teamMembers[code.createdBy].email.charAt(0).toUpperCase() : 'U')}
+                     {getInitials(teamMembers[code.createdBy].name || teamMembers[code.createdBy].email, 'U')}
                    </div>
                  )}
                </div>

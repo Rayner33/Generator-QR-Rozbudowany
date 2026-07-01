@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderOutput, AlertTriangle, Check } from 'lucide-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { getInitials } from '../utils/stringUtils';
 
 export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activeWorkspace, collectionName = 'qrcodes' }) {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState('');
@@ -79,7 +80,7 @@ export default function MoveCodeModal({ isOpen, onClose, code, workspaces, activ
                         className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
                         style={{ background: w.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
                       >
-                        {w.name ? w.name.charAt(0).toUpperCase() : 'W'}
+                        {getInitials(w.name, 'W')}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-semibold text-white truncate">{w.name}</div>

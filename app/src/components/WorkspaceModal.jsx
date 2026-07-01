@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { HexColorPicker } from 'react-colorful';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
+import { getInitials } from '../utils/stringUtils';
 
 export default function WorkspaceModal({ isOpen, onClose, currentUser, setActiveWorkspace }) {
   const [name, setName] = useState('');
@@ -117,7 +118,7 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
                 className="w-20 h-20 flex items-center justify-center text-white font-bold text-3xl shadow-lg border-4 border-border shrink-0"
                 style={{ background: avatarStyle, borderRadius: '30%' }}
               >
-                {name ? name.charAt(0).toUpperCase() : 'Z'}
+                {getInitials(name, 'Z')}
               </div>
               
               {/* Style Selection */}

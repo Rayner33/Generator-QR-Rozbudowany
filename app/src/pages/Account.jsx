@@ -7,6 +7,7 @@ import { HexColorPicker } from 'react-colorful';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem } from '../utils/animations';
+import { getInitials } from '../utils/stringUtils';
 
 export default function Account({ currentUser, workspaces, onMenuClick }) {
   const [username, setUsername] = useState('');
@@ -113,7 +114,7 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
               className="w-24 h-24 flex items-center justify-center text-white font-bold text-4xl shadow-lg border-4 border-border shrink-0"
               style={{ background: avatarStyle, borderRadius: '30%' }}
             >
-              {username ? username.charAt(0).toUpperCase() : (currentUser?.email ? currentUser.email.charAt(0).toUpperCase() : 'U')}
+              {getInitials(username || currentUser?.email, 'U')}
             </div>
             
             {/* Style Selection */}

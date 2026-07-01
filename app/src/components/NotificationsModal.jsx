@@ -4,6 +4,7 @@ import { X, Check } from 'lucide-react';
 import { db } from '../firebase';
 import { doc, updateDoc, arrayUnion, getDoc, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { getInitials } from '../utils/stringUtils';
 
 export default function NotificationsModal({ isOpen, onClose, pendingInvites, currentUser, setActiveWorkspace }) {
   const [processingId, setProcessingId] = useState(null);
@@ -124,7 +125,7 @@ export default function NotificationsModal({ isOpen, onClose, pendingInvites, cu
                       className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
                       style={{ background: invite.workspaceAvatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
                     >
-                      {invite.workspaceName ? invite.workspaceName.charAt(0).toUpperCase() : 'Z'}
+                      {getInitials(invite.workspaceName, 'Z')}
                     </div>
                     <div>
                       <p className="text-sm font-semibold mb-0.5">

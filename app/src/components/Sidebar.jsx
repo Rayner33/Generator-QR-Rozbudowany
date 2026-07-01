@@ -7,6 +7,7 @@ import { signOut } from 'firebase/auth';
 import { dropdownAnimation } from '../utils/animations';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { getInitials } from '../utils/stringUtils';
 import Logo from './Logo';
 import pkg from '../../package.json';
 
@@ -73,7 +74,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                 className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
                 style={{ background: activeWorkspace?.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
               >
-                {activeWorkspace ? activeWorkspace.name.charAt(0).toUpperCase() : 'P'}
+                {activeWorkspace ? getInitials(activeWorkspace.name, 'P') : 'P'}
               </div>
               <div>
                 <p className="text-sm font-semibold text-white truncate w-24">
@@ -117,7 +118,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                             className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
                             style={{ background: ws.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
                           >
-                            {ws.name.charAt(0).toUpperCase()}
+                            {getInitials(ws.name, 'W')}
                           </div>
                           <div>
                             <p className={`text-sm font-semibold ${activeWorkspace?.id === ws.id ? 'text-[#f97316]' : 'text-white'}`}>

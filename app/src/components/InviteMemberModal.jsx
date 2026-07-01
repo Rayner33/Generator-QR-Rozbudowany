@@ -4,6 +4,7 @@ import { X, Search } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
+import { getInitials } from '../utils/stringUtils';
 
 export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) {
   const { currentUser } = useAuth();
@@ -130,7 +131,7 @@ export default function InviteMemberModal({ isOpen, onClose, activeWorkspace }) 
                         className="w-10 h-10 flex items-center justify-center font-bold text-white shadow-sm shrink-0"
                         style={{ background: u.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
                       >
-                        {u.name ? u.name.charAt(0).toUpperCase() : u.email.charAt(0).toUpperCase()}
+                        {getInitials(u.name || u.email, 'U')}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-semibold truncate w-32">{u.name || u.email.split('@')[0]}</span>
