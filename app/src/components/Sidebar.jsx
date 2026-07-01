@@ -102,7 +102,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                 className="absolute top-full left-0 right-0 mt-2 bg-[#0a0a0b] border border-border rounded-xl shadow-xl overflow-hidden p-2 z-50 flex flex-col gap-1 origin-top"
               >
                 <div className="relative">
-                  <div className={`max-h-[300px] overflow-y-auto custom-scrollbar flex flex-col gap-1 ${sortedWorkspaces.length > 5 ? 'pr-1' : ''}`}>
+                  <div className={`max-h-[300px] flex flex-col gap-1 ${sortedWorkspaces.length > 5 ? 'overflow-y-auto custom-scrollbar pr-1' : 'overflow-hidden'}`}>
                     {sortedWorkspaces.map(ws => (
                       <div 
                         key={ws.id} 
