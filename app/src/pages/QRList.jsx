@@ -590,7 +590,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                     return (
                       <div 
                         className={`w-5 h-5 flex items-center justify-center font-bold text-white shadow-sm shrink-0 cursor-help ${initials.length > 1 ? 'tracking-tighter' : ''}`}
-                        style={{ background: teamMembers[code.createdBy].avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%', fontSize: initials.length > 1 ? '8.5px' : '10px' }}
+                        style={{ background: teamMembers[code.createdBy].avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%', fontSize: initials.length > 1 ? '8.1px' : '10px' }}
                         title={teamMembers[code.createdBy].name || teamMembers[code.createdBy].email || 'Użytkownik'}
                       >
                         {initials}
