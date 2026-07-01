@@ -518,59 +518,61 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                      >
                        <Download size={14} /> SVG
                      </button>
-                     <button 
-                       onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === code.id ? null : code.id); setIsFilterOpen(false); }}
-                       className="p-1.5 hover:bg-border rounded-md text-gray-400 transition-colors"
-                     >
-                       <MoreVertical size={16} />
-                     </button>
+                     <div className="relative" onMouseLeave={() => setOpenDropdownId(null)}>
+                       <button 
+                         onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === code.id ? null : code.id); setIsFilterOpen(false); }}
+                         className="p-1.5 hover:bg-border rounded-md text-gray-400 transition-colors"
+                       >
+                         <MoreVertical size={16} />
+                       </button>
 
-                     <AnimatePresence>
-                     {openDropdownId === code.id && (
-                        <motion.div 
-                            key={`dropdown-${code.id}`}
-                            {...dropdownAnimation}
-                            onClick={e => e.stopPropagation()} 
-                            className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top"
-                          >
-                            <div className="p-1 flex flex-col" onMouseLeave={() => setHoveredAction(null)}>
-                              {canEdit && (
-                                <button onMouseEnter={() => setHoveredAction('edit')} onClick={() => { onEdit(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors">
-                                  {hoveredAction === 'edit' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
-                                  <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                  <span className="relative z-10 pointer-events-none">Edytuj</span>
+                       <AnimatePresence>
+                       {openDropdownId === code.id && (
+                          <motion.div 
+                              key={`dropdown-${code.id}`}
+                              {...dropdownAnimation}
+                              onClick={e => e.stopPropagation()} 
+                              className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top"
+                            >
+                              <div className="p-1 flex flex-col" onMouseLeave={() => setHoveredAction(null)}>
+                                {canEdit && (
+                                  <button onMouseEnter={() => setHoveredAction('edit')} onClick={() => { onEdit(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors">
+                                    {hoveredAction === 'edit' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                    <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    <span className="relative z-10 pointer-events-none">Edytuj</span>
+                                  </button>
+                                )}
+                                <button onMouseEnter={() => setHoveredAction('duplicate')} onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className={`relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors ${!canEdit && (canArchive || canReset) ? 'border-b border-border mb-1 pb-2' : ''}`}>
+                                  {hoveredAction === 'duplicate' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                  <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                  <span className="relative z-10 pointer-events-none">Duplikuj</span>
                                 </button>
-                              )}
-                              <button onMouseEnter={() => setHoveredAction('duplicate')} onClick={() => { onDuplicate(code); setOpenDropdownId(null); }} className={`relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors ${!canEdit && (canArchive || canReset) ? 'border-b border-border mb-1 pb-2' : ''}`}>
-                                {hoveredAction === 'duplicate' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
-                                <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                <span className="relative z-10 pointer-events-none">Duplikuj</span>
-                              </button>
-                              {canEdit && (
-                                <button onMouseEnter={() => setHoveredAction('move')} onClick={() => { setCodeToMove(code); setOpenDropdownId(null); }} className={`relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors ${(canArchive || canReset) ? 'border-b border-border mb-1 pb-2' : ''}`}>
-                                  {hoveredAction === 'move' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
-                                  <FolderOutput className="w-4 h-4 relative z-10 pointer-events-none" />
-                                  <span className="relative z-10 pointer-events-none">Przenieś</span>
-                                </button>
-                              )}
-                              {canArchive && (
-                                <button onMouseEnter={() => setHoveredAction('archive')} onClick={() => { setCodeToArchive(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 transition-colors">
-                                  {hoveredAction === 'archive' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
-                                  <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
-                                  <span className="relative z-10 pointer-events-none">Archiwizuj</span>
-                                </button>
-                              )}
-                              {canReset && (
-                                <button onMouseEnter={() => setHoveredAction('reset')} onClick={() => { setCodeToReset(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 transition-colors">
-                                  {hoveredAction === 'reset' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
-                                  <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                  <span className="relative z-10 pointer-events-none">Resetuj</span>
-                                </button>
-                              )}
-                            </div>
-                          </motion.div>
-                     )}
-                     </AnimatePresence>
+                                {canEdit && (
+                                  <button onMouseEnter={() => setHoveredAction('move')} onClick={() => { setCodeToMove(code); setOpenDropdownId(null); }} className={`relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-gray-300 transition-colors ${(canArchive || canReset) ? 'border-b border-border mb-1 pb-2' : ''}`}>
+                                    {hoveredAction === 'move' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-white/5 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                    <FolderOutput className="w-4 h-4 relative z-10 pointer-events-none" />
+                                    <span className="relative z-10 pointer-events-none">Przenieś</span>
+                                  </button>
+                                )}
+                                {canArchive && (
+                                  <button onMouseEnter={() => setHoveredAction('archive')} onClick={() => { setCodeToArchive(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 transition-colors">
+                                    {hoveredAction === 'archive' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                    <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                                    <span className="relative z-10 pointer-events-none">Archiwizuj</span>
+                                  </button>
+                                )}
+                                {canReset && (
+                                  <button onMouseEnter={() => setHoveredAction('reset')} onClick={() => { setCodeToReset(code); setOpenDropdownId(null); }} className="relative flex items-center gap-3 w-full text-left px-3 py-2 text-sm text-red-400 transition-colors">
+                                    {hoveredAction === 'reset' && <motion.div layoutId="qr-action-hover" className="absolute inset-0 bg-red-500/10 rounded-lg -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />}
+                                    <svg className="w-4 h-4 relative z-10 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    <span className="relative z-10 pointer-events-none">Resetuj</span>
+                                  </button>
+                                )}
+                              </div>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
+                     </div>
                    </>
                  )}
                </div>

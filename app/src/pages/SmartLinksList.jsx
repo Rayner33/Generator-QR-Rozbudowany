@@ -481,11 +481,13 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                       >
                         <Copy size={14} /> Kopiuj link
                       </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === code.id ? null : code.id); setIsFilterOpen(false); }}
-                        className="p-1.5 hover:bg-border rounded-md text-gray-400 transition-colors relative"
-                      >
-                        <MoreVertical size={16} />
+                      <div className="relative" onMouseLeave={() => setOpenDropdownId(null)}>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === code.id ? null : code.id); setIsFilterOpen(false); }}
+                          className="p-1.5 hover:bg-border rounded-md text-gray-400 transition-colors"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
                         
                         <AnimatePresence>
                         {openDropdownId === code.id && (
@@ -533,7 +535,7 @@ export default function SmartLinksList({ activeWorkspace, workspaces, onEdit, on
                             </motion.div>
                         )}
                         </AnimatePresence>
-                      </button>
+                      </div>
                     </>
                   )}
                 </div>

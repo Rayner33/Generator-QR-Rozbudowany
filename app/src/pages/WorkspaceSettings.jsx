@@ -7,7 +7,7 @@ import { Check, X, Search, MoreVertical, Trash2, Shield, Menu } from 'lucide-rea
 import { motion, AnimatePresence } from 'framer-motion';
 import InviteMemberModal from '../components/InviteMemberModal';
 import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
-import { staggerContainer, staggerItem } from '../utils/animations';
+import { staggerContainer, staggerItem, modalAnimation } from '../utils/animations';
 
 export default function WorkspaceSettings({ activeWorkspace, currentUser, workspaces, onMenuClick }) {
   const navigate = useNavigate();
@@ -543,20 +543,43 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
         {activeTab === 'Uprawnienia' && renderPermissionsTab()}
       </div>
 
+      <AnimatePresence>
       {isConfirmModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4">
-          <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setIsConfirmModalOpen(false)}
+          className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4"
+        >
+          <motion.div 
+            {...modalAnimation}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl"
+          >
             <h3 className="text-red-500 font-bold mb-2 uppercase">{isOwner ? 'Zarchiwizuj zespół' : 'Opuść zespół'}</h3>
             <p className="text-sm text-gray-300 mb-6">Czy na pewno chcesz {isOwner ? 'zarchiwizować ten zespół? Zniknie on z Twojego konta, a wszystkie jego kody przestaną działać. Tylko Administrator bazy może to cofnąć' : 'opuścić ten zespół'}? Tej operacji nie można cofnąć samemu.</p>
             <button onClick={handleDeleteOrLeave} className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg mb-2 transition-colors">ZATWIERDŹ</button>
             <button onClick={() => setIsConfirmModalOpen(false)} className="w-full bg-[#18181b] hover:bg-[#27272a] text-gray-300 font-bold py-3 rounded-lg transition-colors border border-border">ANULUJ</button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {memberToRemove && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setMemberToRemove(null)}
+          className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4"
+        >
+          <motion.div 
+            {...modalAnimation}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0a0a0b] border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col items-center text-center shadow-2xl"
+          >
             <h3 className="text-red-500 font-bold mb-2 uppercase tracking-wide">USUŃ CZŁONKA</h3>
             <p className="text-sm text-gray-400 mb-6">Czy na pewno chcesz usunąć tego członka? Cofnie to jego dostęp do projektów i danych zespołu. Potwierdź, aby kontynuować</p>
             <button 
@@ -580,9 +603,10 @@ export default function WorkspaceSettings({ activeWorkspace, currentUser, worksp
             >
               ANULUJ
             </button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Transfer Ownership Modal */}
       <AnimatePresence>
