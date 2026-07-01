@@ -67,6 +67,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
   const [isTagsDropdownOpen, setIsTagsDropdownOpen] = useState(false);
   const tagsTimeoutRef = useRef(null);
   const filterTimeoutRef = useRef(null);
+  const dropdownTimeoutRef = useRef(null);
   const [tagSearchQuery, setTagSearchQuery] = useState('');
   const [codeForTagManager, setCodeForTagManager] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -518,7 +519,11 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                      >
                        <Download size={14} /> SVG
                      </button>
-                     <div className="relative" onMouseLeave={() => setOpenDropdownId(null)}>
+                     <div 
+                       className="relative" 
+                       onMouseEnter={() => clearTimeout(dropdownTimeoutRef.current)}
+                       onMouseLeave={() => { dropdownTimeoutRef.current = setTimeout(() => setOpenDropdownId(null), 250); }}
+                     >
                        <button 
                          onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === code.id ? null : code.id); setIsFilterOpen(false); }}
                          className="p-1.5 hover:bg-border rounded-md text-gray-400 transition-colors"
