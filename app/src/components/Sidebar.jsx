@@ -14,7 +14,9 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hoveredNav, setHoveredNav] = useState(null);
   const [hoveredWs, setHoveredWs] = useState(null);
+  const hoveredWsRef = useRef(null);
   const dropdownRef = useRef(null);
+  const dropdownTimeoutRef = useRef(null);
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -56,7 +58,12 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
       
       {/* Workspace Selector */}
       <div className="px-4 mb-4">
-        <div ref={dropdownRef} className="relative mb-8 z-30">
+        <div 
+          ref={dropdownRef} 
+          className="relative mb-8 z-30"
+          onMouseEnter={() => clearTimeout(dropdownTimeoutRef.current)}
+          onMouseLeave={() => { dropdownTimeoutRef.current = setTimeout(() => setIsDropdownOpen(false), 250); }}
+        >
           <div 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className="bg-card border border-border rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-gray-500 transition-colors shadow-sm"
@@ -88,42 +95,49 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                 onMouseLeave={() => setHoveredWs(null)}
                 className="absolute top-full left-0 right-0 mt-2 bg-[#0a0a0b] border border-border rounded-xl shadow-xl overflow-hidden p-2 z-50 flex flex-col gap-1 origin-top"
               >
-              {sortedWorkspaces.map(ws => (
-                <div 
-                  key={ws.id} 
-                  onClick={() => { setActiveWorkspace(ws); setIsDropdownOpen(false); onClose?.(); }}
-                  onMouseEnter={() => setHoveredWs(ws.id)}
-                  className="relative p-2 flex items-center justify-between cursor-pointer transition-colors group rounded-lg"
-                >
-                  {hoveredWs === ws.id && (
-                    <motion.div 
-                      layoutId="ws-hover"
-                      className="absolute inset-0 bg-white/5 rounded-lg -z-10"
-                      initial={false}
-                      transition={{ type: "spring", bounce: 0, duration: 0.2 }}
-                    />
-                  )}
-                  <div className="flex items-center gap-3 relative z-10 pointer-events-none">
-                    <div 
-                      className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
-                      style={{ background: ws.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
-                    >
-                      {ws.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className={`text-sm font-semibold ${activeWorkspace?.id === ws.id ? 'text-[#f97316]' : 'text-white'}`}>
-                        {ws.name}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {ws.type === 'personal' || ws.name === 'Personal' ? 'Osobisty workspace' : 'Workspace zespołu'}
-                      </p>
-                    </div>
+                <div className="relative">
+                  <div className="max-h-[300px] overflow-y-auto custom-scrollbar flex flex-col gap-1 pr-1">
+                    {sortedWorkspaces.map(ws => (
+                      <div 
+                        key={ws.id} 
+                        onClick={() => { setActiveWorkspace(ws); setIsDropdownOpen(false); onClose?.(); }}
+                        onMouseEnter={() => setHoveredWs(ws.id)}
+                        className="relative p-2 flex items-center justify-between cursor-pointer transition-colors group rounded-lg shrink-0"
+                      >
+                        {hoveredWs === ws.id && (
+                          <motion.div 
+                            layoutId="ws-hover"
+                            className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                            initial={false}
+                            transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+                          />
+                        )}
+                        <div className="flex items-center gap-3 relative z-10 pointer-events-none">
+                          <div 
+                            className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
+                            style={{ background: ws.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
+                          >
+                            {ws.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className={`text-sm font-semibold ${activeWorkspace?.id === ws.id ? 'text-[#f97316]' : 'text-white'}`}>
+                              {ws.name}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {ws.type === 'personal' || ws.name === 'Personal' ? 'Osobisty workspace' : 'Workspace zespołu'}
+                            </p>
+                          </div>
+                        </div>
+                        {activeWorkspace?.id === ws.id && (
+                           <Check size={18} className="text-[#f97316] shrink-0 ml-2" />
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {activeWorkspace?.id === ws.id && (
-                     <Check size={18} className="text-[#f97316] shrink-0 ml-2" />
+                  {sortedWorkspaces.length > 5 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#0a0a0b] to-transparent pointer-events-none" />
                   )}
                 </div>
-              ))}
               
               <div className="mt-1 pt-1 border-t border-border/50">
                 <div 
