@@ -532,7 +532,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                               key={`dropdown-${code.id}`}
                               {...dropdownAnimation}
                               onClick={e => e.stopPropagation()} 
-                              className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top"
+                              className="absolute top-full right-0 mt-2 w-48 bg-[#0a0a0b] border border-border rounded-xl shadow-2xl z-50 overflow-hidden origin-top before:absolute before:-top-2 before:left-0 before:w-full before:h-2 before:bg-transparent"
                             >
                               <div className="p-1 flex flex-col" onMouseLeave={() => setHoveredAction(null)}>
                                 {canEdit && (
