@@ -70,12 +70,17 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
             className="bg-card border border-border rounded-xl p-3 flex items-center justify-between cursor-pointer hover:border-gray-500 transition-colors shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
-                style={{ background: activeWorkspace?.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
-              >
-                {activeWorkspace ? getInitials(activeWorkspace.name, 'P') : 'P'}
-              </div>
+              {(() => {
+                const initials = activeWorkspace ? getInitials(activeWorkspace.name, 'P') : 'P';
+                return (
+                  <div 
+                    className={`w-10 h-10 flex items-center justify-center text-white font-bold shrink-0 shadow-sm ${initials.length > 1 ? 'text-base tracking-tighter' : 'text-lg'}`}
+                    style={{ background: activeWorkspace?.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
+                  >
+                    {initials}
+                  </div>
+                );
+              })()}
               <div>
                 <p className="text-sm font-semibold text-white truncate w-24">
                   {activeWorkspace ? activeWorkspace.name : 'Ładowanie...'}
@@ -114,12 +119,17 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
                           />
                         )}
                         <div className="flex items-center gap-3 relative z-10 pointer-events-none">
-                          <div 
-                            className="w-10 h-10 flex items-center justify-center text-white font-bold text-lg shrink-0 shadow-sm"
-                            style={{ background: ws.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
-                          >
-                            {getInitials(ws.name, 'W')}
-                          </div>
+                          {(() => {
+                            const initials = getInitials(ws.name, 'W');
+                            return (
+                              <div 
+                                className={`w-10 h-10 flex items-center justify-center text-white font-bold shrink-0 shadow-sm ${initials.length > 1 ? 'text-base tracking-tighter' : 'text-lg'}`}
+                                style={{ background: ws.avatarStyle || 'linear-gradient(to top right, #FF4C00, #9333ea)', borderRadius: '30%' }}
+                              >
+                                {initials}
+                              </div>
+                            );
+                          })()}
                           <div>
                             <p className={`text-sm font-semibold ${activeWorkspace?.id === ws.id ? 'text-[#f97316]' : 'text-white'}`}>
                               {ws.name}
