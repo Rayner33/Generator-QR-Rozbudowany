@@ -125,7 +125,7 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
                   <button
                     key={index}
                     onClick={() => { setAvatarStyle(gradient); setShowColorPicker(false); }}
-                    className={`w-10 h-10 rounded-full transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${avatarStyle === gradient ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : 'border border-border'}`}
+                    className={`w-10 h-10 rounded-full transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${avatarStyle === gradient ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
                     style={{ background: gradient }}
                   />
                 ))}
@@ -133,7 +133,7 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
                 {/* Custom Color Button */}
                 <button 
                   onClick={() => setShowColorPicker(!showColorPicker)}
-                  className={`w-10 h-10 rounded-full border border-border flex items-center justify-center bg-card transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${showColorPicker ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center bg-card transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${showColorPicker ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
                   title="Własny kolor"
                 >
                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-red-500 via-green-500 to-blue-500" />
