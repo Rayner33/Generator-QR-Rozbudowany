@@ -99,6 +99,9 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Ignorujemy zamykanie kliknięciem w tło na urządzeniach mobilnych (użytkownik użyje przycisku X)
+      if (window.innerWidth < 640) return;
+
       // Ignorujemy kliknięcia w same przyciski odpalające, by uniknąć natychmiastowego zamykania
       if (event.target.closest('.color-trigger-btn')) return;
       
