@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.2] - 2026-07-02
+### Poprawione
+- **Optymalizacja widoków mobilnych (Analityka i Edytor):** Usunięto błąd ucinanych przycisków w Analityce oraz ulepszono ich estetykę (usunięto mylący efekt `hover`). Całkowicie przebudowano mobilny układ edytora kodów QR – m.in. skompresowano style do widoku kompaktowej siatki, zrównano przycisk zapisu z szerokością podglądu kodu QR, oraz sprytnie przeniesiono ręczne pole wpisywania HEX do wewnątrz zoptymalizowanego okienka wyboru koloru. Poprawiono system zamykania okien kolorów i płynne skalowanie elementów.
+
 ## [1.4.1] - 2026-07-01
 ### Dodane
 - **Animacje kaskadowe (Stagger Animations):** Wdrożono nowoczesny, ujednolicony system animacji (oparty o framer-motion) na wszystkich listach w aplikacji. Elementy na listach Kodów QR, Smart Linków, w blokach analityki oraz w oknach ustawień (zespołu i konta użytkownika) ładują się teraz kaskadowo z płynnym, "sprężystym" efektem, nadając aplikacji jeszcze bardziej profesjonalny i "żywy" charakter. Szybkość ładowania zestrojona z opóźnieniem 50ms na każdy kolejny element.
