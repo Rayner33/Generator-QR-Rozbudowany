@@ -651,7 +651,10 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                 <span className="w-6 h-6 rounded-full bg-border flex items-center justify-center text-xs">5</span>
                 Kolorystyka
               </h3>
-              <div className="ml-9 relative">
+              <div 
+                className="ml-9 relative"
+                onMouseLeave={() => setOpenColorPicker(null)}
+              >
                 <div className="flex gap-6">
                    <div>
                      <label className="text-xs text-gray-400 block mb-2">Kolor kropek</label>
@@ -690,10 +693,9 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute z-50 top-full left-0 mt-4 bg-card border border-border rounded-lg p-3 shadow-2xl"
-                      onMouseLeave={() => setOpenColorPicker(null)}
+                      className="absolute z-50 bottom-full left-0 mb-3 bg-card border border-border rounded-lg p-3 shadow-2xl origin-bottom-left"
                     >
-                      <div className="relative z-10 space-y-3">
+                      <div className="relative z-10 space-y-3 transform scale-85 sm:scale-100 origin-bottom-left transition-transform">
                         <HexColorPicker 
                           color={openColorPicker === 'dots' ? dotsColor : openColorPicker === 'eye' ? eyeColor : backgroundColor} 
                           onChange={(color) => {
