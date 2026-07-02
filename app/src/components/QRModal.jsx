@@ -96,6 +96,20 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   const [isSaving, setIsSaving] = useState(false);
   const [openColorPicker, setOpenColorPicker] = useState(null);
   const colorPickerRef = useRef(null);
+  const isMouseDownRef = useRef(false);
+
+  useEffect(() => {
+    const handleGlobalMouseDown = () => { isMouseDownRef.current = true; };
+    const handleGlobalMouseUp = () => { isMouseDownRef.current = false; };
+    
+    window.addEventListener('mousedown', handleGlobalMouseDown);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    
+    return () => {
+      window.removeEventListener('mousedown', handleGlobalMouseDown);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -713,7 +727,11 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.15 }}
                       className="fixed sm:absolute z-[60] sm:z-50 top-1/2 sm:top-auto -translate-y-1/2 sm:translate-y-0 sm:bottom-full left-12 sm:left-0 sm:pb-3"
-                      onMouseLeave={() => setOpenColorPicker(null)}
+                      onMouseLeave={() => {
+                        if (!isMouseDownRef.current) {
+                          setOpenColorPicker(null);
+                        }
+                      }}
                     >
                       <div className="bg-card border border-border rounded-xl p-3 shadow-2xl origin-left sm:origin-bottom-left transform scale-85 sm:scale-100 transition-transform relative">
                         <button 
