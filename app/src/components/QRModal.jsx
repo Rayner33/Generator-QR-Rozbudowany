@@ -638,7 +638,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                 <span className="w-6 h-6 rounded-full bg-border flex items-center justify-center text-xs">4</span>
                 Wybierz styl kodu QR
               </h3>
-              <div className="ml-9 flex gap-3">
+              <div className="ml-9 grid grid-cols-3 gap-2 sm:flex sm:gap-3">
                  <StyleCard title="Łagodne" type="rounded" active={styleType === 'rounded'} onClick={() => setStyleType('rounded')} />
                  <StyleCard title="Kropki" type="dots" active={styleType === 'dots'} onClick={() => setStyleType('dots')} />
                  <StyleCard title="Kwadraty" type="square" active={styleType === 'square'} onClick={() => setStyleType('square')} />
@@ -656,11 +656,16 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <label className="text-xs text-gray-400 block mb-2">Kolor kropek</label>
                    <div className="flex items-center gap-3 relative">
                      <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: dotsColor }} onClick={() => setOpenColorPicker('dots')} />
-                     <input type="text" value={dotsColor} onChange={e => setDotsColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#1ea2e4]" />
                      {openColorPicker === 'dots' && (
-                        <div className="absolute z-10 bottom-[110%] left-0">
+                        <div className="absolute z-10 bottom-[120%] left-0 sm:left-auto bg-card border border-border rounded-lg p-3 shadow-xl">
                           <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
-                          <HexColorPicker color={dotsColor} onChange={setDotsColor} />
+                          <div className="relative z-10 space-y-3">
+                            <HexColorPicker color={dotsColor} onChange={setDotsColor} />
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-400 font-semibold">HEX</span>
+                              <input type="text" value={dotsColor} onChange={e => setDotsColor(e.target.value)} className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" />
+                            </div>
+                          </div>
                         </div>
                      )}
                    </div>
@@ -669,11 +674,16 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <label className="text-xs text-gray-400 block mb-2">Kolor oczka</label>
                    <div className="flex items-center gap-3 relative">
                      <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: eyeColor }} onClick={() => setOpenColorPicker('eye')} />
-                     <input type="text" value={eyeColor} onChange={e => setEyeColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#1ea2e4]" />
                      {openColorPicker === 'eye' && (
-                        <div className="absolute z-10 bottom-[110%] left-0">
+                        <div className="absolute z-10 bottom-[120%] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 bg-card border border-border rounded-lg p-3 shadow-xl">
                           <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
-                          <HexColorPicker color={eyeColor} onChange={setEyeColor} />
+                          <div className="relative z-10 space-y-3">
+                            <HexColorPicker color={eyeColor} onChange={setEyeColor} />
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-400 font-semibold">HEX</span>
+                              <input type="text" value={eyeColor} onChange={e => setEyeColor(e.target.value)} className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" />
+                            </div>
+                          </div>
                         </div>
                      )}
                    </div>
@@ -682,11 +692,16 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <label className="text-xs text-gray-400 block mb-2">Kolor tła</label>
                    <div className="flex items-center gap-3 relative">
                      <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: backgroundColor }} onClick={() => setOpenColorPicker('bg')} />
-                     <input type="text" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="bg-card border border-border rounded-lg px-3 py-2 text-sm w-24 uppercase focus:outline-none focus:border-[#1ea2e4]" />
                      {openColorPicker === 'bg' && (
-                        <div className="absolute z-10 bottom-[110%] left-0">
+                        <div className="absolute z-10 bottom-[120%] right-0 bg-card border border-border rounded-lg p-3 shadow-xl">
                           <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
-                          <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} />
+                          <div className="relative z-10 space-y-3">
+                            <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} />
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-400 font-semibold">HEX</span>
+                              <input type="text" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" />
+                            </div>
+                          </div>
                         </div>
                      )}
                    </div>
@@ -774,11 +789,11 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                </div>
              </div>
              
-             <div className="w-full flex justify-end pointer-events-auto lg:absolute lg:bottom-6 lg:right-6">
+             <div className="w-[140px] sm:w-[160px] flex justify-end pointer-events-auto lg:w-full lg:absolute lg:bottom-6 lg:right-6">
                <button 
                  onClick={handleSave} 
                  disabled={isSaving || !isFormValid}
-                 className={`px-4 lg:px-6 py-2.5 lg:py-2 text-sm rounded-xl lg:rounded-lg font-semibold transition-colors text-white shadow-xl lg:shadow-none ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#1ea2e4] hover:bg-[#1891ce]'}`}
+                 className={`w-full lg:w-auto px-4 lg:px-6 py-2.5 lg:py-2 text-sm rounded-xl lg:rounded-lg font-semibold transition-colors text-white shadow-xl lg:shadow-none ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#1ea2e4] hover:bg-[#1891ce]'}`}
                >
                  {isSaving ? 'Zapisywanie...' : 'Zapisz kod QR'}
                </button>
@@ -870,11 +885,11 @@ function StyleIcon({ type }) {
 
 function StyleCard({ title, type, active, onClick }) {
   return (
-    <div onClick={onClick} className={`flex-1 p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${active ? 'border-[#1ea2e4] bg-[#1ea2e4]/10 text-white' : 'border-border bg-card text-gray-400 hover:border-gray-500 hover:text-gray-200'}`}>
+    <div onClick={onClick} className={`flex-1 p-2 sm:p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${active ? 'border-[#1ea2e4] bg-[#1ea2e4]/10 text-white' : 'border-border bg-card text-gray-400 hover:border-gray-500 hover:text-gray-200'}`}>
       <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-black/20 shrink-0">
          <StyleIcon type={type} />
       </div>
-      <span className="text-sm font-semibold">{title}</span>
+      <span className="hidden sm:inline-block text-sm font-semibold">{title}</span>
     </div>
   );
 }
