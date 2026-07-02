@@ -694,7 +694,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                       onMouseLeave={() => setOpenColorPicker(null)}
                     >
                       <div className="bg-card border border-border rounded-xl p-3 shadow-2xl origin-bottom-left transform scale-85 sm:scale-100 transition-transform">
-                        <div className="relative z-10 space-y-3">
+                        <div className="relative z-10 space-y-3 w-[200px]">
                           <HexColorPicker 
                             color={openColorPicker === 'dots' ? dotsColor : openColorPicker === 'eye' ? eyeColor : backgroundColor} 
                             onChange={(color) => {
