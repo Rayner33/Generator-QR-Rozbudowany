@@ -102,12 +102,12 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
     const handleGlobalMouseDown = () => { isMouseDownRef.current = true; };
     const handleGlobalMouseUp = () => { isMouseDownRef.current = false; };
     
-    window.addEventListener('mousedown', handleGlobalMouseDown);
-    window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('mousedown', handleGlobalMouseDown, { capture: true });
+    window.addEventListener('mouseup', handleGlobalMouseUp, { capture: true });
     
     return () => {
-      window.removeEventListener('mousedown', handleGlobalMouseDown);
-      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('mousedown', handleGlobalMouseDown, { capture: true });
+      window.removeEventListener('mouseup', handleGlobalMouseUp, { capture: true });
     };
   }, []);
 
