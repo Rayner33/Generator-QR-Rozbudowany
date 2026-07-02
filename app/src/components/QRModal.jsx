@@ -409,9 +409,9 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         </div>
 
         {/* Content */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden relative">
           {/* Left Form */}
-          <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8 custom-scrollbar pb-[280px] lg:pb-8">
             {/* Step 1: Short link */}
             <div>
               <h3 className="flex items-center gap-3 font-semibold mb-4">
@@ -751,30 +751,34 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
           </div>
 
           {/* Right Preview */}
-          <div className="w-[450px] bg-sidebar border-l border-border flex flex-col items-center justify-center p-8 relative">
-             <div className="w-full aspect-square rounded-3xl flex items-center justify-center relative overflow-hidden shadow-2xl" style={{ backgroundColor }}>
-               {/* Kontener dla qr-code-styling */}
-               <div ref={qrRef} className="w-full h-full flex items-center justify-center p-[6.5%] [&>*]:w-full [&>*]:h-full"></div>
+          <div className="absolute bottom-4 right-4 z-50 flex flex-col gap-3 items-end pointer-events-none lg:pointer-events-auto lg:static lg:w-[450px] lg:bg-sidebar lg:border-l lg:border-border lg:flex-col lg:items-center lg:justify-center lg:p-8 lg:gap-0 lg:shadow-none">
+             
+             {/* QR Container */}
+             <div className="w-[140px] sm:w-[160px] p-3 bg-card border border-border rounded-2xl shadow-2xl flex flex-col items-center justify-center pointer-events-auto lg:w-full lg:bg-transparent lg:border-0 lg:rounded-none lg:shadow-none lg:p-0">
+               <div className="w-full aspect-square rounded-xl lg:rounded-3xl flex items-center justify-center relative overflow-hidden shadow-sm lg:shadow-2xl" style={{ backgroundColor }}>
+                 {/* Kontener dla qr-code-styling */}
+                 <div ref={qrRef} className="w-full h-full flex items-center justify-center p-[6.5%] [&>*]:w-full [&>*]:h-full"></div>
+               </div>
+               
+               <div className="mt-3 lg:mt-10 w-full max-w-sm">
+                 <div className="flex justify-end mb-1.5 lg:mb-3">
+                   <span className={`font-bold tracking-wide text-[9px] lg:text-xs ${scannability.color}`}>{scannability.text}</span>
+                 </div>
+                 <div className="relative w-full h-2 lg:h-3 rounded-full flex ring-1 ring-white/10 bg-gradient-to-r from-red-500 via-orange-500 to-[#10b981]">
+                   <div className="flex-1 border-r border-white/40"></div>
+                   <div className="flex-1 border-r border-white/40"></div>
+                   <div className="flex-1 border-r border-white/40"></div>
+                   <div className="flex-1"></div>
+                   <div className="absolute top-1/2 -translate-y-1/2 w-1 lg:w-1.5 h-3 lg:h-4 bg-white shadow rounded z-10 transition-all duration-500" style={{ left: `calc(${scannability.percent}% - 2px)` }}></div>
+                 </div>
+               </div>
              </div>
              
-             <div className="mt-10 w-full max-w-sm">
-               <div className="flex justify-end text-xs mb-3">
-                 <span className={`font-bold tracking-wide ${scannability.color}`}>{scannability.text}</span>
-               </div>
-               <div className="relative w-full h-3 rounded-full flex ring-1 ring-white/10 bg-gradient-to-r from-red-500 via-orange-500 to-[#10b981]">
-                 <div className="flex-1 border-r border-white/40"></div>
-                 <div className="flex-1 border-r border-white/40"></div>
-                 <div className="flex-1 border-r border-white/40"></div>
-                 <div className="flex-1"></div>
-                 <div className="absolute top-1/2 -translate-y-1/2 w-1.5 h-4 bg-white shadow rounded z-10 transition-all duration-500" style={{ left: `calc(${scannability.percent}% - 3px)` }}></div>
-               </div>
-             </div>
-             
-             <div className="absolute bottom-6 right-6">
+             <div className="w-full flex justify-end pointer-events-auto lg:absolute lg:bottom-6 lg:right-6">
                <button 
                  onClick={handleSave} 
                  disabled={isSaving || !isFormValid}
-                 className={`px-6 py-2 rounded-lg font-semibold transition-colors text-white ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#1ea2e4] hover:bg-[#1891ce]'}`}
+                 className={`px-4 lg:px-6 py-2.5 lg:py-2 text-sm rounded-xl lg:rounded-lg font-semibold transition-colors text-white shadow-xl lg:shadow-none ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#1ea2e4] hover:bg-[#1891ce]'}`}
                >
                  {isSaving ? 'Zapisywanie...' : 'Zapisz kod QR'}
                </button>
