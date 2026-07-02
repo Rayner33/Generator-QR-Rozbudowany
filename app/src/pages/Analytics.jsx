@@ -252,23 +252,23 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
   return (
     <div className="space-y-6 pb-20 relative min-h-[80vh]">
       {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 w-full">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full lg:w-auto">
           <div className="flex items-center gap-4">
-            <button onClick={onMenuClick} className="md:hidden flex items-center justify-center p-2 bg-card border border-border rounded-xl text-white hover:bg-white/5 transition-colors">
+            <button onClick={onMenuClick} className="md:hidden flex items-center justify-center p-2 bg-card border border-border rounded-xl text-white hover:bg-white/5 transition-colors shrink-0">
               <Menu size={24} />
             </button>
             <h1 className="text-2xl md:text-3xl font-semibold">Analityka</h1>
           </div>
           
-          <div className="flex bg-[#0a0a0b] rounded-lg border border-border p-1">
+          <div className="flex w-full md:w-auto bg-[#0a0a0b] rounded-lg border border-border p-1">
             {mainTabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setSelectedMainTab(tab.id)}
                 onMouseEnter={() => setHoveredMainTab(tab.id)}
                 onMouseLeave={() => setHoveredMainTab(null)}
-                className={`relative px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${selectedMainTab === tab.id ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`relative flex-1 md:flex-none px-2 sm:px-4 py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-colors text-center ${selectedMainTab === tab.id ? 'text-white' : 'text-gray-400 hover:text-white'}`}
               >
                 {hoveredMainTab === tab.id && (
                   <motion.div layoutId="analytics-tab-hover" className="absolute inset-0 bg-white/5 rounded-md -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
@@ -276,13 +276,13 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                 {selectedMainTab === tab.id && (
                   <motion.div layoutId="analytics-tab-active" className="absolute inset-0 bg-[#1a1a1c] border border-border rounded-md -z-10" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
                 )}
-                <span className="relative z-10">{tab.label}</span>
+                <span className="relative z-10 whitespace-nowrap">{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full lg:w-auto">
           <div 
             className="relative w-full sm:w-40 z-20" 
             onMouseEnter={() => clearTimeout(timeframeTimeoutRef.current)}
