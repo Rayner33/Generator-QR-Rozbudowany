@@ -651,61 +651,75 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                 <span className="w-6 h-6 rounded-full bg-border flex items-center justify-center text-xs">5</span>
                 Kolorystyka
               </h3>
-              <div className="ml-9 flex gap-6">
-                 <div>
-                   <label className="text-xs text-gray-400 block mb-2">Kolor kropek</label>
-                   <div className="flex items-center gap-3 relative">
-                     <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: dotsColor }} onClick={() => setOpenColorPicker('dots')} />
-                     {openColorPicker === 'dots' && (
-                        <div className="absolute z-10 bottom-[120%] left-0 sm:left-auto bg-card border border-border rounded-lg p-3 shadow-xl">
-                          <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
-                          <div className="relative z-10 space-y-3">
-                            <HexColorPicker color={dotsColor} onChange={setDotsColor} />
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400 font-semibold">HEX</span>
-                              <input type="text" value={dotsColor} onChange={e => setDotsColor(e.target.value)} className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" />
-                            </div>
-                          </div>
-                        </div>
-                     )}
+              <div className="ml-9 relative">
+                <div className="flex gap-6">
+                   <div>
+                     <label className="text-xs text-gray-400 block mb-2">Kolor kropek</label>
+                     <div 
+                       className="w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
+                       style={{ backgroundColor: dotsColor }} 
+                       onClick={() => setOpenColorPicker(openColorPicker === 'dots' ? null : 'dots')} 
+                     />
                    </div>
-                 </div>
-                 <div>
-                   <label className="text-xs text-gray-400 block mb-2">Kolor oczka</label>
-                   <div className="flex items-center gap-3 relative">
-                     <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: eyeColor }} onClick={() => setOpenColorPicker('eye')} />
-                     {openColorPicker === 'eye' && (
-                        <div className="absolute z-10 bottom-[120%] left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 bg-card border border-border rounded-lg p-3 shadow-xl">
-                          <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
-                          <div className="relative z-10 space-y-3">
-                            <HexColorPicker color={eyeColor} onChange={setEyeColor} />
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400 font-semibold">HEX</span>
-                              <input type="text" value={eyeColor} onChange={e => setEyeColor(e.target.value)} className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" />
-                            </div>
-                          </div>
-                        </div>
-                     )}
+                   <div>
+                     <label className="text-xs text-gray-400 block mb-2">Kolor oczka</label>
+                     <div 
+                       className="w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
+                       style={{ backgroundColor: eyeColor }} 
+                       onClick={() => setOpenColorPicker(openColorPicker === 'eye' ? null : 'eye')} 
+                     />
                    </div>
-                 </div>
-                 <div>
-                   <label className="text-xs text-gray-400 block mb-2">Kolor tła</label>
-                   <div className="flex items-center gap-3 relative">
-                     <div className="w-10 h-10 rounded cursor-pointer border border-border" style={{ backgroundColor: backgroundColor }} onClick={() => setOpenColorPicker('bg')} />
-                     {openColorPicker === 'bg' && (
-                        <div className="absolute z-10 bottom-[120%] right-0 bg-card border border-border rounded-lg p-3 shadow-xl">
-                          <div className="fixed inset-0" onClick={() => setOpenColorPicker(null)} />
-                          <div className="relative z-10 space-y-3">
-                            <HexColorPicker color={backgroundColor} onChange={setBackgroundColor} />
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400 font-semibold">HEX</span>
-                              <input type="text" value={backgroundColor} onChange={e => setBackgroundColor(e.target.value)} className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" />
-                            </div>
-                          </div>
-                        </div>
-                     )}
+                   <div>
+                     <label className="text-xs text-gray-400 block mb-2">Kolor tła</label>
+                     <div 
+                       className="w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
+                       style={{ backgroundColor: backgroundColor }} 
+                       onClick={() => setOpenColorPicker(openColorPicker === 'bg' ? null : 'bg')} 
+                     />
                    </div>
-                 </div>
+                </div>
+
+                {openColorPicker && (
+                  <div className="fixed inset-0 z-40" onClick={() => setOpenColorPicker(null)} />
+                )}
+
+                <AnimatePresence>
+                  {openColorPicker && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute z-50 top-full left-0 mt-4 bg-card border border-border rounded-lg p-3 shadow-2xl"
+                      onMouseLeave={() => setOpenColorPicker(null)}
+                    >
+                      <div className="relative z-10 space-y-3">
+                        <HexColorPicker 
+                          color={openColorPicker === 'dots' ? dotsColor : openColorPicker === 'eye' ? eyeColor : backgroundColor} 
+                          onChange={(color) => {
+                            if (openColorPicker === 'dots') setDotsColor(color);
+                            if (openColorPicker === 'eye') setEyeColor(color);
+                            if (openColorPicker === 'bg') setBackgroundColor(color);
+                          }} 
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400 font-semibold">HEX</span>
+                          <input 
+                            type="text" 
+                            value={openColorPicker === 'dots' ? dotsColor : openColorPicker === 'eye' ? eyeColor : backgroundColor} 
+                            onChange={(e) => {
+                              const color = e.target.value;
+                              if (openColorPicker === 'dots') setDotsColor(color);
+                              if (openColorPicker === 'eye') setEyeColor(color);
+                              if (openColorPicker === 'bg') setBackgroundColor(color);
+                            }} 
+                            className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" 
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
