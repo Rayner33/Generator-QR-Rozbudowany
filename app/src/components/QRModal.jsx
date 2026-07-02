@@ -709,10 +709,10 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.15 }}
-                      className="fixed sm:absolute z-[60] sm:z-50 top-1/2 sm:top-auto -translate-y-1/2 sm:translate-y-0 sm:bottom-full left-6 sm:left-0 sm:pb-3"
+                      className="fixed sm:absolute z-[60] sm:z-50 top-1/2 sm:top-auto -translate-y-1/2 sm:translate-y-0 sm:bottom-full left-12 sm:left-0 sm:pb-3"
                       onMouseLeave={() => setOpenColorPicker(null)}
                     >
-                      <div className="bg-card border border-border rounded-xl p-3 shadow-2xl origin-left sm:origin-bottom-left transform sm:scale-100 transition-transform relative">
+                      <div className="bg-card border border-border rounded-xl p-3 shadow-2xl origin-left sm:origin-bottom-left transform scale-85 sm:scale-100 transition-transform relative">
                         <button 
                           onClick={() => setOpenColorPicker(null)}
                           className="absolute -top-3 -right-3 w-7 h-7 bg-background border border-border rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors z-20 sm:hidden shadow-lg"
