@@ -420,7 +420,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4" 
-          onClick={onClose}
+          onMouseDown={onClose}
         >
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
@@ -428,7 +428,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
             className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative" 
-            onClick={e => e.stopPropagation()}
+            onMouseDown={e => e.stopPropagation()}
           >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-sidebar">
