@@ -270,9 +270,6 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                 onMouseLeave={() => setHoveredMainTab(null)}
                 className={`relative flex-1 md:flex-none px-2 sm:px-4 py-1.5 text-[13px] sm:text-sm font-medium rounded-md transition-colors text-center ${selectedMainTab === tab.id ? 'text-white' : 'text-gray-400 hover:text-white'}`}
               >
-                {hoveredMainTab === tab.id && (
-                  <motion.div layoutId="analytics-tab-hover" className="absolute inset-0 bg-white/5 rounded-md z-0" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
-                )}
                 {selectedMainTab === tab.id && (
                   <motion.div layoutId="analytics-tab-active" className="absolute inset-0 bg-[#1a1a1c] border border-border rounded-md z-0" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
                 )}
