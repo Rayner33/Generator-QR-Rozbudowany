@@ -95,6 +95,28 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   const [logoBase64, setLogoBase64] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [openColorPicker, setOpenColorPicker] = useState(null);
+  const colorPickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Ignorujemy kliknięcia w same przyciski odpalające, by uniknąć natychmiastowego zamykania
+      if (event.target.closest('.color-trigger-btn')) return;
+      
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target)) {
+        setOpenColorPicker(null);
+      }
+    };
+
+    if (openColorPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [openColorPicker]);
   
   // UTM
   const [utmData, setUtmData] = useState(null);
@@ -656,7 +678,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <div>
                      <label className="text-xs text-gray-400 block mb-2">Kolor kropek</label>
                      <div 
-                       className="w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
+                       className="color-trigger-btn w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
                        style={{ backgroundColor: dotsColor }} 
                        onClick={() => setOpenColorPicker(openColorPicker === 'dots' ? null : 'dots')} 
                      />
@@ -664,7 +686,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <div>
                      <label className="text-xs text-gray-400 block mb-2">Kolor oczka</label>
                      <div 
-                       className="w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
+                       className="color-trigger-btn w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
                        style={{ backgroundColor: eyeColor }} 
                        onClick={() => setOpenColorPicker(openColorPicker === 'eye' ? null : 'eye')} 
                      />
@@ -672,28 +694,31 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
                    <div>
                      <label className="text-xs text-gray-400 block mb-2">Kolor tła</label>
                      <div 
-                       className="w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
+                       className="color-trigger-btn w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
                        style={{ backgroundColor: backgroundColor }} 
                        onClick={() => setOpenColorPicker(openColorPicker === 'bg' ? null : 'bg')} 
                      />
                    </div>
                 </div>
 
-                {openColorPicker && (
-                  <div className="fixed inset-0 z-40" onClick={() => setOpenColorPicker(null)} />
-                )}
-
                 <AnimatePresence>
                   {openColorPicker && (
                     <motion.div 
+                      ref={colorPickerRef}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute z-50 bottom-full left-0 pb-3"
+                      className="fixed sm:absolute z-[60] sm:z-50 top-1/2 sm:top-auto -translate-y-1/2 sm:translate-y-0 sm:bottom-full left-6 sm:left-0 sm:pb-3"
                       onMouseLeave={() => setOpenColorPicker(null)}
                     >
-                      <div className="bg-card border border-border rounded-xl p-3 shadow-2xl origin-bottom-left transform scale-85 sm:scale-100 transition-transform">
+                      <div className="bg-card border border-border rounded-xl p-3 shadow-2xl origin-left sm:origin-bottom-left transform sm:scale-100 transition-transform relative">
+                        <button 
+                          onClick={() => setOpenColorPicker(null)}
+                          className="absolute -top-3 -right-3 w-7 h-7 bg-background border border-border rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors z-20 sm:hidden shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                         <div className="relative z-10 space-y-3 w-[200px]">
                           <HexColorPicker 
                             color={openColorPicker === 'dots' ? dotsColor : openColorPicker === 'eye' ? eyeColor : backgroundColor} 
