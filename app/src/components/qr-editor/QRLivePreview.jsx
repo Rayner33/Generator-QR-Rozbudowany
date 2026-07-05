@@ -2,6 +2,42 @@ import React, { useEffect, useRef, useState } from 'react';
 import QRCodeStyling from 'qr-code-styling';
 import { useQREditor } from './QREditorContext';
 
+const drawFilledStroke = (targetCtx, sourceCanvas, x, y, strokeRadius) => {
+  // Zabezpieczenie przed półprzezroczystymi artefaktami na krawędziach (Utwardzenie kanału Alpha)
+  // Wymusza pełną nieprzezroczystość dla wygładzonych pikseli oryginalnego logo przed propagacją obrysu
+  const sCtx = sourceCanvas.getContext('2d');
+  const imgData = sCtx.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
+  const data = imgData.data;
+  for (let i = 3; i < data.length; i += 4) {
+    data[i] = data[i] > 10 ? 255 : 0;
+  }
+  sCtx.putImageData(imgData, 0, 0);
+
+  // Rysujemy po całym promieniu od 1px do strokeRadius, by wypełnić wnętrze obrysu
+  // Eliminuje to "dziury" pomiędzy obwodem a oryginalnym obrazem w przypadku cienkich detali.
+  for (let r = 1; r <= strokeRadius; r += 1) {
+    const steps = Math.max(8, Math.ceil(Math.PI * 2 * r));
+    for (let i = 0; i < steps; i++) {
+      const angle = (i / steps) * Math.PI * 2;
+      const dx = Math.cos(angle) * r;
+      const dy = Math.sin(angle) * r;
+      targetCtx.drawImage(sourceCanvas, x + dx, y + dy);
+    }
+  }
+  // Rysowanie obwodu dla ułamkowych promieni (precyzja krawędzi)
+  if (strokeRadius % 1 !== 0 && strokeRadius > 0) {
+    const steps = Math.max(8, Math.ceil(Math.PI * 2 * strokeRadius));
+    for (let i = 0; i < steps; i++) {
+      const angle = (i / steps) * Math.PI * 2;
+      const dx = Math.cos(angle) * strokeRadius;
+      const dy = Math.sin(angle) * strokeRadius;
+      targetCtx.drawImage(sourceCanvas, x + dx, y + dy);
+    }
+  }
+  // Zamalowanie absolutnego centrum
+  targetCtx.drawImage(sourceCanvas, x, y);
+};
+
 export default function QRLivePreview({ qrData, externalDesignData = null }) {
   const canvasRef = useRef(null);
   const contextEditor = useQREditor();
@@ -153,29 +189,28 @@ export default function QRLivePreview({ qrData, externalDesignData = null }) {
           offCtx.fillStyle = 'black';
           offCtx.fillRect(0, 0, logoW, logoH);
 
-          // Dynamiczna liczba kroków zapewnia 1 krok na każdy 1 piksel obwodu - koniec z poszarpanymi brzegami!
-          const steps = Math.max(32, Math.ceil(Math.PI * 2 * strokeW));
-          
           // Zawsze wycinamy obrys w kropkach QR
           qrLayerCtx.globalCompositeOperation = 'destination-out';
-          for (let i = 0; i < steps; i++) {
-            const angle = (i / steps) * Math.PI * 2;
-            const dx = Math.cos(angle) * strokeW;
-            const dy = Math.sin(angle) * strokeW;
-            qrLayerCtx.drawImage(offCanvas, logoX + dx, logoY + dy);
-          }
+          drawFilledStroke(qrLayerCtx, offCanvas, logoX, logoY, strokeW);
           qrLayerCtx.globalCompositeOperation = 'source-over';
 
           // Jeśli mamy własny kolor, rysujemy obrys pod spodem (na ctx) przed nałożeniem kropek
           if (!useHolePunchForLogo) {
-            offCtx.fillStyle = editor.logoStrokeColor;
-            offCtx.fillRect(0, 0, logoW, logoH);
-            for (let i = 0; i < steps; i++) {
-              const angle = (i / steps) * Math.PI * 2;
-              const dx = Math.cos(angle) * strokeW;
-              const dy = Math.sin(angle) * strokeW;
-              ctx.drawImage(offCanvas, logoX + dx, logoY + dy);
-            }
+              const tCtx = offCanvas.getContext('2d');
+              tCtx.fillStyle = useHolePunchForLogo ? 'black' : (editor.logoStrokeColor || '#ffffff');
+              tCtx.fillRect(0, 0, logoW, logoH);
+              
+              // Zabezpieczenie przed półprzezroczystymi artefaktami na krawędziach (Utwardzenie kanału Alpha)
+              // Konwertuje antyaliasing i cienie oryginalnego logo w twardą maskę o kryciu 100%.
+              const imgData = tCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+              const data = imgData.data;
+              for (let i = 3; i < data.length; i += 4) {
+                  data[i] = data[i] > 10 ? 255 : 0;
+              }
+              tCtx.putImageData(imgData, 0, 0);
+              
+              // Wypełniamy obrys od 1px do strokeRadius
+              drawFilledStroke(ctx, offCanvas, logoX, logoY, strokeW);
           }
         }
       }
@@ -382,26 +417,14 @@ export const generateCustomQRDataURL = async (qrData, editor, size = 1024) => {
       offCtx.fillStyle = 'black';
       offCtx.fillRect(0, 0, logoW, logoH);
 
-      const steps = Math.max(32, Math.ceil(Math.PI * 2 * strokeW));
-      
       qrLayerCtx.globalCompositeOperation = 'destination-out';
-      for (let i = 0; i < steps; i++) {
-        const angle = (i / steps) * Math.PI * 2;
-        const dx = Math.cos(angle) * strokeW;
-        const dy = Math.sin(angle) * strokeW;
-        qrLayerCtx.drawImage(offCanvas, logoX + dx, logoY + dy);
-      }
+      drawFilledStroke(qrLayerCtx, offCanvas, logoX, logoY, strokeW);
       qrLayerCtx.globalCompositeOperation = 'source-over';
 
       if (!useHolePunchForLogo) {
         offCtx.fillStyle = editor.logoStrokeColor;
         offCtx.fillRect(0, 0, logoW, logoH);
-        for (let i = 0; i < steps; i++) {
-          const angle = (i / steps) * Math.PI * 2;
-          const dx = Math.cos(angle) * strokeW;
-          const dy = Math.sin(angle) * strokeW;
-          ctx.drawImage(offCanvas, logoX + dx, logoY + dy);
-        }
+        drawFilledStroke(ctx, offCanvas, logoX, logoY, strokeW);
       }
     }
   }

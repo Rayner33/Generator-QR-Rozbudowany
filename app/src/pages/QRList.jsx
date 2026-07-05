@@ -302,86 +302,87 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
             
             if (logoStrokeW > 0) {
               const useHolePunchForLogo = d.backgroundType === 'gradient' || !d.logoStrokeColor;
-              const imgId = "logo-img-" + Math.random().toString(36).substr(2, 9);
-              imageEl.setAttribute("id", imgId);
               
-              let defs = svgEl.querySelector("defs");
-              if (!defs) {
-                defs = doc.createElementNS(svgns, "defs");
-                svgEl.insertBefore(defs, svgEl.firstChild);
+              // Rozwiązanie problemu z powielaniem się krzywych w programach wektorowych (np. Illustrator):
+              // Zamiast generować 180 nakładających się na siebie tagów <use> jako wektorowy obrys, 
+              // renderujemy JEDEN płaski obraz o wysokiej rozdzielczości na wirtualnym płótnie.
+              const originalBase64 = d.logoImage || code.logoBase64;
+              const logoImgObj = new Image();
+              logoImgObj.crossOrigin = "anonymous";
+              await new Promise((resolve) => {
+                logoImgObj.onload = resolve;
+                logoImgObj.onerror = resolve; 
+                logoImgObj.src = originalBase64;
+              });
+
+              const scale = 4; // 4x wyższa rozdzielczość dla idealnej ostrości krawędzi maski
+              const sw = (imgW + 2 * logoStrokeW) * scale;
+              const sh = (imgH + 2 * logoStrokeW) * scale;
+              const cStroke = logoStrokeW * scale;
+              
+              const sCanvas = document.createElement('canvas');
+              sCanvas.width = sw;
+              sCanvas.height = sh;
+              const sCtx = sCanvas.getContext('2d');
+              
+              const tempCanvas = document.createElement('canvas');
+              tempCanvas.width = imgW * scale;
+              tempCanvas.height = imgH * scale;
+              const tCtx = tempCanvas.getContext('2d');
+              tCtx.drawImage(logoImgObj, 0, 0, imgW * scale, imgH * scale);
+              tCtx.globalCompositeOperation = 'source-in';
+              
+              // Jeśli wycinamy dziurę w masce SVG, obrys musi być czarny.
+              // Jeśli jest to zwykły kolor, używamy zdefiniowanego koloru.
+              tCtx.fillStyle = useHolePunchForLogo ? 'black' : (d.logoStrokeColor || '#ffffff');
+              tCtx.fillRect(0, 0, imgW * scale, imgH * scale);
+              
+              // Utwardzenie krawędzi (Binary Alpha Threshold)
+              // Zabezpiecza przed efektem półprzezroczystych szarych widm na obrzeżach obrysu.
+              // Przekształca miękki antyaliasing logo w idealnie 100% twardą maskę bazową.
+              const imgData = tCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+              const data = imgData.data;
+              for (let i = 3; i < data.length; i += 4) {
+                 data[i] = data[i] > 10 ? 255 : 0;
               }
+              tCtx.putImageData(imgData, 0, 0);
               
-              const steps = Math.max(180, Math.ceil(Math.PI * 2 * logoStrokeW * 8));
+              // Wypełniamy obrys od 1px do cStroke (aby uniknąć "pustych środków" przy drobnych detalach logo)
+              for (let r = 1; r <= cStroke; r += 1) {
+                  const steps = Math.max(8, Math.ceil(Math.PI * 2 * r));
+                  for (let i = 0; i < steps; i++) {
+                      const angle = (i / steps) * Math.PI * 2;
+                      const dx = Math.cos(angle) * r;
+                      const dy = Math.sin(angle) * r;
+                      sCtx.drawImage(tempCanvas, cStroke + dx, cStroke + dy);
+                  }
+              }
+              if (cStroke % 1 !== 0 && cStroke > 0) {
+                  const steps = Math.max(8, Math.ceil(Math.PI * 2 * cStroke));
+                  for (let i = 0; i < steps; i++) {
+                      const angle = (i / steps) * Math.PI * 2;
+                      const dx = Math.cos(angle) * cStroke;
+                      const dy = Math.sin(angle) * cStroke;
+                      sCtx.drawImage(tempCanvas, cStroke + dx, cStroke + dy);
+                  }
+              }
+              sCtx.drawImage(tempCanvas, cStroke, cStroke);
+              
+              const strokeDataUrl = sCanvas.toDataURL('image/png');
+              
+              const strokeImageEl = doc.createElementNS(svgns, "image");
+              strokeImageEl.setAttribute("x", imgX - logoStrokeW);
+              strokeImageEl.setAttribute("y", imgY - logoStrokeW);
+              strokeImageEl.setAttribute("width", imgW + 2 * logoStrokeW);
+              strokeImageEl.setAttribute("height", imgH + 2 * logoStrokeW);
+              strokeImageEl.setAttribute("href", strokeDataUrl);
+              strokeImageEl.setAttributeNS("http://www.w3.org/1999/xlink", "href", strokeDataUrl);
 
               if (useHolePunchForLogo) {
                  const currentMaskEl = getOrCreateMask();
-                 const blackFilterId = "black-filter-" + Math.random().toString(36).substr(2, 9);
-                 const blackFilterEl = doc.createElementNS(svgns, "filter");
-                 blackFilterEl.setAttribute("id", blackFilterId);
-                 blackFilterEl.setAttribute("x", "-20%");
-                 blackFilterEl.setAttribute("y", "-20%");
-                 blackFilterEl.setAttribute("width", "140%");
-                 blackFilterEl.setAttribute("height", "140%");
-                 blackFilterEl.setAttribute("color-interpolation-filters", "sRGB");
-                 blackFilterEl.innerHTML = `
-                   <feComponentTransfer in="SourceAlpha" result="tightAlpha">
-                     <feFuncA type="linear" slope="2" intercept="-0.5" />
-                   </feComponentTransfer>
-                   <feFlood flood-color="black" result="color" />
-                   <feComposite in="color" in2="tightAlpha" operator="in" />
-                 `;
-                 defs.appendChild(blackFilterEl);
-                 
-                 const maskStampGroup = doc.createElementNS(svgns, "g");
-                 maskStampGroup.setAttribute("filter", `url(#${blackFilterId})`);
-                 
-                 for (let i = 0; i < steps; i++) {
-                    const angle = (i / steps) * Math.PI * 2;
-                    const dx = Math.cos(angle) * logoStrokeW;
-                    const dy = Math.sin(angle) * logoStrokeW;
-                    const useEl = doc.createElementNS(svgns, "use");
-                    useEl.setAttribute("href", `#${imgId}`);
-                    useEl.setAttributeNS("http://www.w3.org/1999/xlink", "href", `#${imgId}`);
-                    useEl.setAttribute("x", dx);
-                    useEl.setAttribute("y", dy);
-                    maskStampGroup.appendChild(useEl);
-                 }
-                 currentMaskEl.appendChild(maskStampGroup);
-                 
+                 currentMaskEl.appendChild(strokeImageEl);
               } else {
-                 const logoStrokeColor = d.logoStrokeColor || '#ffffff';
-                 const fillFilterId = "fill-color-" + Math.random().toString(36).substr(2, 9);
-                 const filterEl = doc.createElementNS(svgns, "filter");
-                 filterEl.setAttribute("id", fillFilterId);
-                 filterEl.setAttribute("x", "-20%");
-                 filterEl.setAttribute("y", "-20%");
-                 filterEl.setAttribute("width", "140%");
-                 filterEl.setAttribute("height", "140%");
-                 filterEl.setAttribute("color-interpolation-filters", "sRGB");
-                 filterEl.innerHTML = `
-                   <feComponentTransfer in="SourceAlpha" result="tightAlpha">
-                     <feFuncA type="linear" slope="2" intercept="-0.5" />
-                   </feComponentTransfer>
-                   <feFlood flood-color="${logoStrokeColor}" result="color" />
-                   <feComposite in="color" in2="tightAlpha" operator="in" />
-                 `;
-                 defs.appendChild(filterEl);
-                 
-                 const strokeGroup = doc.createElementNS(svgns, "g");
-                 strokeGroup.setAttribute("filter", `url(#${fillFilterId})`);
-                 
-                 for (let i = 0; i < steps; i++) {
-                    const angle = (i / steps) * Math.PI * 2;
-                    const dx = Math.cos(angle) * logoStrokeW;
-                    const dy = Math.sin(angle) * logoStrokeW;
-                    const useEl = doc.createElementNS(svgns, "use");
-                    useEl.setAttribute("href", `#${imgId}`);
-                    useEl.setAttributeNS("http://www.w3.org/1999/xlink", "href", `#${imgId}`);
-                    useEl.setAttribute("x", dx);
-                    useEl.setAttribute("y", dy);
-                    strokeGroup.appendChild(useEl);
-                 }
-                 imageEl.parentNode.insertBefore(strokeGroup, imageEl);
+                 imageEl.parentNode.insertBefore(strokeImageEl, imageEl);
               }
             }
           }
@@ -401,16 +402,19 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
             const strokeW = d.textStrokeWidth * 1.5 * svgScaleFactor;
             const useHolePunchForText = d.backgroundType === 'gradient' || !d.textStrokeColor;
             
+            // Rozwiązanie problemu Illustratora: ignoruje on dominant-baseline="central"
+            // Wyliczamy ręcznie matematyczny "alphabetic baseline" przesuwając tekst w dół o ok. 35% wysokości fontu
+            const baselineAdjustedY = textY + (textFontSize * 0.35);
+            
             if (useHolePunchForText) {
                const currentMaskEl = getOrCreateMask();
                const textHoleEl = doc.createElementNS(svgns, "text");
                textHoleEl.setAttribute("x", textX);
-               textHoleEl.setAttribute("y", textY);
+               textHoleEl.setAttribute("y", baselineAdjustedY);
                textHoleEl.setAttribute("font-family", d.textFont || 'Arial');
                textHoleEl.setAttribute("font-size", `${textFontSize}px`);
                textHoleEl.setAttribute("font-weight", d.textBold ? 'bold' : 'normal');
                textHoleEl.setAttribute("text-anchor", "middle");
-               textHoleEl.setAttribute("dominant-baseline", "central");
                textHoleEl.setAttribute("stroke", "black");
                textHoleEl.setAttribute("stroke-width", strokeW);
                textHoleEl.setAttribute("stroke-linejoin", "round");
@@ -421,12 +425,11 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                let strokeColor = d.textStrokeColor || '#ffffff';
                const textStrokeEl = doc.createElementNS(svgns, "text");
                textStrokeEl.setAttribute("x", textX);
-               textStrokeEl.setAttribute("y", textY);
+               textStrokeEl.setAttribute("y", baselineAdjustedY);
                textStrokeEl.setAttribute("font-family", d.textFont || 'Arial');
                textStrokeEl.setAttribute("font-size", `${textFontSize}px`);
                textStrokeEl.setAttribute("font-weight", d.textBold ? 'bold' : 'normal');
                textStrokeEl.setAttribute("text-anchor", "middle");
-               textStrokeEl.setAttribute("dominant-baseline", "central");
                textStrokeEl.setAttribute("stroke", strokeColor);
                textStrokeEl.setAttribute("stroke-width", strokeW);
                textStrokeEl.setAttribute("stroke-linejoin", "round");
@@ -435,14 +438,14 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
             }
           }
           
+          const baselineAdjustedY = textY + (textFontSize * 0.35);
           const textEl = doc.createElementNS(svgns, "text");
           textEl.setAttribute("x", textX);
-          textEl.setAttribute("y", textY);
+          textEl.setAttribute("y", baselineAdjustedY);
           textEl.setAttribute("font-family", d.textFont || 'Arial');
           textEl.setAttribute("font-size", `${textFontSize}px`);
           textEl.setAttribute("font-weight", d.textBold ? 'bold' : 'normal');
           textEl.setAttribute("text-anchor", "middle");
-          textEl.setAttribute("dominant-baseline", "central");
           textEl.setAttribute("fill", textColor);
           textEl.textContent = d.textValue;
           svgEl.appendChild(textEl);
