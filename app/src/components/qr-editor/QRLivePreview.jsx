@@ -38,13 +38,13 @@ const drawFilledStroke = (targetCtx, sourceCanvas, x, y, strokeRadius) => {
   targetCtx.drawImage(sourceCanvas, x, y);
 };
 
-export default function QRLivePreview({ qrData, externalDesignData = null }) {
+export default function QRLivePreview({ qrData, externalDesignData = null, renderSize = 1000 }) {
   const canvasRef = useRef(null);
   const contextEditor = useQREditor();
   const editor = externalDesignData || contextEditor;
   const [qrCodeInstance] = useState(() => new QRCodeStyling({
-    width: 1000,
-    height: 1000,
+    width: renderSize,
+    height: renderSize,
     type: "svg",
     margin: 0,
     qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" }, // H for high error correction (better for logos)
@@ -116,7 +116,7 @@ export default function QRLivePreview({ qrData, externalDesignData = null }) {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const size = 1000;
+      const size = renderSize;
       canvas.width = size;
       canvas.height = size;
 

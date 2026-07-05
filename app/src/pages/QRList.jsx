@@ -1082,6 +1082,31 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
   );
 }
 
+const renderQueue = [];
+let isRenderingQueue = false;
+
+const processRenderQueue = () => {
+  if (renderQueue.length === 0) {
+    isRenderingQueue = false;
+    return;
+  }
+  isRenderingQueue = true;
+  const task = renderQueue.shift();
+  task();
+  
+  // Zwalniamy wątek na jedną klatkę, aby przeglądarka zdążyła narysować Canvas bez zacinania strony
+  requestAnimationFrame(() => {
+    setTimeout(processRenderQueue, 16);
+  });
+};
+
+const enqueueRender = (task) => {
+  renderQueue.push(task);
+  if (!isRenderingQueue) {
+    processRenderQueue();
+  }
+};
+
 function QRPreviewItem({ code }) {
   const [showPreview, setShowPreview] = React.useState(false);
   const containerRef = React.useRef(null);
@@ -1091,14 +1116,11 @@ function QRPreviewItem({ code }) {
     
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
-        // Niewielkie opóźnienie staggerowe, by masowe pojawianie się kodów (np. na dużym ekranie)
-        // nie blokowało wątku w jednej milisekundzie.
-        setTimeout(() => {
-           setShowPreview(true);
-        }, 50 + Math.random() * 150);
+        // Wrzucamy renderowanie do globalnej kolejki, aby zapobiec blokowaniu głównego wątku
+        enqueueRender(() => setShowPreview(true));
         observer.disconnect();
       }
-    }, { rootMargin: '300px' }); // Renderuj z wyprzedzeniem 300px przed wejściem na ekran
+    }, { rootMargin: '150px' }); // Renderuj z wyprzedzeniem 150px przed wejściem na ekran
     
     observer.observe(containerRef.current);
     return () => observer.disconnect();
@@ -1150,7 +1172,7 @@ function QRPreviewItem({ code }) {
     <div ref={containerRef} className="w-full h-full relative overflow-hidden rounded-[inherit] flex items-center justify-center">
       {showPreview ? (
         <div className="w-full h-full [&>canvas]:w-full [&>canvas]:h-full [&>canvas]:object-contain">
-          <QRLivePreview qrData={getQrDataToEncode(code)} externalDesignData={designData} />
+          <QRLivePreview qrData={getQrDataToEncode(code)} externalDesignData={designData} renderSize={300} />
         </div>
       ) : (
         <div className="w-6 h-6 border-2 border-[#009de2] border-t-transparent rounded-full animate-spin"></div>
