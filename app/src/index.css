@@ -46,7 +46,7 @@
 .quill-dark .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke, 
 .quill-dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke, 
 .quill-dark .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke {
-  stroke: #1ea2e4;
+  stroke: #009de2;
 }
 
 .quill-dark .ql-snow.ql-toolbar button:hover .ql-fill, 
@@ -61,7 +61,7 @@
 .quill-dark .ql-snow .ql-toolbar .ql-picker-item:hover .ql-fill, 
 .quill-dark .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill, 
 .quill-dark .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-fill {
-  fill: #1ea2e4;
+  fill: #009de2;
 }
 
 .quill-dark .ql-editor.ql-blank::before {
@@ -135,15 +135,15 @@
 }
 
 .quill-dark .ql-snow .ql-tooltip input[type="text"] {
-  @apply bg-[#0a0a0b] border border-border text-white rounded px-3 py-1 outline-none transition-colors focus:border-[#1ea2e4];
+  @apply bg-[#0a0a0b] border border-border text-white rounded px-3 py-1 outline-none transition-colors focus:border-[#009de2];
 }
 
 .quill-dark .ql-snow .ql-tooltip a.ql-action {
-  @apply text-[#1ea2e4] hover:text-blue-400 font-medium transition-colors ml-3;
+  @apply text-[#009de2] hover:text-blue-400 font-medium transition-colors ml-3;
 }
 
 .quill-dark .ql-snow .ql-tooltip a.ql-action::before {
-  @apply text-[#1ea2e4];
+  @apply text-[#009de2];
 }
 
 .quill-dark .ql-snow .ql-tooltip a.ql-remove {

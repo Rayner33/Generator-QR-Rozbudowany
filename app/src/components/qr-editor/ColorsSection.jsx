@@ -139,7 +139,7 @@ export default function ColorsSection({ type }) {
         <div className="relative shrink-0 w-full md:w-[200px]" ref={colorPickerRef} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           <div 
             onClick={() => setShowPicker(!showPicker)}
-            className={`relative w-full h-[120px] md:h-[200px] rounded-xl border-2 cursor-pointer shadow-lg transition-colors overflow-hidden group ${showPicker ? 'border-[#1ea2e4]' : 'border-border hover:border-[#1ea2e4]'}`}
+            className={`relative w-full h-[120px] md:h-[200px] rounded-xl border-2 cursor-pointer shadow-lg transition-colors overflow-hidden group ${showPicker ? 'border-[#009de2]' : 'border-border hover:border-[#009de2]'}`}
             style={currentType === 'solid' ? { backgroundColor: currentColor } : getGradientStyle(currentGradient)}
           >
             <div className="absolute bottom-2 right-2 w-8 h-8 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center transition-colors group-hover:bg-white/40">
@@ -167,13 +167,13 @@ export default function ColorsSection({ type }) {
                   <div className="flex gap-2 mb-3 bg-[#18181b] p-1 rounded-lg border border-border">
                     <button
                       onClick={() => setActiveGradientStop(0)}
-                      className={`flex-1 py-1 text-xs rounded-md transition-colors ${activeGradientStop === 0 ? 'bg-[#1ea2e4]/10 text-[#1ea2e4] font-medium' : 'text-gray-400 hover:text-gray-200'}`}
+                      className={`flex-1 py-1 text-xs rounded-md transition-colors ${activeGradientStop === 0 ? 'bg-[#009de2]/10 text-[#009de2] font-medium' : 'text-gray-400 hover:text-gray-200'}`}
                     >
                       Początkowy
                     </button>
                     <button
                       onClick={() => setActiveGradientStop(1)}
-                      className={`flex-1 py-1 text-xs rounded-md transition-colors ${activeGradientStop === 1 ? 'bg-[#1ea2e4]/10 text-[#1ea2e4] font-medium' : 'text-gray-400 hover:text-gray-200'}`}
+                      className={`flex-1 py-1 text-xs rounded-md transition-colors ${activeGradientStop === 1 ? 'bg-[#009de2]/10 text-[#009de2] font-medium' : 'text-gray-400 hover:text-gray-200'}`}
                     >
                       Końcowy
                     </button>
@@ -204,7 +204,7 @@ export default function ColorsSection({ type }) {
               <button
                 key={i}
                 onClick={() => setColor(color)}
-                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${currentColor?.toLowerCase() === color.toLowerCase() ? 'shadow-[inset_0_0_0_2px_#1ea2e4]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#1ea2e4]'}`}
+                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${currentColor?.toLowerCase() === color.toLowerCase() ? 'shadow-[inset_0_0_0_2px_#009de2]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#009de2]'}`}
                 style={{ backgroundColor: color }}
               />
             ))
@@ -213,7 +213,7 @@ export default function ColorsSection({ type }) {
               <button
                 key={i}
                 onClick={() => setGradient(grad)}
-                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${isGradActive(grad) ? 'shadow-[inset_0_0_0_2px_#1ea2e4]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#1ea2e4]'}`}
+                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${isGradActive(grad) ? 'shadow-[inset_0_0_0_2px_#009de2]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#009de2]'}`}
                 style={getGradientStyle(grad)}
               />
             ))

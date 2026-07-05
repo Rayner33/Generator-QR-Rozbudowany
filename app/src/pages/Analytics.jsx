@@ -87,7 +87,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
   const [utmTab, setUtmTab] = useState('Source');
 
   const isQr = selectedMainTab === 'qr';
-  const themeColor = isQr ? '#1ea2e4' : '#8b5cf6';
+  const themeColor = isQr ? '#009de2' : '#8b5cf6';
   const themeBg = isQr ? 'rgba(30, 162, 228, 0.1)' : 'rgba(139, 92, 246, 0.1)';
 
   // Dynamic data processing
@@ -369,7 +369,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                           placeholder="Szukaj filtrów..." 
                           value={dropdownSearch}
                           onChange={(e) => setDropdownSearch(e.target.value)}
-                          className={`w-full bg-[#18181b] border border-border rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none transition-colors ${isQr ? 'focus:border-[#1ea2e4]' : 'focus:border-[#8b5cf6]'}`}
+                          className={`w-full bg-[#18181b] border border-border rounded-lg py-2 pl-9 pr-4 text-sm text-white focus:outline-none transition-colors ${isQr ? 'focus:border-[#009de2]' : 'focus:border-[#8b5cf6]'}`}
                         />
                       </div>
                       <div 
@@ -413,7 +413,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                                 }
                                 setIsFilterDropdownOpen(false);
                               }}
-                              className={`relative w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${isActive ? (opt.mainTab === 'qr' ? 'bg-[#1ea2e4]/10 text-[#1ea2e4]' : 'bg-[#8b5cf6]/10 text-[#8b5cf6]') : 'text-gray-300'}`}
+                              className={`relative w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${isActive ? (opt.mainTab === 'qr' ? 'bg-[#009de2]/10 text-[#009de2]' : 'bg-[#8b5cf6]/10 text-[#8b5cf6]') : 'text-gray-300'}`}
                             >
                               {hoveredDropdownItem === opt.label && !isActive && (
                                 <motion.div layoutId="analytics-dropdown-hover" className="absolute inset-0 bg-white/5 rounded-lg pointer-events-none" initial={false} transition={{ type: "spring", bounce: 0, duration: 0.2 }} />
@@ -750,7 +750,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                       value={modalSearchQuery}
                       onChange={(e) => setModalSearchQuery(e.target.value)}
                       autoFocus
-                      className={`w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none transition-colors text-white placeholder:text-gray-500 ${isQr ? 'focus:border-[#1ea2e4]' : 'focus:border-[#8b5cf6]'}`}
+                      className={`w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-10 pr-4 text-sm focus:outline-none transition-colors text-white placeholder:text-gray-500 ${isQr ? 'focus:border-[#009de2]' : 'focus:border-[#8b5cf6]'}`}
                     />
                   </div>
                 </div>
@@ -834,7 +834,7 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className={`pointer-events-auto border backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-3 shadow-lg ${isQr ? 'bg-[#1ea2e4]/10 border-[#1ea2e4]/30 text-[#1ea2e4] shadow-[#1ea2e4]/5' : 'bg-[#8b5cf6]/10 border-[#8b5cf6]/30 text-[#8b5cf6] shadow-[#8b5cf6]/5'}`}
+              className={`pointer-events-auto border backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-3 shadow-lg ${isQr ? 'bg-[#009de2]/10 border-[#009de2]/30 text-[#009de2] shadow-[#009de2]/5' : 'bg-[#8b5cf6]/10 border-[#8b5cf6]/30 text-[#8b5cf6] shadow-[#8b5cf6]/5'}`}
             >
               <div className="flex items-center gap-2">
                 <Filter size={14} />
@@ -843,10 +843,10 @@ export default function Analytics({ activeWorkspace, onMenuClick }) {
                   <span className="font-bold text-white">{filter.label}</span>
                 </span>
               </div>
-              <div className={`w-px h-4 mx-1 ${isQr ? 'bg-[#1ea2e4]/30' : 'bg-[#8b5cf6]/30'}`}></div>
+              <div className={`w-px h-4 mx-1 ${isQr ? 'bg-[#009de2]/30' : 'bg-[#8b5cf6]/30'}`}></div>
               <button 
                 onClick={() => removeFilter(filter.id)}
-                className={`transition-colors hover:text-white ${isQr ? 'text-[#1ea2e4]' : 'text-[#8b5cf6]'}`}
+                className={`transition-colors hover:text-white ${isQr ? 'text-[#009de2]' : 'text-[#8b5cf6]'}`}
               >
                 <X size={16} />
               </button>

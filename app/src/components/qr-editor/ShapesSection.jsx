@@ -36,7 +36,7 @@ const ShapeSelector = ({ shapes, selectedId, onChange, layoutIdPrefix }) => {
           {selectedId === shape.id && (
             <motion.div
               layoutId={`${layoutIdPrefix}-selector`}
-              className="absolute inset-0 bg-[#1ea2e4] rounded-full pointer-events-none"
+              className="absolute inset-0 bg-[#009de2] rounded-full pointer-events-none"
               transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
             />
           )}

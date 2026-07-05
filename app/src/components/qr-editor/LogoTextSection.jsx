@@ -43,7 +43,7 @@ const ColorCircle = ({ color, defaultColor, onChange, disabled }) => {
         onClick={handleOpen}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`w-8 h-8 rounded-full border-2 border-border shadow-sm transition-colors shrink-0 relative ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#1ea2e4]'}`}
+        className={`w-8 h-8 rounded-full border-2 border-border shadow-sm transition-colors shrink-0 relative ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[#009de2]'}`}
         style={{ backgroundColor: displayColor }}
         title={disabled ? "Opcja niedostępna (tło gradientowe)" : "Zmień kolor"}
       />
@@ -195,8 +195,8 @@ export default function LogoTextSection() {
                   className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer bg-background hover:bg-white/5 transition-colors group"
                 >
                   <div className="flex flex-col items-center justify-center pt-3 pb-3">
-                    <ImageIcon className="w-8 h-8 text-gray-500 mb-2 group-hover:text-[#1ea2e4] transition-colors" />
-                    <p className="text-sm text-gray-400"><span className="font-semibold text-[#1ea2e4]">Wgraj logo</span> (SVG, PNG, JPG)</p>
+                    <ImageIcon className="w-8 h-8 text-gray-500 mb-2 group-hover:text-[#009de2] transition-colors" />
+                    <p className="text-sm text-gray-400"><span className="font-semibold text-[#009de2]">Wgraj logo</span> (SVG, PNG, JPG)</p>
                   </div>
                   <input type="file" className="hidden" accept=".svg,.png,.jpg,.jpeg" onChange={handleLogoUpload} />
                 </motion.label>
@@ -229,7 +229,7 @@ export default function LogoTextSection() {
                       <label className="text-xs text-gray-400">Wielkość</label>
                       <span className="text-xs font-mono">{editor.logoSize}%</span>
                     </div>
-                    <input type="range" min="10" max="100" value={editor.logoSize} onChange={(e) => editor.setLogoSize(Number(e.target.value))} className="w-full accent-[#1ea2e4]" />
+                    <input type="range" min="10" max="100" value={editor.logoSize} onChange={(e) => editor.setLogoSize(Number(e.target.value))} className="w-full accent-[#009de2]" />
                   </div>
                   
                   <div>
@@ -245,7 +245,7 @@ export default function LogoTextSection() {
                         disabled={bgIsGradient}
                       />
                       <div className="flex-1">
-                        <input type="range" min="0" max="30" value={editor.logoStrokeWidth} onChange={(e) => editor.setLogoStrokeWidth(Number(e.target.value))} className="w-full accent-[#1ea2e4]" />
+                        <input type="range" min="0" max="30" value={editor.logoStrokeWidth} onChange={(e) => editor.setLogoStrokeWidth(Number(e.target.value))} className="w-full accent-[#009de2]" />
                       </div>
                     </div>
                   </div>
@@ -287,7 +287,7 @@ export default function LogoTextSection() {
                 value={editor.textValue}
                 onChange={(e) => editor.setTextValue(e.target.value)}
                 placeholder="Twój tekst..."
-                className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-[#1ea2e4] transition-colors placeholder:text-gray-600"
+                className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-[#009de2] transition-colors placeholder:text-gray-600"
               />
             </div>
 
@@ -310,7 +310,7 @@ export default function LogoTextSection() {
                       <button 
                         type="button"
                         onClick={() => setShowFontDropdown(!showFontDropdown)}
-                        className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs focus:outline-none flex justify-between items-center hover:border-[#1ea2e4] transition-colors"
+                        className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs focus:outline-none flex justify-between items-center hover:border-[#009de2] transition-colors"
                       >
                         <span style={{ fontFamily: editor.textFont }}>{editor.textFont}</span>
                         <ChevronDown size={14} className="text-gray-500" />
@@ -331,7 +331,7 @@ export default function LogoTextSection() {
                                   type="button"
                                   onMouseEnter={() => setHoveredFont(font)}
                                   onClick={() => { editor.setTextFont(font); setShowFontDropdown(false); }}
-                                  className={`relative w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors flex items-center justify-between group ${editor.textFont === font ? 'text-[#1ea2e4] font-medium' : 'text-gray-200'}`}
+                                  className={`relative w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors flex items-center justify-between group ${editor.textFont === font ? 'text-[#009de2] font-medium' : 'text-gray-200'}`}
                                   style={{ fontFamily: font }}
                                 >
                                   {hoveredFont === font && (
@@ -343,7 +343,7 @@ export default function LogoTextSection() {
                                     />
                                   )}
                                   <span className="relative z-10">{font}</span>
-                                  {editor.textFont === font && <div className="relative z-10 w-1.5 h-1.5 rounded-full bg-[#1ea2e4]" />}
+                                  {editor.textFont === font && <div className="relative z-10 w-1.5 h-1.5 rounded-full bg-[#009de2]" />}
                                 </button>
                               ))}
                             </div>
@@ -354,7 +354,7 @@ export default function LogoTextSection() {
                     <button 
                       type="button"
                       onClick={() => editor.setTextBold(!editor.textBold)}
-                      className={`p-1.5 rounded-lg border flex items-center justify-center transition-colors ${editor.textBold ? 'bg-[#1ea2e4] border-[#1ea2e4] text-white' : 'bg-background border-border text-gray-400 hover:text-white'}`}
+                      className={`p-1.5 rounded-lg border flex items-center justify-center transition-colors ${editor.textBold ? 'bg-[#009de2] border-[#009de2] text-white' : 'bg-background border-border text-gray-400 hover:text-white'}`}
                       title="Pogrubienie"
                     >
                       <Bold size={16} />
@@ -374,7 +374,7 @@ export default function LogoTextSection() {
                         disabled={false}
                       />
                       <div className="flex-1">
-                        <input type="range" min="10" max="100" value={editor.textSize} onChange={(e) => editor.setTextSize(Number(e.target.value))} className="w-full accent-[#1ea2e4]" />
+                        <input type="range" min="10" max="100" value={editor.textSize} onChange={(e) => editor.setTextSize(Number(e.target.value))} className="w-full accent-[#009de2]" />
                       </div>
                     </div>
                   </div>
@@ -392,7 +392,7 @@ export default function LogoTextSection() {
                         disabled={bgIsGradient}
                       />
                       <div className="flex-1">
-                        <input type="range" min="0" max="30" value={editor.textStrokeWidth} onChange={(e) => editor.setTextStrokeWidth(Number(e.target.value))} className="w-full accent-[#1ea2e4]" />
+                        <input type="range" min="0" max="30" value={editor.textStrokeWidth} onChange={(e) => editor.setTextStrokeWidth(Number(e.target.value))} className="w-full accent-[#009de2]" />
                       </div>
                     </div>
                   </div>

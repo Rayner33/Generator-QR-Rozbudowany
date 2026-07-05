@@ -546,7 +546,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
             placeholder="Szukaj kodów QR..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-[#1ea2e4] transition-colors"
+            className="w-full bg-[#18181b] border border-border rounded-lg py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-[#009de2] transition-colors"
           />
         </div>
         
@@ -579,7 +579,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                   placeholder="Szukaj tagów..." 
                   value={tagSearchQuery}
                   onChange={(e) => setTagSearchQuery(e.target.value)}
-                  className="w-full bg-[#18181b] border border-border rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:border-[#1ea2e4] text-white"
+                  className="w-full bg-[#18181b] border border-border rounded-lg py-1.5 px-3 text-sm focus:outline-none focus:border-[#009de2] text-white"
                 />
               </div>
               <div 
@@ -715,7 +715,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
             <div className="order-1 md:order-1 flex justify-center p-6 md:p-0 border-b border-border md:border-none md:mr-5">
               <div 
                 onClick={() => setPreviewCode(code)}
-                className="w-[160px] h-[160px] md:w-28 md:h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white/5 md:bg-transparent cursor-pointer hover:border-[#1ea2e4] hover:shadow-[0_0_15px_rgba(30,162,228,0.2)] transition-all"
+                className="w-[160px] h-[160px] md:w-28 md:h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white/5 md:bg-transparent cursor-pointer hover:border-[#009de2] hover:shadow-[0_0_15px_rgba(30,162,228,0.2)] transition-all"
                 title="Kliknij, aby powiększyć"
               >
                 <QRPreviewItem code={code} />
@@ -805,7 +805,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                  {/* Mobile simplified Chart Button */}
                  <button 
                    onClick={(e) => { e.stopPropagation(); onAnalytics && onAnalytics(code); }}
-                   className="md:hidden flex items-center gap-1.5 bg-transparent border border-[#1ea2e4] text-white px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-[#1ea2e4]/10 transition-colors shrink-0"
+                   className="md:hidden flex items-center gap-1.5 bg-transparent border border-[#009de2] text-white px-3 py-1.5 rounded-md text-xs font-semibold hover:bg-[#009de2]/10 transition-colors shrink-0"
                  >
                    <Scan size={14} className="text-white" /> <span className="whitespace-nowrap">{code.scans || 0} Skany</span>
                  </button>
@@ -946,7 +946,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
                      labels: ['1', '2', '3', '4', '5', '6'],
                      datasets: [{
                        data: [1, 3, 2, 5, 3, 8],
-                       borderColor: '#1ea2e4',
+                       borderColor: '#009de2',
                        backgroundColor: 'rgba(30, 162, 228, 0.2)',
                        fill: true,
                      }]
@@ -1153,7 +1153,7 @@ function QRPreviewItem({ code }) {
           <QRLivePreview qrData={getQrDataToEncode(code)} externalDesignData={designData} />
         </div>
       ) : (
-        <div className="w-6 h-6 border-2 border-[#1ea2e4] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-6 h-6 border-2 border-[#009de2] border-t-transparent rounded-full animate-spin"></div>
       )}
     </div>
   );

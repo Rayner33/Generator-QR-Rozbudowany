@@ -54,7 +54,7 @@ export default function TemplatesSidebar({ isOpen, onClose }) {
                   <button
                     key={template.id}
                     onClick={() => handleApply(template)}
-                    className="group relative bg-sidebar border border-border rounded-xl p-2 flex flex-col items-center hover:border-[#1ea2e4] hover:shadow-[0_0_15px_rgba(30,162,228,0.2)] transition-all"
+                    className="group relative bg-sidebar border border-border rounded-xl p-2 flex flex-col items-center hover:border-[#009de2] hover:shadow-[0_0_15px_rgba(30,162,228,0.2)] transition-all"
                   >
                     <div 
                       className="w-full aspect-square bg-transparent rounded-lg overflow-hidden shadow-inner opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all flex items-center justify-center"

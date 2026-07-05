@@ -45,15 +45,15 @@ export default function PositionPad({ position = { x: 50, y: 50 }, onChange }) {
     <div className="w-full max-w-[140px] mx-auto">
       <div 
         ref={padRef}
-        className={`relative w-full aspect-square bg-[#18181b] border-2 border-border rounded-xl overflow-hidden touch-none transition-shadow ${isDragging ? 'cursor-grabbing ring-1 ring-[#1ea2e4]/50' : 'cursor-pointer hover:border-gray-500'}`}
+        className={`relative w-full aspect-square bg-[#18181b] border-2 border-border rounded-xl overflow-hidden touch-none transition-shadow ${isDragging ? 'cursor-grabbing ring-1 ring-[#009de2]/50' : 'cursor-pointer hover:border-gray-500'}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
         {/* Linie prowadzące (Snapping guides) */}
-        <div className={`absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 transition-colors ${isSnappedX ? 'bg-[#1ea2e4]/50' : 'bg-white/10'}`}></div>
-        <div className={`absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 transition-colors ${isSnappedY ? 'bg-[#1ea2e4]/50' : 'bg-white/10'}`}></div>
+        <div className={`absolute top-0 bottom-0 left-1/2 w-px -translate-x-1/2 transition-colors ${isSnappedX ? 'bg-[#009de2]/50' : 'bg-white/10'}`}></div>
+        <div className={`absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 transition-colors ${isSnappedY ? 'bg-[#009de2]/50' : 'bg-white/10'}`}></div>
         
         {/* Wskaźnik (Joystick dot) */}
         <div 
@@ -64,7 +64,7 @@ export default function PositionPad({ position = { x: 50, y: 50 }, onChange }) {
             scale: isDragging ? 1.2 : 1
           }}
         >
-          <div className="w-1.5 h-1.5 bg-[#1ea2e4] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="w-1.5 h-1.5 bg-[#009de2] rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
         </div>
       </div>
       <div className="flex justify-between mt-2 px-1 text-[10px] text-gray-500 font-mono uppercase tracking-widest">

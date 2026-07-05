@@ -134,7 +134,7 @@ function UtmInput({ icon, label, value, onChange, placeholder, type }) {
   const isValid = value.trim().length > 0;
   
   // Różny kolor focus w zależności od miejsca (Smart Link = Fiolet, QR = Niebieski)
-  const focusBorderColor = type === 'qr' ? 'focus:border-[#1ea2e4]' : 'focus:border-[#8b5cf6]';
+  const focusBorderColor = type === 'qr' ? 'focus:border-[#009de2]' : 'focus:border-[#8b5cf6]';
   
   return (
     <div className="flex flex-col gap-1.5">

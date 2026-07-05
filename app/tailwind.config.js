@@ -14,8 +14,8 @@ export default {
         primary: '#3b82f6',
         primaryDark: '#2563eb',
         brand: {
-          qr: '#1ea2e4',
-          qrHover: '#1891ce',
+          qr: '#009de2',
+          qrHover: '#008bc9',
           smartlink: '#8b5cf6',
           smartlinkHover: '#7e22ce',
           orange: '#f97316',

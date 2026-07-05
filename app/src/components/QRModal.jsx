@@ -588,7 +588,7 @@ function QRModalInner({ isOpen, onClose, activeWorkspace, mode = 'create', initi
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="np. Kampania Wiosna 2026" 
-                  className="flex-1 bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4] transition-colors" 
+                  className="flex-1 bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#009de2] transition-colors" 
                 />
               </div>
             </div>
@@ -647,8 +647,8 @@ function QRModalInner({ isOpen, onClose, activeWorkspace, mode = 'create', initi
                             [{ 'header': 1 }, { 'header': 2 }],
                             ['bold', 'italic', 'underline', 'strike'],
                             ['blockquote'],
-                            [{ 'color': ['#FF4C00', '#1ea2e4', '#8B5CF6', '', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444'] }, 
-                             { 'background': ['#FF4C00', '#1ea2e4', '#8B5CF6', '', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444'] }],
+                            [{ 'color': ['#FF4C00', '#009de2', '#8B5CF6', '', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444'] }, 
+                             { 'background': ['#FF4C00', '#009de2', '#8B5CF6', '', '#e60000', '#ff9900', '#ffff00', '#008a00', '#0066cc', '#9933ff', '#ffffff', '#facccc', '#ffebcc', '#ffffcc', '#cce8cc', '#cce0f5', '#ebd6ff', '#bbbbbb', '#f06666', '#ffc266', '#ffff66', '#66b966', '#66a3e0', '#c285ff', '#888888', '#a10000', '#b26b00', '#b2b200', '#006100', '#0047b2', '#6b24b2', '#444444'] }],
                             [{ 'align': [] }],
                             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                             ['link', 'clean']
@@ -687,7 +687,7 @@ function QRModalInner({ isOpen, onClose, activeWorkspace, mode = 'create', initi
               <select
                 value={wifiData.type}
                 onChange={(e) => setWifiData({...wifiData, type: e.target.value})}
-                className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#1ea2e4] transition-colors"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#009de2] transition-colors"
               >
                 <option value="WPA">WPA/WPA2</option>
                 <option value="WEP">WEP</option>
@@ -730,16 +730,16 @@ function QRModalInner({ isOpen, onClose, activeWorkspace, mode = 'create', initi
                 )}
                 {contentType === 'vcard' && (
                   <div className="grid grid-cols-2 gap-3">
-                    <input type="text" value={vcardData.firstName} onChange={e => setVcardData({...vcardData, firstName: e.target.value})} placeholder="Imię" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
-                    <input type="text" value={vcardData.lastName} onChange={e => setVcardData({...vcardData, lastName: e.target.value})} placeholder="Nazwisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
+                    <input type="text" value={vcardData.firstName} onChange={e => setVcardData({...vcardData, firstName: e.target.value})} placeholder="Imię" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#009de2]" />
+                    <input type="text" value={vcardData.lastName} onChange={e => setVcardData({...vcardData, lastName: e.target.value})} placeholder="Nazwisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#009de2]" />
                     <div className="col-span-2">
                       <ValidatedInput type="tel" value={vcardData.phone} onChange={val => setVcardData({...vcardData, phone: val})} placeholder="Telefon" error={validationErrors.vcardPhone} />
                     </div>
                     <div className="col-span-2">
                       <ValidatedInput type="email" value={vcardData.email} onChange={val => setVcardData({...vcardData, email: val})} placeholder="E-mail" error={validationErrors.vcardEmail} />
                     </div>
-                    <input type="text" value={vcardData.company} onChange={e => setVcardData({...vcardData, company: e.target.value})} placeholder="Firma" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
-                    <input type="text" value={vcardData.title} onChange={e => setVcardData({...vcardData, title: e.target.value})} placeholder="Stanowisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#1ea2e4]" />
+                    <input type="text" value={vcardData.company} onChange={e => setVcardData({...vcardData, company: e.target.value})} placeholder="Firma" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#009de2]" />
+                    <input type="text" value={vcardData.title} onChange={e => setVcardData({...vcardData, title: e.target.value})} placeholder="Stanowisko" className="w-full bg-card border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-[#009de2]" />
                     <div className="col-span-2">
                       <ValidatedInput type="url" value={vcardData.website} onChange={val => setVcardData({...vcardData, website: val})} placeholder="Strona WWW" error={validationErrors.vcardWebsite} />
                     </div>
@@ -765,7 +765,7 @@ function QRModalInner({ isOpen, onClose, activeWorkspace, mode = 'create', initi
                    <QRLivePreview qrData={getQrDataToEncode()} />
                  ) : (
                    <div className="w-full h-full flex items-center justify-center bg-black/5">
-                     <div className="w-10 h-10 border-4 border-[#1ea2e4] border-t-transparent rounded-full animate-spin opacity-50"></div>
+                     <div className="w-10 h-10 border-4 border-[#009de2] border-t-transparent rounded-full animate-spin opacity-50"></div>
                    </div>
                  )}
                </div>
@@ -788,7 +788,7 @@ function QRModalInner({ isOpen, onClose, activeWorkspace, mode = 'create', initi
                <button 
                  onClick={handleSave} 
                  disabled={isSaving || !isFormValid}
-                 className={`w-full lg:w-auto px-4 lg:px-6 py-2.5 lg:py-2 text-sm rounded-xl lg:rounded-lg font-semibold transition-colors text-white shadow-xl lg:shadow-none ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#1ea2e4] hover:bg-[#1891ce]'}`}
+                 className={`w-full lg:w-auto px-4 lg:px-6 py-2.5 lg:py-2 text-sm rounded-xl lg:rounded-lg font-semibold transition-colors text-white shadow-xl lg:shadow-none ${isSaving || !isFormValid ? 'bg-gray-500 cursor-not-allowed opacity-50' : 'bg-[#009de2] hover:bg-[#008bc9]'}`}
                >
                  {isSaving ? 'Zapisywanie...' : 'Zapisz kod QR'}
                </button>
@@ -825,13 +825,13 @@ export default function QRModal(props) {
 
 function Tab({ icon, label, active, onClick }) {
   return (
-    <div onClick={onClick} className={`relative flex flex-col items-center gap-2 cursor-pointer pb-2 whitespace-nowrap min-w-[100px] transition-colors ${active ? 'text-[#1ea2e4]' : 'text-gray-400 hover:text-white'}`}>
+    <div onClick={onClick} className={`relative flex flex-col items-center gap-2 cursor-pointer pb-2 whitespace-nowrap min-w-[100px] transition-colors ${active ? 'text-[#009de2]' : 'text-gray-400 hover:text-white'}`}>
       {icon}
       <span className="text-xs font-semibold">{label}</span>
       {active && (
         <motion.div
           layoutId="qr-modal-active-tab"
-          className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#1ea2e4]"
+          className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#009de2]"
           initial={false}
           transition={{ type: "spring", bounce: 0, duration: 0.2 }}
         />
@@ -888,7 +888,7 @@ function StyleIcon({ type }) {
 
 function StyleCard({ title, type, active, onClick }) {
   return (
-    <div onClick={onClick} className={`flex-1 p-2 sm:p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${active ? 'border-[#1ea2e4] bg-[#1ea2e4]/10 text-white' : 'border-border bg-card text-gray-400 hover:border-gray-500 hover:text-gray-200'}`}>
+    <div onClick={onClick} className={`flex-1 p-2 sm:p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-center gap-2 ${active ? 'border-[#009de2] bg-[#009de2]/10 text-white' : 'border-border bg-card text-gray-400 hover:border-gray-500 hover:text-gray-200'}`}>
       <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-black/20 shrink-0">
          <StyleIcon type={type} />
       </div>
@@ -907,7 +907,7 @@ function ValidatedInput({ value, onChange, placeholder, type = "text", error, ..
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder} 
           className={`w-full bg-card border rounded-lg px-4 py-2 text-sm focus:outline-none transition-colors ${
-            error ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-border focus:border-[#1ea2e4] text-white'
+            error ? 'border-red-500 focus:border-red-500 text-red-500' : 'border-border focus:border-[#009de2] text-white'
           } ${props.className || ''}`}
           {...props}
         />

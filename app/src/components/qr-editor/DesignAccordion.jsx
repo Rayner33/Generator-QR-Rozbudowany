@@ -9,7 +9,7 @@ import SpacingSection from './SpacingSection';
 
 const AccordionItem = ({ title, icon, isOpen, onClick, children }) => {
   return (
-    <div className={`border border-border rounded-xl mb-3 bg-card/30 transition-all ${isOpen ? 'relative z-50 ring-1 ring-[#1ea2e4]/20 shadow-lg' : 'relative z-10'}`}>
+    <div className={`border border-border rounded-xl mb-3 bg-card/30 transition-all ${isOpen ? 'relative z-50 ring-1 ring-[#009de2]/20 shadow-lg' : 'relative z-10'}`}>
       <button
         onClick={onClick}
         className={`w-full flex items-center justify-between p-4 bg-card hover:bg-card/80 transition-colors ${isOpen ? 'rounded-t-xl' : 'rounded-xl'}`}
