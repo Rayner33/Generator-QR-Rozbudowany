@@ -13,12 +13,12 @@ async function generate() {
     const margin = 15 / 100 * 120;
     const fgGradient = t.foregroundType === "gradient" ? {
       type: t.foregroundGradient?.type || "linear",
-      rotation: (t.foregroundGradient?.rotation || 45) * Math.PI / 180,
+      rotation: ((t.foregroundGradient?.rotation !== undefined ? t.foregroundGradient?.rotation : 135) - 90) * Math.PI / 180,
       colorStops: t.foregroundGradient?.colorStops || []
     } : undefined;
     const bgGradient = t.backgroundType === "gradient" ? {
       type: t.backgroundGradient?.type || "linear",
-      rotation: (t.backgroundGradient?.rotation || 45) * Math.PI / 180,
+      rotation: ((t.backgroundGradient?.rotation !== undefined ? t.backgroundGradient?.rotation : 135) - 90) * Math.PI / 180,
       colorStops: t.backgroundGradient?.colorStops || []
     } : undefined;
     const qrCode = new QRCodeStyling({
