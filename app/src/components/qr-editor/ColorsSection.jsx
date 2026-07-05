@@ -76,6 +76,14 @@ export default function ColorsSection({ type }) {
     return { background: currentColor };
   };
 
+  const isGradActive = (grad) => {
+    if (!currentGradient || !grad) return false;
+    return currentGradient.type === grad.type &&
+           currentGradient.rotation === grad.rotation &&
+           currentGradient.colorStops[0]?.color?.toLowerCase() === grad.colorStops[0]?.color?.toLowerCase() &&
+           currentGradient.colorStops[1]?.color?.toLowerCase() === grad.colorStops[1]?.color?.toLowerCase();
+  };
+
   const handleMouseEnter = () => {
     if (colorPickerTimeoutRef.current) {
       clearTimeout(colorPickerTimeoutRef.current);
@@ -196,7 +204,7 @@ export default function ColorsSection({ type }) {
               <button
                 key={i}
                 onClick={() => setColor(color)}
-                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${currentColor === color ? 'shadow-[inset_0_0_0_2px_#1ea2e4]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#1ea2e4]'}`}
+                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${currentColor?.toLowerCase() === color.toLowerCase() ? 'shadow-[inset_0_0_0_2px_#1ea2e4]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#1ea2e4]'}`}
                 style={{ backgroundColor: color }}
               />
             ))
@@ -205,7 +213,7 @@ export default function ColorsSection({ type }) {
               <button
                 key={i}
                 onClick={() => setGradient(grad)}
-                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${currentGradient === grad ? 'shadow-[inset_0_0_0_2px_#1ea2e4]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#1ea2e4]'}`}
+                className={`w-full h-full aspect-square md:aspect-auto rounded-md transition-shadow focus:outline-none ${isGradActive(grad) ? 'shadow-[inset_0_0_0_2px_#1ea2e4]' : 'shadow-none hover:shadow-[inset_0_0_0_2px_#1ea2e4]'}`}
                 style={getGradientStyle(grad)}
               />
             ))
