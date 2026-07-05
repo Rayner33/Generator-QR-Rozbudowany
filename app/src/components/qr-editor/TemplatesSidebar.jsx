@@ -38,7 +38,7 @@ export default function TemplatesSidebar({ isOpen, onClose }) {
             <div className="flex items-center justify-between p-4 border-b border-border bg-sidebar">
               <div>
                 <h3 className="font-semibold text-lg text-white">Wszystkie szablony</h3>
-                <p className="text-xs text-gray-400">Wybierz jeden z 30 gotowych motywów</p>
+                <p className="text-xs text-gray-400">Wybierz jeden z 60 gotowych motywów</p>
               </div>
               <button 
                 onClick={onClose} 

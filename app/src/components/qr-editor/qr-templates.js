@@ -26,15 +26,28 @@ export const qrTemplates = [
     }
   },
   {
-    "id": "corporate-blue",
-    "name": "Biznesowy",
+    "id": "bg-grad-dark",
+    "name": "Mroczny Styl",
     "moduleShape": "dots",
-    "markerOuterShape": "dot",
+    "markerOuterShape": "extra-rounded",
     "markerInnerShape": "dot",
     "foregroundType": "solid",
-    "foregroundColor": "#434343",
-    "backgroundType": "solid",
-    "backgroundColor": "#ffffff",
+    "foregroundColor": "#ffffff",
+    "backgroundType": "gradient",
+    "backgroundGradient": {
+      "type": "linear",
+      "rotation": 135,
+      "colorStops": [
+        {
+          "offset": 0,
+          "color": "#ef5350"
+        },
+        {
+          "offset": 1,
+          "color": "#c62828"
+        }
+      ]
+    },
     "padding": 15
   },
   {
@@ -64,42 +77,28 @@ export const qrTemplates = [
     }
   },
   {
-    "id": "minimalist-gray",
-    "name": "Minimal",
-    "moduleShape": "rounded",
-    "markerOuterShape": "rounded",
-    "markerInnerShape": "rounded",
-    "foregroundType": "solid",
-    "foregroundColor": "#ffffff",
-    "backgroundType": "solid",
-    "backgroundColor": "#2e7d32",
-    "padding": 15
-  },
-  {
-    "id": "premium-gold",
-    "name": "Premium Gold",
+    "id": "grad-cyber",
+    "name": "Cyberpunk",
     "moduleShape": "dots",
-    "markerOuterShape": "extra-rounded",
+    "markerOuterShape": "rounded",
     "markerInnerShape": "dot",
-    "foregroundType": "gradient",
-    "foregroundColor": "#ffffff",
+    "foregroundType": "solid",
     "backgroundType": "solid",
     "backgroundColor": "#ffffff",
     "padding": 15,
-    "foregroundGradient": {
-      "type": "linear",
-      "rotation": 135,
-      "colorStops": [
-        {
-          "offset": 0,
-          "color": "#455a64"
-        },
-        {
-          "offset": 1,
-          "color": "#263238"
-        }
-      ]
-    }
+    "foregroundColor": "#d32f2f"
+  },
+  {
+    "id": "lines-h-neon",
+    "name": "Neonowe Paski",
+    "moduleShape": "rounded",
+    "markerOuterShape": "extra-rounded",
+    "markerInnerShape": "dot",
+    "foregroundType": "solid",
+    "foregroundColor": "#ffffff",
+    "backgroundType": "solid",
+    "backgroundColor": "#0b3d6e",
+    "padding": 15
   },
   {
     "id": "soft-blue",
@@ -330,16 +329,16 @@ export const qrTemplates = [
     "foregroundColor": "#ffffff"
   },
   {
-    "id": "grad-cyber",
-    "name": "Cyberpunk",
-    "moduleShape": "dots",
+    "id": "minimalist-gray",
+    "name": "Minimal",
+    "moduleShape": "rounded",
     "markerOuterShape": "rounded",
-    "markerInnerShape": "dot",
+    "markerInnerShape": "rounded",
     "foregroundType": "solid",
+    "foregroundColor": "#ffffff",
     "backgroundType": "solid",
-    "backgroundColor": "#ffffff",
-    "padding": 15,
-    "foregroundColor": "#d32f2f"
+    "backgroundColor": "#2e7d32",
+    "padding": 15
   },
   {
     "id": "grad-forest",
@@ -418,28 +417,15 @@ export const qrTemplates = [
     "backgroundColor": "#ffffff"
   },
   {
-    "id": "bg-grad-dark",
-    "name": "Mroczny Styl",
+    "id": "corporate-blue",
+    "name": "Biznesowy",
     "moduleShape": "dots",
-    "markerOuterShape": "extra-rounded",
+    "markerOuterShape": "dot",
     "markerInnerShape": "dot",
     "foregroundType": "solid",
-    "foregroundColor": "#ffffff",
-    "backgroundType": "gradient",
-    "backgroundGradient": {
-      "type": "linear",
-      "rotation": 135,
-      "colorStops": [
-        {
-          "offset": 0,
-          "color": "#ef5350"
-        },
-        {
-          "offset": 1,
-          "color": "#c62828"
-        }
-      ]
-    },
+    "foregroundColor": "#434343",
+    "backgroundType": "solid",
+    "backgroundColor": "#ffffff",
     "padding": 15
   },
   {
@@ -519,16 +505,30 @@ export const qrTemplates = [
     }
   },
   {
-    "id": "lines-h-neon",
-    "name": "Neonowe Paski",
-    "moduleShape": "rounded",
+    "id": "premium-gold",
+    "name": "Premium Gold",
+    "moduleShape": "dots",
     "markerOuterShape": "extra-rounded",
     "markerInnerShape": "dot",
-    "foregroundType": "solid",
+    "foregroundType": "gradient",
     "foregroundColor": "#ffffff",
     "backgroundType": "solid",
-    "backgroundColor": "#0b3d6e",
-    "padding": 15
+    "backgroundColor": "#ffffff",
+    "padding": 15,
+    "foregroundGradient": {
+      "type": "linear",
+      "rotation": 135,
+      "colorStops": [
+        {
+          "offset": 0,
+          "color": "#455a64"
+        },
+        {
+          "offset": 1,
+          "color": "#263238"
+        }
+      ]
+    }
   },
   {
     "id": "extreme-contrast",
