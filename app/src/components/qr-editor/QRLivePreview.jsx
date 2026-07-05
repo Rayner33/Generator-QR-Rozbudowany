@@ -116,7 +116,10 @@ export default function QRLivePreview({ qrData, externalDesignData = null }) {
       if (qrImg) {
         const paddingPixels = (editor.padding / 100) * (size / 2); 
         const qrDrawSize = size - (paddingPixels * 2);
-        qrLayerCtx.drawImage(qrImg, paddingPixels, paddingPixels, qrDrawSize, qrDrawSize);
+        // Wielokrotne rysowanie niweluje cienkie, półprzezroczyste linie na styku modułów (efekt antyaliasingu wektorów)
+        for (let i = 0; i < 5; i++) {
+          qrLayerCtx.drawImage(qrImg, paddingPixels, paddingPixels, qrDrawSize, qrDrawSize);
+        }
       }
 
       const useHolePunchForLogo = editor.backgroundType === 'gradient' || !editor.logoStrokeColor;
@@ -345,7 +348,10 @@ export const generateCustomQRDataURL = async (qrData, editor, size = 1024) => {
   if (qrImg) {
     const paddingPixels = (editor.padding / 100) * (size / 2); 
     const qrDrawSize = size - (paddingPixels * 2);
-    qrLayerCtx.drawImage(qrImg, paddingPixels, paddingPixels, qrDrawSize, qrDrawSize);
+    // Wielokrotne rysowanie niweluje cienkie, półprzezroczyste linie na styku modułów (efekt antyaliasingu wektorów)
+    for (let i = 0; i < 5; i++) {
+      qrLayerCtx.drawImage(qrImg, paddingPixels, paddingPixels, qrDrawSize, qrDrawSize);
+    }
   }
 
   const useHolePunchForLogo = editor.backgroundType === 'gradient' || !editor.logoStrokeColor;
