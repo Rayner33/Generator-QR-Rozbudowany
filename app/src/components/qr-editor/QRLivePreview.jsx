@@ -1,0 +1,454 @@
+import React, { useEffect, useRef, useState } from 'react';
+import QRCodeStyling from 'qr-code-styling';
+import { useQREditor } from './QREditorContext';
+
+export default function QRLivePreview({ qrData, externalDesignData = null }) {
+  const canvasRef = useRef(null);
+  const contextEditor = useQREditor();
+  const editor = externalDesignData || contextEditor;
+  const [qrCodeInstance] = useState(() => new QRCodeStyling({
+    width: 1000,
+    height: 1000,
+    type: "svg",
+    margin: 0,
+    qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" }, // H for high error correction (better for logos)
+  }));
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const render = async () => {
+      // 1. Zaktualizuj instancję (synchronicznie przed czekaniem)
+      qrCodeInstance.update({
+        data: qrData,
+        dotsOptions: { 
+          type: editor.moduleShape === 'classys' ? 'square' : (editor.moduleShape === 'classy-pt' ? 'square' : editor.moduleShape), 
+          color: editor.foregroundType === 'solid' ? editor.foregroundColor : undefined,
+          gradient: editor.foregroundType === 'gradient' ? {
+            type: editor.foregroundGradient.type,
+            rotation: (editor.foregroundGradient.rotation - 90) * Math.PI / 180,
+            colorStops: editor.foregroundGradient.colorStops
+          } : undefined
+        },
+        backgroundOptions: { color: "transparent" },
+        cornersSquareOptions: { 
+          type: editor.markerOuterShape, 
+          color: editor.foregroundType === 'solid' ? editor.foregroundColor : undefined 
+        },
+        cornersDotOptions: { 
+          type: editor.markerInnerShape, 
+          color: editor.foregroundType === 'solid' ? editor.foregroundColor : undefined 
+        }
+      });
+
+      // 2. Pobierz obraz QR jako SVG
+      let qrImg = null;
+      try {
+        const blob = await qrCodeInstance.getRawData("svg");
+        if (isCancelled) return;
+        if (blob) {
+          qrImg = new Image();
+          const url = URL.createObjectURL(blob);
+          await new Promise((resolve) => {
+            qrImg.onload = resolve;
+            qrImg.onerror = resolve;
+            qrImg.src = url;
+          });
+          URL.revokeObjectURL(url);
+        }
+      } catch (err) {
+        console.error("Błąd podczas pobierania SVG z QRCodeStyling:", err);
+      }
+
+      if (isCancelled) return;
+
+      // 3. Załaduj ewentualne logo asynchronicznie
+      let logoImg = null;
+      if (editor.logoImage) {
+        logoImg = new Image();
+        logoImg.crossOrigin = "anonymous";
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = resolve; 
+          logoImg.src = editor.logoImage;
+        });
+      }
+
+      if (isCancelled) return;
+
+      // 4. Dopiero teraz, mając wszystkie zasoby gotowe, czyścimy i rysujemy na canvasie w jednym cyklu synchronicznym
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const size = 1000;
+      canvas.width = size;
+      canvas.height = size;
+
+      // --- RYSOWANIE TŁA ---
+      if (editor.backgroundType === 'solid') {
+        ctx.fillStyle = editor.backgroundColor || '#ffffff';
+      } else {
+        const grad = editor.backgroundGradient;
+        let canvasGrad;
+        if (grad.type === 'linear') {
+          const angle = grad.rotation * Math.PI / 180;
+          const x2 = size/2 + Math.sin(angle) * size/2;
+          const y2 = size/2 - Math.cos(angle) * size/2;
+          const x1 = size/2 - Math.sin(angle) * size/2;
+          const y1 = size/2 + Math.cos(angle) * size/2;
+          canvasGrad = ctx.createLinearGradient(x1, y1, x2, y2);
+        } else {
+          canvasGrad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+        }
+        grad.colorStops.forEach(stop => canvasGrad.addColorStop(stop.offset, stop.color));
+        ctx.fillStyle = canvasGrad;
+      }
+      ctx.fillRect(0, 0, size, size);
+
+      const getBackgroundFillStyle = () => ctx.fillStyle;
+
+      // --- WARSTWA KODU QR (Dla wycinania obrysów) ---
+      const qrLayerCanvas = document.createElement('canvas');
+      qrLayerCanvas.width = size;
+      qrLayerCanvas.height = size;
+      const qrLayerCtx = qrLayerCanvas.getContext('2d');
+
+      if (qrImg) {
+        const paddingPixels = (editor.padding / 100) * (size / 2); 
+        const qrDrawSize = size - (paddingPixels * 2);
+        qrLayerCtx.drawImage(qrImg, paddingPixels, paddingPixels, qrDrawSize, qrDrawSize);
+      }
+
+      const useHolePunchForLogo = editor.backgroundType === 'gradient' || !editor.logoStrokeColor;
+      const useHolePunchForText = editor.backgroundType === 'gradient' || !editor.textStrokeColor;
+
+      let logoW, logoH, logoX, logoY;
+      let textX, textY, textFontSize;
+
+      // --- RYSOWANIE LOGO OBRYS ---
+      if (logoImg) {
+        const maxLogoSize = size * 0.4;
+        const logoSizePx = (editor.logoSize / 100) * maxLogoSize;
+        const aspect = logoImg.width / logoImg.height;
+        logoW = logoSizePx;
+        logoH = logoSizePx;
+        if (aspect > 1) logoH = logoW / aspect;
+        else logoW = logoH * aspect;
+
+        logoX = (editor.logoPos.x / 100) * size - (logoW / 2);
+        logoY = (editor.logoPos.y / 100) * size - (logoH / 2);
+
+        if (editor.logoStrokeWidth > 0) {
+          const strokeW = editor.logoStrokeWidth * (size/400);
+
+          const offCanvas = document.createElement('canvas');
+          offCanvas.width = logoW;
+          offCanvas.height = logoH;
+          const offCtx = offCanvas.getContext('2d');
+          offCtx.drawImage(logoImg, 0, 0, logoW, logoH);
+          offCtx.globalCompositeOperation = 'source-in';
+          offCtx.fillStyle = 'black';
+          offCtx.fillRect(0, 0, logoW, logoH);
+
+          // Dynamiczna liczba kroków zapewnia 1 krok na każdy 1 piksel obwodu - koniec z poszarpanymi brzegami!
+          const steps = Math.max(32, Math.ceil(Math.PI * 2 * strokeW));
+          
+          // Zawsze wycinamy obrys w kropkach QR
+          qrLayerCtx.globalCompositeOperation = 'destination-out';
+          for (let i = 0; i < steps; i++) {
+            const angle = (i / steps) * Math.PI * 2;
+            const dx = Math.cos(angle) * strokeW;
+            const dy = Math.sin(angle) * strokeW;
+            qrLayerCtx.drawImage(offCanvas, logoX + dx, logoY + dy);
+          }
+          qrLayerCtx.globalCompositeOperation = 'source-over';
+
+          // Jeśli mamy własny kolor, rysujemy obrys pod spodem (na ctx) przed nałożeniem kropek
+          if (!useHolePunchForLogo) {
+            offCtx.fillStyle = editor.logoStrokeColor;
+            offCtx.fillRect(0, 0, logoW, logoH);
+            for (let i = 0; i < steps; i++) {
+              const angle = (i / steps) * Math.PI * 2;
+              const dx = Math.cos(angle) * strokeW;
+              const dy = Math.sin(angle) * strokeW;
+              ctx.drawImage(offCanvas, logoX + dx, logoY + dy);
+            }
+          }
+        }
+      }
+
+      // --- RYSOWANIE TEKSTU OBRYS ---
+      if (editor.textValue) {
+        const maxTextSize = size * 0.3;
+        textFontSize = (editor.textSize / 100) * maxTextSize;
+        textX = (editor.textPos.x / 100) * size;
+        textY = (editor.textPos.y / 100) * size;
+
+        if (editor.textStrokeWidth > 0) {
+          // Zawsze wycinamy dziurę w kropkach
+          qrLayerCtx.globalCompositeOperation = 'destination-out';
+          qrLayerCtx.font = `${editor.textBold ? 'bold' : 'normal'} ${textFontSize}px ${editor.textFont}`;
+          qrLayerCtx.textAlign = 'center';
+          qrLayerCtx.textBaseline = 'middle';
+          qrLayerCtx.lineWidth = editor.textStrokeWidth * (size/200);
+          qrLayerCtx.lineJoin = 'round';
+          qrLayerCtx.strokeStyle = 'black';
+          qrLayerCtx.strokeText(editor.textValue, textX, textY);
+          qrLayerCtx.globalCompositeOperation = 'source-over';
+          
+          // Jeśli mamy własny kolor, rysujemy na ctx przed kropkami
+          if (!useHolePunchForText) {
+            ctx.font = `${editor.textBold ? 'bold' : 'normal'} ${textFontSize}px ${editor.textFont}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.lineWidth = editor.textStrokeWidth * (size/200);
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = editor.textStrokeColor;
+            ctx.strokeText(editor.textValue, textX, textY);
+          }
+        }
+      }
+
+      // Nanosimy wyciętą (lub nie) warstwę QR na główne płótno
+      ctx.drawImage(qrLayerCanvas, 0, 0);
+
+      // --- RYSOWANIE LOGO WŁAŚCIWEGO ---
+      if (logoImg) {
+        ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
+      }
+
+      // --- RYSOWANIE TEKSTU WŁAŚCIWEGO ---
+      if (editor.textValue) {
+        ctx.font = `${editor.textBold ? 'bold' : 'normal'} ${textFontSize}px ${editor.textFont}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const defaultFgColor = editor.foregroundType === 'gradient' ? '#000000' : (editor.foregroundColor || '#000000');
+        ctx.fillStyle = editor.textColor || defaultFgColor;
+        
+        if (!editor.textColor && editor.foregroundType === 'gradient') {
+           const grad = editor.foregroundGradient;
+           const canvasGrad = ctx.createLinearGradient(textX - textFontSize, textY, textX + textFontSize, textY);
+           grad.colorStops.forEach(s => canvasGrad.addColorStop(s.offset, s.color));
+           ctx.fillStyle = canvasGrad;
+        }
+
+        ctx.fillText(editor.textValue, textX, textY);
+      }
+    };
+
+    render();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    qrData,
+    editor.moduleShape, editor.markerOuterShape, editor.markerInnerShape,
+    editor.foregroundType, editor.foregroundColor, editor.foregroundGradient,
+    editor.backgroundType, editor.backgroundColor, editor.backgroundGradient,
+    editor.padding,
+    editor.logoImage, editor.logoSize, editor.logoPos, editor.logoStrokeWidth, editor.logoStrokeColor,
+    editor.textValue, editor.textFont, editor.textColor, editor.textSize, editor.textBold, editor.textPos, editor.textStrokeWidth, editor.textStrokeColor
+  ]);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="w-full h-full object-contain"
+    />
+  );
+}
+
+export const generateCustomQRDataURL = async (qrData, editor, size = 1024) => {
+  const qrCodeInstance = new QRCodeStyling({
+    width: size,
+    height: size,
+    type: "svg",
+    margin: 0,
+    qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" },
+    data: qrData,
+    dotsOptions: { 
+      type: editor.moduleShape === 'classys' ? 'square' : (editor.moduleShape === 'classy-pt' ? 'square' : editor.moduleShape), 
+      color: editor.foregroundType === 'solid' ? editor.foregroundColor : undefined,
+      gradient: editor.foregroundType === 'gradient' ? {
+        type: editor.foregroundGradient.type,
+        rotation: (editor.foregroundGradient.rotation - 90) * Math.PI / 180,
+        colorStops: editor.foregroundGradient.colorStops
+      } : undefined
+    },
+    backgroundOptions: { color: "transparent" },
+    cornersSquareOptions: { 
+      type: editor.markerOuterShape, 
+      color: editor.foregroundType === 'solid' ? editor.foregroundColor : undefined 
+    },
+    cornersDotOptions: { 
+      type: editor.markerInnerShape, 
+      color: editor.foregroundType === 'solid' ? editor.foregroundColor : undefined 
+    }
+  });
+
+  let qrImg = null;
+  const blob = await qrCodeInstance.getRawData("svg");
+  if (blob) {
+    qrImg = new Image();
+    const url = URL.createObjectURL(blob);
+    await new Promise((resolve) => {
+      qrImg.onload = resolve;
+      qrImg.onerror = resolve;
+      qrImg.src = url;
+    });
+    URL.revokeObjectURL(url);
+  }
+
+  let logoImg = null;
+  if (editor.logoImage) {
+    logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    await new Promise((resolve) => {
+      logoImg.onload = resolve;
+      logoImg.onerror = resolve; 
+      logoImg.src = editor.logoImage;
+    });
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  if (editor.backgroundType === 'solid') {
+    ctx.fillStyle = editor.backgroundColor || '#ffffff';
+  } else {
+    const grad = editor.backgroundGradient;
+    let canvasGrad;
+    if (grad.type === 'linear') {
+      const angle = grad.rotation * Math.PI / 180;
+      const x2 = size/2 + Math.sin(angle) * size/2;
+      const y2 = size/2 - Math.cos(angle) * size/2;
+      const x1 = size/2 - Math.sin(angle) * size/2;
+      const y1 = size/2 + Math.cos(angle) * size/2;
+      canvasGrad = ctx.createLinearGradient(x1, y1, x2, y2);
+    } else {
+      canvasGrad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    }
+    grad.colorStops.forEach(stop => canvasGrad.addColorStop(stop.offset, stop.color));
+    ctx.fillStyle = canvasGrad;
+  }
+  ctx.fillRect(0, 0, size, size);
+
+  const qrLayerCanvas = document.createElement('canvas');
+  qrLayerCanvas.width = size;
+  qrLayerCanvas.height = size;
+  const qrLayerCtx = qrLayerCanvas.getContext('2d');
+
+  if (qrImg) {
+    const paddingPixels = (editor.padding / 100) * (size / 2); 
+    const qrDrawSize = size - (paddingPixels * 2);
+    qrLayerCtx.drawImage(qrImg, paddingPixels, paddingPixels, qrDrawSize, qrDrawSize);
+  }
+
+  const useHolePunchForLogo = editor.backgroundType === 'gradient' || !editor.logoStrokeColor;
+  const useHolePunchForText = editor.backgroundType === 'gradient' || !editor.textStrokeColor;
+
+  let logoW, logoH, logoX, logoY;
+  let textX, textY, textFontSize;
+
+  if (logoImg) {
+    const maxLogoSize = size * 0.4;
+    const logoSizePx = (editor.logoSize / 100) * maxLogoSize;
+    const aspect = logoImg.width / logoImg.height;
+    logoW = logoSizePx;
+    logoH = logoSizePx;
+    if (aspect > 1) logoH = logoW / aspect;
+    else logoW = logoH * aspect;
+    logoX = (editor.logoPos.x / 100) * size - (logoW / 2);
+    logoY = (editor.logoPos.y / 100) * size - (logoH / 2);
+
+    if (editor.logoStrokeWidth > 0) {
+      const strokeW = editor.logoStrokeWidth * (size/400);
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = logoW;
+      offCanvas.height = logoH;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.drawImage(logoImg, 0, 0, logoW, logoH);
+      offCtx.globalCompositeOperation = 'source-in';
+      offCtx.fillStyle = 'black';
+      offCtx.fillRect(0, 0, logoW, logoH);
+
+      const steps = Math.max(32, Math.ceil(Math.PI * 2 * strokeW));
+      
+      qrLayerCtx.globalCompositeOperation = 'destination-out';
+      for (let i = 0; i < steps; i++) {
+        const angle = (i / steps) * Math.PI * 2;
+        const dx = Math.cos(angle) * strokeW;
+        const dy = Math.sin(angle) * strokeW;
+        qrLayerCtx.drawImage(offCanvas, logoX + dx, logoY + dy);
+      }
+      qrLayerCtx.globalCompositeOperation = 'source-over';
+
+      if (!useHolePunchForLogo) {
+        offCtx.fillStyle = editor.logoStrokeColor;
+        offCtx.fillRect(0, 0, logoW, logoH);
+        for (let i = 0; i < steps; i++) {
+          const angle = (i / steps) * Math.PI * 2;
+          const dx = Math.cos(angle) * strokeW;
+          const dy = Math.sin(angle) * strokeW;
+          ctx.drawImage(offCanvas, logoX + dx, logoY + dy);
+        }
+      }
+    }
+  }
+
+  if (editor.textValue) {
+    const maxTextSize = size * 0.3;
+    textFontSize = (editor.textSize / 100) * maxTextSize;
+    textX = (editor.textPos.x / 100) * size;
+    textY = (editor.textPos.y / 100) * size;
+
+    if (editor.textStrokeWidth > 0) {
+      qrLayerCtx.globalCompositeOperation = 'destination-out';
+      qrLayerCtx.font = `${editor.textBold ? 'bold' : 'normal'} ${textFontSize}px ${editor.textFont}`;
+      qrLayerCtx.textAlign = 'center';
+      qrLayerCtx.textBaseline = 'middle';
+      qrLayerCtx.lineWidth = editor.textStrokeWidth * (size/200);
+      qrLayerCtx.lineJoin = 'round';
+      qrLayerCtx.strokeStyle = 'black';
+      qrLayerCtx.strokeText(editor.textValue, textX, textY);
+      qrLayerCtx.globalCompositeOperation = 'source-over';
+      
+      if (!useHolePunchForText) {
+        ctx.font = `${editor.textBold ? 'bold' : 'normal'} ${textFontSize}px ${editor.textFont}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = editor.textStrokeWidth * (size/200);
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = editor.textStrokeColor;
+        ctx.strokeText(editor.textValue, textX, textY);
+      }
+    }
+  }
+
+  ctx.drawImage(qrLayerCanvas, 0, 0);
+
+  if (logoImg) {
+    ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
+  }
+
+  if (editor.textValue) {
+    ctx.font = `${editor.textBold ? 'bold' : 'normal'} ${textFontSize}px ${editor.textFont}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const defaultFgColor = editor.foregroundType === 'gradient' ? '#000000' : (editor.foregroundColor || '#000000');
+    ctx.fillStyle = editor.textColor || defaultFgColor;
+    if (!editor.textColor && editor.foregroundType === 'gradient') {
+       const grad = editor.foregroundGradient;
+       const canvasGrad = ctx.createLinearGradient(textX - textFontSize, textY, textX + textFontSize, textY);
+       grad.colorStops.forEach(s => canvasGrad.addColorStop(s.offset, s.color));
+       ctx.fillStyle = canvasGrad;
+    }
+    ctx.fillText(editor.textValue, textX, textY);
+  }
+
+  return canvas.toDataURL('image/png', 1.0);
+};

@@ -167,5 +167,6 @@ Aplikacja została uporządkowana według ściśle określonych stref kolorystyc
 - **Pomarańczowy (#f97316):** Używany do ustawień systemowych i zarządzania zespołami (wyszukiwarki członków, formularze tworzenia zespołów, selektor menu).
 - **Niebieski (#1ea2e4):** Dedykowany do wizualizacji statystyk i okien modalnych kodów QR.
 - **Fioletowy (#8b5cf6):** Dedykowany do wizualizacji statystyk i okien modalnych Smart Linków.
+- **Premium Palettes & Vector Engine:** Zaimplementowano wbudowaną bazę 28 profesjonalnych palet jednolitych oraz 28 dopracowanych gradientów wektorowych, w pełni konfigurowalnych w podglądzie "na żywo". Wszystkie modyfikacje opierają się na zaawansowanych transformacjach macierzy Canvas z uwzględnieniem offsetów kątowych (korekta -90 stopni), co gwarantuje jakość wektorową podczas eksportu SVG. Wykorzystano efekty cienia wewnętrznego (`shadow-inset`) zapobiegając defektom renderowania "ghost lines" u przeglądarek internetowych.
 
 Interfejs zyskał zaktualizowane moduły list (paski procentowe `progress bars` zintegrowane w tle) oraz płynne efekty zanikania (CSS Masking) dla długich list analitycznych.

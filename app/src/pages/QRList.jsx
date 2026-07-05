@@ -9,8 +9,9 @@ import { Line } from 'react-chartjs-2';
 import QRCodeStyling from 'qr-code-styling';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
-import { collection, query, where, onSnapshot, doc, updateDoc, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, deleteDoc, updateDoc, collection, getDocs, query, where, Timestamp, onSnapshot, writeBatch } from 'firebase/firestore';
 import QRModal from '../components/QRModal';
+import QRLivePreview, { generateCustomQRDataURL } from '../components/qr-editor/QRLivePreview';
 import { dropdownAnimation, staggerContainer, staggerItem } from '../utils/animations';
 import { getInitials } from '../utils/stringUtils';
 import {
@@ -78,6 +79,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
   const [codeToArchive, setCodeToArchive] = useState(null);
   const [codeToReset, setCodeToReset] = useState(null);
   const [codeToMove, setCodeToMove] = useState(null);
+  const [previewCode, setPreviewCode] = useState(null);
 
   // Zamykanie dropdowna przy kliknięciu gdziekolwiek
   useEffect(() => {
@@ -138,26 +140,332 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
     return `${window.location.origin}/${code.id}`;
   };
 
-  const handleDownload = (code, extension) => {
-    const dotsColor = code.dotsColor || "#000000";
-    const eyeColor = code.eyeColor || dotsColor;
-    const backgroundColor = code.backgroundColor || "#ffffff";
+  const handleDownload = async (code, extension) => {
+    const d = code.designData || {};
+    const legacyDotsColor = code.dotsColor || "#000000";
+    const legacyEyeColor = code.eyeColor || legacyDotsColor;
+    const legacyBgColor = code.backgroundColor || "#ffffff";
+    const legacyStyle = code.styleType || "rounded";
+
+    const dotsColor = d.foregroundType === 'solid' ? (d.foregroundColor || legacyDotsColor) : undefined;
+    const dotsGradient = d.foregroundType === 'gradient' && d.foregroundGradient ? {
+      type: d.foregroundGradient.type || 'linear',
+      rotation: ((d.foregroundGradient.rotation !== undefined ? d.foregroundGradient.rotation : 135) - 90) * Math.PI / 180,
+      colorStops: d.foregroundGradient.colorStops || []
+    } : undefined;
+
+    const bgColor = d.backgroundType === 'solid' ? (d.backgroundColor || legacyBgColor) : undefined;
+    const bgGradient = d.backgroundType === 'gradient' && d.backgroundGradient ? {
+      type: d.backgroundGradient.type || 'linear',
+      rotation: ((d.backgroundGradient.rotation !== undefined ? d.backgroundGradient.rotation : 135) - 90) * Math.PI / 180,
+      colorStops: d.backgroundGradient.colorStops || []
+    } : undefined;
+
+    if (extension === 'png') {
+      try {
+        const dataUrl = await generateCustomQRDataURL(getQrDataToEncode(code), d, 1024);
+        const link = document.createElement('a');
+        link.download = `QR_${code.title || 'kod'}_${code.id}.png`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        console.error("Błąd generowania PNG:", err);
+      }
+      return;
+    }
+
+    const qrPaddingPx = d.padding !== undefined ? (d.padding / 100) * 150 : 7.5;
     
+    // Obliczamy współczynnik kompensacji, by zniwelować pomniejszenie wynikające z nałożonego viewBoxa w SVG
+    const svgScaleFactor = 300 / (300 - 2 * qrPaddingPx);
+    
+    const targetLogoW = (d.logoSize ? (d.logoSize / 100) : 0.5) * (300 * 0.4);
+    const compensatedLogoW = targetLogoW * svgScaleFactor;
+    const calculatedImageSize = compensatedLogoW / 300; // Zawsze względem 300, bo wymuszamy margin: 0 w bibliotece
+
     const qrCode = new QRCodeStyling({
-      width: 1024,
-      height: 1024,
+      width: 300,
+      height: 300,
       data: getQrDataToEncode(code),
-      image: code.logoBase64 || undefined,
-      margin: 66,
-      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
-      imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 10, crossOrigin: "anonymous" },
-      dotsOptions: { color: dotsColor, type: code.styleType || "rounded" },
-      backgroundOptions: { color: backgroundColor },
-      cornersSquareOptions: { color: eyeColor, type: code.styleType === 'dots' ? 'dot' : (code.styleType === 'square' ? 'square' : 'extra-rounded') },
-      cornersDotOptions: { color: eyeColor, type: code.styleType === 'square' ? 'square' : 'dot' }
+      image: d.logoImage || code.logoBase64 || undefined,
+      margin: 0, // Cały padding aplikujemy ręcznie na poziomie wektorowym w SVG, unikając błędu zbyt grubej ramki!
+      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" },
+      imageOptions: { 
+        hideBackgroundDots: false, 
+        imageSize: calculatedImageSize, 
+        margin: 0, 
+        crossOrigin: "anonymous" 
+      },
+      dotsOptions: { 
+        type: d.moduleShape || legacyStyle,
+        color: dotsColor,
+        gradient: dotsGradient
+      },
+      backgroundOptions: { 
+        color: bgColor,
+        gradient: bgGradient
+      },
+      cornersSquareOptions: { 
+        type: d.markerOuterShape || (legacyStyle === 'dots' ? 'dot' : (legacyStyle === 'square' ? 'square' : 'extra-rounded')),
+        color: d.foregroundType === 'solid' ? (d.foregroundColor || legacyEyeColor) : undefined
+      },
+      cornersDotOptions: { 
+        type: d.markerInnerShape || (legacyStyle === 'square' ? 'square' : 'dot'),
+        color: d.foregroundType === 'solid' ? (d.foregroundColor || legacyEyeColor) : undefined
+      }
     });
 
-    qrCode.download({ name: `QR_${code.title || 'kod'}_${code.id}`, extension });
+    if (extension === 'svg') {
+      try {
+        const blob = await qrCode.getRawData("svg");
+        const svgText = await blob.text();
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgText, "image/svg+xml");
+        const svgEl = doc.documentElement;
+        
+        const svgns = "http://www.w3.org/2000/svg";
+        
+        const vW = 300 * svgScaleFactor;
+        const vX = -qrPaddingPx * svgScaleFactor;
+        
+        // --- 1. Aplikowanie paddingu wektorowo (BEZPSUJNIE) ---
+        // Manipulujemy viewBoxem całego SVG, by naturalnie stworzyć matematyczny margines
+        if (qrPaddingPx > 0) {
+          svgEl.setAttribute("viewBox", `${vX} ${vX} ${vW} ${vW}`);
+          
+          // Rozciągamy tło precyzyjnie na wygenerowany viewBox. 
+          // Dzięki temu wbudowany gradient QR będzie płynnie wypełniał tło, nie robiąc się jednolitym białym/szarym plackiem.
+          const bgRect = Array.from(svgEl.childNodes).find(n => n.nodeName === 'rect');
+          if (bgRect) {
+             bgRect.setAttribute("x", vX);
+             bgRect.setAttribute("y", vX);
+             bgRect.setAttribute("width", vW);
+             bgRect.setAttribute("height", vW);
+             // QRCodeStyling na tło zawsze nakłada clip-path blokujący je w oryginalnym 300x300.
+             // Musimy usunąć to ograniczenie, by tło swobodnie wylało się na nasz nowy viewBox (padding).
+             bgRect.removeAttribute("clip-path");
+          }
+        }
+        
+        // System masek do wycinania "dziur" w kropkach QR, ujawniający gradient pod spodem (jak na Canvas)
+        let maskId = null;
+        let maskEl = null;
+        const getOrCreateMask = () => {
+           if (maskEl) return maskEl;
+           maskId = "hole-mask-" + Math.random().toString(36).substr(2, 9);
+           maskEl = doc.createElementNS(svgns, "mask");
+           maskEl.setAttribute("id", maskId);
+           const maskBg = doc.createElementNS(svgns, "rect");
+           maskBg.setAttribute("width", "1000%");
+           maskBg.setAttribute("height", "1000%");
+           maskBg.setAttribute("x", "-500%");
+           maskBg.setAttribute("y", "-500%");
+           maskBg.setAttribute("fill", "white");
+           maskEl.appendChild(maskBg);
+           let defs = svgEl.querySelector("defs");
+           if (!defs) { defs = doc.createElementNS(svgns, "defs"); svgEl.insertBefore(defs, svgEl.firstChild); }
+           defs.appendChild(maskEl);
+           Array.from(svgEl.childNodes).forEach((child, index) => {
+              if (child.nodeName === 'defs') return;
+              if (child.nodeName === 'rect' && index <= 1) return; // Background
+              if (child.nodeName === 'image' || child.nodeName === 'text') return;
+              child.setAttribute("mask", `url(#${maskId})`);
+           });
+           return maskEl;
+        };
+
+
+        // --- 2. Dodanie absolutnie ostrego obrysu oraz pełnej jakości logo ---
+        const baseLogoStrokeW = d.logoStrokeWidth ? d.logoStrokeWidth * 0.75 : 0;
+        const logoStrokeW = baseLogoStrokeW * svgScaleFactor;
+        
+        if (d.logoImage || code.logoBase64) {
+          const imageEl = svgEl.querySelector("image");
+          if (imageEl) {
+            // Pozycjonowanie logo rekompensujące viewBox z uwzględnieniem jego faktycznych proporcji
+            const imgW = parseFloat(imageEl.getAttribute("width") || compensatedLogoW);
+            const imgH = parseFloat(imageEl.getAttribute("height") || compensatedLogoW);
+            
+            const imgX = ((d.logoPos?.x ?? 50) / 100) * vW + vX - imgW / 2;
+            const imgY = ((d.logoPos?.y ?? 50) / 100) * vW + vX - imgH / 2;
+            
+            imageEl.setAttribute("x", imgX);
+            imageEl.setAttribute("y", imgY);
+
+            // Przywracamy pełną, maksymalną rozdzielczość logo
+            const originalBase64 = d.logoImage || code.logoBase64;
+            imageEl.setAttribute("href", originalBase64);
+            imageEl.setAttributeNS("http://www.w3.org/1999/xlink", "href", originalBase64);
+            
+            if (logoStrokeW > 0) {
+              const useHolePunchForLogo = d.backgroundType === 'gradient' || !d.logoStrokeColor;
+              const imgId = "logo-img-" + Math.random().toString(36).substr(2, 9);
+              imageEl.setAttribute("id", imgId);
+              
+              let defs = svgEl.querySelector("defs");
+              if (!defs) {
+                defs = doc.createElementNS(svgns, "defs");
+                svgEl.insertBefore(defs, svgEl.firstChild);
+              }
+              
+              const steps = Math.max(180, Math.ceil(Math.PI * 2 * logoStrokeW * 8));
+
+              if (useHolePunchForLogo) {
+                 const currentMaskEl = getOrCreateMask();
+                 const blackFilterId = "black-filter-" + Math.random().toString(36).substr(2, 9);
+                 const blackFilterEl = doc.createElementNS(svgns, "filter");
+                 blackFilterEl.setAttribute("id", blackFilterId);
+                 blackFilterEl.setAttribute("x", "-20%");
+                 blackFilterEl.setAttribute("y", "-20%");
+                 blackFilterEl.setAttribute("width", "140%");
+                 blackFilterEl.setAttribute("height", "140%");
+                 blackFilterEl.setAttribute("color-interpolation-filters", "sRGB");
+                 blackFilterEl.innerHTML = `
+                   <feComponentTransfer in="SourceAlpha" result="tightAlpha">
+                     <feFuncA type="linear" slope="2" intercept="-0.5" />
+                   </feComponentTransfer>
+                   <feFlood flood-color="black" result="color" />
+                   <feComposite in="color" in2="tightAlpha" operator="in" />
+                 `;
+                 defs.appendChild(blackFilterEl);
+                 
+                 const maskStampGroup = doc.createElementNS(svgns, "g");
+                 maskStampGroup.setAttribute("filter", `url(#${blackFilterId})`);
+                 
+                 for (let i = 0; i < steps; i++) {
+                    const angle = (i / steps) * Math.PI * 2;
+                    const dx = Math.cos(angle) * logoStrokeW;
+                    const dy = Math.sin(angle) * logoStrokeW;
+                    const useEl = doc.createElementNS(svgns, "use");
+                    useEl.setAttribute("href", `#${imgId}`);
+                    useEl.setAttributeNS("http://www.w3.org/1999/xlink", "href", `#${imgId}`);
+                    useEl.setAttribute("x", dx);
+                    useEl.setAttribute("y", dy);
+                    maskStampGroup.appendChild(useEl);
+                 }
+                 currentMaskEl.appendChild(maskStampGroup);
+                 
+              } else {
+                 const logoStrokeColor = d.logoStrokeColor || '#ffffff';
+                 const fillFilterId = "fill-color-" + Math.random().toString(36).substr(2, 9);
+                 const filterEl = doc.createElementNS(svgns, "filter");
+                 filterEl.setAttribute("id", fillFilterId);
+                 filterEl.setAttribute("x", "-20%");
+                 filterEl.setAttribute("y", "-20%");
+                 filterEl.setAttribute("width", "140%");
+                 filterEl.setAttribute("height", "140%");
+                 filterEl.setAttribute("color-interpolation-filters", "sRGB");
+                 filterEl.innerHTML = `
+                   <feComponentTransfer in="SourceAlpha" result="tightAlpha">
+                     <feFuncA type="linear" slope="2" intercept="-0.5" />
+                   </feComponentTransfer>
+                   <feFlood flood-color="${logoStrokeColor}" result="color" />
+                   <feComposite in="color" in2="tightAlpha" operator="in" />
+                 `;
+                 defs.appendChild(filterEl);
+                 
+                 const strokeGroup = doc.createElementNS(svgns, "g");
+                 strokeGroup.setAttribute("filter", `url(#${fillFilterId})`);
+                 
+                 for (let i = 0; i < steps; i++) {
+                    const angle = (i / steps) * Math.PI * 2;
+                    const dx = Math.cos(angle) * logoStrokeW;
+                    const dy = Math.sin(angle) * logoStrokeW;
+                    const useEl = doc.createElementNS(svgns, "use");
+                    useEl.setAttribute("href", `#${imgId}`);
+                    useEl.setAttributeNS("http://www.w3.org/1999/xlink", "href", `#${imgId}`);
+                    useEl.setAttribute("x", dx);
+                    useEl.setAttribute("y", dy);
+                    strokeGroup.appendChild(useEl);
+                 }
+                 imageEl.parentNode.insertBefore(strokeGroup, imageEl);
+              }
+            }
+          }
+        }
+
+        // 2. Dodanie tekstu i jego obrysu
+        if (d.textValue) {
+          const baseTextFontSize = ((d.textSize ?? 30) / 100) * (300 * 0.3);
+          const textFontSize = baseTextFontSize * svgScaleFactor;
+          
+          const textX = ((d.textPos?.x ?? 50) / 100) * vW + vX;
+          const textY = ((d.textPos?.y ?? 50) / 100) * vW + vX;
+          
+          let textColor = d.textColor || (d.foregroundType === 'gradient' ? '#000000' : (d.foregroundColor || '#000000'));
+          
+          if (d.textStrokeWidth > 0) {
+            const strokeW = d.textStrokeWidth * 1.5 * svgScaleFactor;
+            const useHolePunchForText = d.backgroundType === 'gradient' || !d.textStrokeColor;
+            
+            if (useHolePunchForText) {
+               const currentMaskEl = getOrCreateMask();
+               const textHoleEl = doc.createElementNS(svgns, "text");
+               textHoleEl.setAttribute("x", textX);
+               textHoleEl.setAttribute("y", textY);
+               textHoleEl.setAttribute("font-family", d.textFont || 'Arial');
+               textHoleEl.setAttribute("font-size", `${textFontSize}px`);
+               textHoleEl.setAttribute("font-weight", d.textBold ? 'bold' : 'normal');
+               textHoleEl.setAttribute("text-anchor", "middle");
+               textHoleEl.setAttribute("dominant-baseline", "central");
+               textHoleEl.setAttribute("stroke", "black");
+               textHoleEl.setAttribute("stroke-width", strokeW);
+               textHoleEl.setAttribute("stroke-linejoin", "round");
+               textHoleEl.setAttribute("fill", "none");
+               textHoleEl.textContent = d.textValue;
+               currentMaskEl.appendChild(textHoleEl);
+            } else {
+               let strokeColor = d.textStrokeColor || '#ffffff';
+               const textStrokeEl = doc.createElementNS(svgns, "text");
+               textStrokeEl.setAttribute("x", textX);
+               textStrokeEl.setAttribute("y", textY);
+               textStrokeEl.setAttribute("font-family", d.textFont || 'Arial');
+               textStrokeEl.setAttribute("font-size", `${textFontSize}px`);
+               textStrokeEl.setAttribute("font-weight", d.textBold ? 'bold' : 'normal');
+               textStrokeEl.setAttribute("text-anchor", "middle");
+               textStrokeEl.setAttribute("dominant-baseline", "central");
+               textStrokeEl.setAttribute("stroke", strokeColor);
+               textStrokeEl.setAttribute("stroke-width", strokeW);
+               textStrokeEl.setAttribute("stroke-linejoin", "round");
+               textStrokeEl.textContent = d.textValue;
+               svgEl.appendChild(textStrokeEl);
+            }
+          }
+          
+          const textEl = doc.createElementNS(svgns, "text");
+          textEl.setAttribute("x", textX);
+          textEl.setAttribute("y", textY);
+          textEl.setAttribute("font-family", d.textFont || 'Arial');
+          textEl.setAttribute("font-size", `${textFontSize}px`);
+          textEl.setAttribute("font-weight", d.textBold ? 'bold' : 'normal');
+          textEl.setAttribute("text-anchor", "middle");
+          textEl.setAttribute("dominant-baseline", "central");
+          textEl.setAttribute("fill", textColor);
+          textEl.textContent = d.textValue;
+          svgEl.appendChild(textEl);
+        }
+
+        const serializer = new XMLSerializer();
+        const finalSvgString = serializer.serializeToString(doc);
+
+        const finalBlob = new Blob([finalSvgString], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(finalBlob);
+        const link = document.createElement('a');
+        link.download = `QR_${code.title || 'kod'}_${code.id}.svg`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Błąd generowania SVG:", err);
+      }
+    } else {
+      qrCode.download({ name: `QR_${code.title || 'kod'}_${code.id}`, extension });
+    }
   };
 
   const handleArchive = (code) => {
@@ -402,7 +710,11 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
             
             {/* QR Image */}
             <div className="order-1 md:order-1 flex justify-center p-6 md:p-0 border-b border-border md:border-none md:mr-5">
-              <div className="w-[160px] h-[160px] md:w-28 md:h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white/5 md:bg-transparent">
+              <div 
+                onClick={() => setPreviewCode(code)}
+                className="w-[160px] h-[160px] md:w-28 md:h-28 rounded-xl shrink-0 border border-border overflow-hidden bg-white/5 md:bg-transparent cursor-pointer hover:border-[#1ea2e4] hover:shadow-[0_0_15px_rgba(30,162,228,0.2)] transition-all"
+                title="Kliknij, aby powiększyć"
+              >
                 <QRPreviewItem code={code} />
               </div>
             </div>
@@ -730,47 +1042,116 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
         />
       )}
       </AnimatePresence>
+
+      {/* Modal Dużego Podglądu */}
+      <AnimatePresence>
+        {previewCode && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center backdrop-blur-sm p-4"
+            onClick={() => setPreviewCode(null)}
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
+              className="relative flex flex-col items-center gap-6"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] bg-transparent border border-border rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center relative">
+                <QRPreviewItem code={previewCode} />
+              </div>
+              <button 
+                onClick={() => setPreviewCode(null)}
+                className="w-12 h-12 bg-white text-black hover:bg-gray-200 rounded-full flex items-center justify-center shadow-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
 function QRPreviewItem({ code }) {
-  const qrRef = React.useRef(null);
+  const [showPreview, setShowPreview] = React.useState(false);
+  const containerRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (!qrRef.current) return;
+    if (!containerRef.current) return;
     
-    const getQrDataToEncode = (code) => {
-      if (code.contentType === 'wifi') {
-        const { ssid, password, type } = code.wifiData || {};
-        const auth = type === 'nopass' ? '' : `T:${type};`;
-        return `WIFI:S:${ssid};${auth}P:${password};;`;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        // Niewielkie opóźnienie staggerowe, by masowe pojawianie się kodów (np. na dużym ekranie)
+        // nie blokowało wątku w jednej milisekundzie.
+        setTimeout(() => {
+           setShowPreview(true);
+        }, 50 + Math.random() * 150);
+        observer.disconnect();
       }
-      return `${window.location.origin}/${code.id || 'xxxxx'}`;
-    };
+    }, { rootMargin: '300px' }); // Renderuj z wyprzedzeniem 300px przed wejściem na ekran
+    
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
-    const dotsColor = code.dotsColor || "#000000";
-    const eyeColor = code.eyeColor || dotsColor;
-    const backgroundColor = code.backgroundColor || "#ffffff";
+  const getQrDataToEncode = (code) => {
+    if (code.contentType === 'wifi') {
+      const { ssid, password, type } = code.wifiData || {};
+      const auth = type === 'nopass' ? '' : `T:${type};`;
+      return `WIFI:S:${ssid};${auth}P:${password};;`;
+    }
+    return `${window.location.origin}/${code.id || 'xxxxx'}`;
+  };
 
-    const qrCode = new QRCodeStyling({
-      width: 1000,
-      height: 1000,
-      type: "svg",
-      data: getQrDataToEncode(code),
-      image: code.logoBase64 || undefined,
-      margin: 0,
-      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
-      imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 5, crossOrigin: "anonymous" },
-      dotsOptions: { color: dotsColor, type: code.styleType || "rounded" },
-      backgroundOptions: { color: backgroundColor },
-      cornersSquareOptions: { color: eyeColor, type: code.styleType === 'dots' ? 'dot' : (code.styleType === 'square' ? 'square' : 'extra-rounded') },
-      cornersDotOptions: { color: eyeColor, type: code.styleType === 'square' ? 'square' : 'dot' }
-    });
+  const d = code.designData || {};
+  const legacyDotsColor = code.dotsColor || "#000000";
+  const legacyEyeColor = code.eyeColor || legacyDotsColor;
+  const legacyStyle = code.styleType || "rounded";
+  const legacyBgColor = code.backgroundColor || "#ffffff";
 
-    qrRef.current.innerHTML = '';
-    qrCode.append(qrRef.current);
-  }, [code]);
+  // Konwersja wsteczna dla starych kodów na nowy standard designData
+  const designData = {
+    moduleShape: d.moduleShape || legacyStyle,
+    markerOuterShape: d.markerOuterShape || (legacyStyle === 'dots' ? 'dot' : (legacyStyle === 'square' ? 'square' : 'extra-rounded')),
+    markerInnerShape: d.markerInnerShape || (legacyStyle === 'square' ? 'square' : 'dot'),
+    foregroundType: d.foregroundType || 'solid',
+    foregroundColor: d.foregroundColor || legacyDotsColor,
+    foregroundGradient: d.foregroundGradient,
+    backgroundType: d.backgroundType || 'solid',
+    backgroundColor: d.backgroundColor || legacyBgColor,
+    backgroundGradient: d.backgroundGradient,
+    padding: d.padding ?? 5,
+    logoImage: d.logoImage || code.logoBase64 || null,
+    logoSize: d.logoSize ?? 50,
+    logoPos: d.logoPos || {x:50, y:50},
+    logoStrokeWidth: d.logoStrokeWidth ?? 10,
+    logoStrokeColor: d.logoStrokeColor || null,
+    textValue: d.textValue || '',
+    textFont: d.textFont || 'Arial',
+    textColor: d.textColor || null,
+    textSize: d.textSize ?? 50,
+    textBold: d.textBold || false,
+    textPos: d.textPos || {x:50, y:50},
+    textStrokeWidth: d.textStrokeWidth ?? 10,
+    textStrokeColor: d.textStrokeColor || null,
+  };
 
-  return <div ref={qrRef} className="w-full h-full flex items-center justify-center p-[6.5%] [&>*]:w-full [&>*]:h-full" style={{ backgroundColor: code.backgroundColor || '#ffffff' }} />;
+  return (
+    <div ref={containerRef} className="w-full h-full relative overflow-hidden rounded-[inherit] flex items-center justify-center">
+      {showPreview ? (
+        <div className="w-full h-full [&>canvas]:w-full [&>canvas]:h-full [&>canvas]:object-contain">
+          <QRLivePreview qrData={getQrDataToEncode(code)} externalDesignData={designData} />
+        </div>
+      ) : (
+        <div className="w-6 h-6 border-2 border-[#1ea2e4] border-t-transparent rounded-full animate-spin"></div>
+      )}
+    </div>
+  );
 }

@@ -9,6 +9,9 @@ import UTMBuilderModal from './UTMBuilderModal';
 import { buildUrlWithUtm } from '../utils/analyticsHelpers';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import { QREditorProvider, useQREditor } from './qr-editor/QREditorContext';
+import DesignAccordion from './qr-editor/DesignAccordion';
+import QRLivePreview from './qr-editor/QRLivePreview';
 
 const DraggableTabsWrapper = ({ children }) => {
   const scrollRef = useRef(null);
@@ -73,7 +76,8 @@ const DraggableTabsWrapper = ({ children }) => {
   );
 };
 
-export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'create', initialData = null }) {
+function QRModalInner({ isOpen, onClose, activeWorkspace, mode = 'create', initialData = null }) {
+  const editor = useQREditor();
   const [title, setTitle] = useState('');
   const [codeId, setCodeId] = useState('');
   const [isCodeAvailable, setIsCodeAvailable] = useState(true);
@@ -87,61 +91,24 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
   const [wifiData, setWifiData] = useState({ ssid: '', password: '', type: 'WPA' });
   const [vcardData, setVcardData] = useState({ firstName: '', lastName: '', phone: '', email: '', company: '', title: '', website: '' });
   const [textData, setTextData] = useState('');
-
-  const [styleType, setStyleType] = useState('rounded');
-  const [dotsColor, setDotsColor] = useState('#000000');
-  const [eyeColor, setEyeColor] = useState('#000000');
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [logoBase64, setLogoBase64] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [openColorPicker, setOpenColorPicker] = useState(null);
-  const colorPickerRef = useRef(null);
-  const isMouseDownRef = useRef(false);
 
-  useEffect(() => {
-    const handleGlobalMouseDown = () => { isMouseDownRef.current = true; };
-    const handleGlobalMouseUp = () => { isMouseDownRef.current = false; };
-    
-    window.addEventListener('mousedown', handleGlobalMouseDown, { capture: true });
-    window.addEventListener('mouseup', handleGlobalMouseUp, { capture: true });
-    
-    return () => {
-      window.removeEventListener('mousedown', handleGlobalMouseDown, { capture: true });
-      window.removeEventListener('mouseup', handleGlobalMouseUp, { capture: true });
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Ignorujemy zamykanie kliknięciem w tło na urządzeniach mobilnych (użytkownik użyje przycisku X)
-      if (window.innerWidth < 640) return;
-
-      // Ignorujemy kliknięcia w same przyciski odpalające, by uniknąć natychmiastowego zamykania
-      if (event.target.closest('.color-trigger-btn')) return;
-      
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target)) {
-        setOpenColorPicker(null);
-      }
-    };
-
-    if (openColorPicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
-  }, [openColorPicker]);
-  
   // UTM
   const [utmData, setUtmData] = useState(null);
   const [isUtmModalOpen, setIsUtmModalOpen] = useState(false);
-  
-  const qrRef = useRef(null);
-  const qrCode = useRef(null);
 
+  // Optymalizacja ładowania
+  const [showPreview, setShowPreview] = useState(false);
+  
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => setShowPreview(true), 300);
+      return () => clearTimeout(timer);
+    } else {
+      setShowPreview(false);
+    }
+  }, [isOpen]);
+  
   const generateShortCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
@@ -163,11 +130,44 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         setWifiData(initialData.wifiData || { ssid: '', password: '', type: 'WPA' });
         setVcardData(initialData.vcardData || { firstName: '', lastName: '', phone: '', email: '', company: '', title: '', website: '' });
         setTextData(initialData.textData || '');
-        setStyleType(initialData.styleType || 'rounded');
-        setDotsColor(initialData.dotsColor || '#000000');
-        setEyeColor(initialData.eyeColor || initialData.dotsColor || '#000000');
-        setBackgroundColor(initialData.backgroundColor || '#ffffff');
-        setLogoBase64(initialData.logoBase64 || null);
+        
+        // Inicjalizacja nowego wyglądu (QREditorContext)
+        if (initialData.designData) {
+          editor.setModuleShape(initialData.designData.moduleShape || 'rounded');
+          editor.setMarkerOuterShape(initialData.designData.markerOuterShape || 'rounded');
+          editor.setMarkerInnerShape(initialData.designData.markerInnerShape || 'dot');
+          editor.setForegroundType(initialData.designData.foregroundType || 'solid');
+          editor.setForegroundColor(initialData.designData.foregroundColor || '#000000');
+          if (initialData.designData.foregroundGradient) editor.setForegroundGradient(initialData.designData.foregroundGradient);
+          editor.setBackgroundType(initialData.designData.backgroundType || 'solid');
+          editor.setBackgroundColor(initialData.designData.backgroundColor || '#ffffff');
+          if (initialData.designData.backgroundGradient) editor.setBackgroundGradient(initialData.designData.backgroundGradient);
+          editor.setPadding(initialData.designData.padding ?? 15);
+          editor.setLogoImage(initialData.designData.logoImage || null);
+          editor.setLogoSize(initialData.designData.logoSize ?? 50);
+          editor.setLogoPos(initialData.designData.logoPos || {x:50, y:50});
+          editor.setLogoStrokeWidth(initialData.designData.logoStrokeWidth ?? 5);
+          editor.setLogoStrokeColor(initialData.designData.logoStrokeColor || null);
+          editor.setTextValue(initialData.designData.textValue || '');
+          editor.setTextFont(initialData.designData.textFont || 'Arial');
+          editor.setTextColor(initialData.designData.textColor || null);
+          editor.setTextSize(initialData.designData.textSize ?? 30);
+          editor.setTextBold(initialData.designData.textBold || false);
+          editor.setTextPos(initialData.designData.textPos || {x:50, y:50});
+          editor.setTextStrokeWidth(initialData.designData.textStrokeWidth ?? 7);
+          editor.setTextStrokeColor(initialData.designData.textStrokeColor || null);
+        } else {
+          // Fallback z kompatybilnością wsteczną do starych kodów
+          editor.setModuleShape(initialData.styleType || 'rounded');
+          editor.setForegroundType('solid');
+          editor.setForegroundColor(initialData.dotsColor || '#000000');
+          editor.setMarkerOuterShape(initialData.eyeColor ? 'square' : 'rounded'); // rough mapping
+          editor.setMarkerInnerShape(initialData.eyeColor ? 'square' : 'dot'); // rough mapping
+          editor.setBackgroundType('solid');
+          editor.setBackgroundColor(initialData.backgroundColor || '#ffffff');
+          editor.setLogoImage(initialData.logoBase64 || null);
+        }
+        
         setUtmData(initialData.utm || null);
       } else {
         setCodeId(generateShortCode());
@@ -179,11 +179,29 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
         setWifiData({ ssid: '', password: '', type: 'WPA' });
         setVcardData({ firstName: '', lastName: '', phone: '', email: '', company: '', title: '', website: '' });
         setTextData('');
-        setStyleType('rounded');
-        setDotsColor('#000000');
-        setEyeColor('#000000');
-        setBackgroundColor('#ffffff');
-        setLogoBase64(null);
+        
+        // Resetowanie do defaults dla nowego kodu
+        editor.setModuleShape('square');
+        editor.setMarkerOuterShape('square');
+        editor.setMarkerInnerShape('square');
+        editor.setForegroundType('solid');
+        editor.setForegroundColor('#000000');
+        editor.setBackgroundType('solid');
+        editor.setBackgroundColor('#ffffff');
+        editor.setPadding(15);
+        editor.setLogoImage(null);
+        editor.setLogoSize(50);
+        editor.setLogoPos({x:50, y:50});
+        editor.setLogoStrokeWidth(5);
+        editor.setLogoStrokeColor(null);
+        editor.setTextValue('');
+        editor.setTextFont('Arial');
+        editor.setTextColor(null);
+        editor.setTextSize(30);
+        editor.setTextBold(false);
+        editor.setTextPos({x:50, y:50});
+        editor.setTextStrokeWidth(7);
+        editor.setTextStrokeColor(null);
         setUtmData(null);
       }
       setIsSaving(false);
@@ -294,17 +312,44 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
       phoneData,
       emailData,
       wifiData,
+      wifiData,
       vcardData,
       textData,
-      styleType,
-      dotsColor,
-      eyeColor,
-      backgroundColor,
-      logoBase64,
       utm: utmData,
       title: title || "Nowy kod QR",
       workspaceId: activeWorkspace.id,
-      archived: false
+      archived: false,
+      // Konfiguracja wyglądu z QREditorContext
+      styleType: editor.moduleShape,
+      dotsColor: editor.foregroundColor, // TODO: lepsza obsługa gradientów w chmurze
+      eyeColor: editor.markerOuterShape,
+      backgroundColor: editor.backgroundColor,
+      logoBase64: editor.logoImage,
+      designData: {
+        moduleShape: editor.moduleShape,
+        markerOuterShape: editor.markerOuterShape,
+        markerInnerShape: editor.markerInnerShape,
+        foregroundType: editor.foregroundType,
+        foregroundColor: editor.foregroundColor,
+        foregroundGradient: editor.foregroundGradient,
+        backgroundType: editor.backgroundType,
+        backgroundColor: editor.backgroundColor,
+        backgroundGradient: editor.backgroundGradient,
+        padding: editor.padding,
+        logoImage: editor.logoImage,
+        logoSize: editor.logoSize,
+        logoPos: editor.logoPos,
+        logoStrokeWidth: editor.logoStrokeWidth,
+        logoStrokeColor: editor.logoStrokeColor,
+        textValue: editor.textValue,
+        textFont: editor.textFont,
+        textColor: editor.textColor,
+        textSize: editor.textSize,
+        textBold: editor.textBold,
+        textPos: editor.textPos,
+        textStrokeWidth: editor.textStrokeWidth,
+        textStrokeColor: editor.textStrokeColor
+      }
     };
 
     if (mode === 'edit' && initialData) {
@@ -325,49 +370,12 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
     }
   };
 
-  useEffect(() => {
-    if (!qrCode.current) {
-      qrCode.current = new QRCodeStyling({
-        width: 1000,
-        height: 1000,
-        type: "svg",
-        data: getQrDataToEncode(),
-        image: logoBase64 || undefined,
-        margin: 0,
-        qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
-        imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 10, crossOrigin: "anonymous" },
-        dotsOptions: { color: dotsColor, type: styleType },
-        backgroundOptions: { color: backgroundColor },
-        cornersSquareOptions: { color: eyeColor, type: styleType === 'dots' ? 'dot' : (styleType === 'square' ? 'square' : 'extra-rounded') },
-        cornersDotOptions: { color: eyeColor, type: styleType === 'square' ? 'square' : 'dot' }
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isOpen && qrRef.current && qrCode.current) {
-      qrRef.current.innerHTML = '';
-      qrCode.current.append(qrRef.current);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (qrCode.current) {
-      qrCode.current.update({
-        data: getQrDataToEncode(),
-        image: logoBase64 || undefined,
-        dotsOptions: { type: styleType, color: dotsColor },
-        backgroundOptions: { color: backgroundColor },
-        cornersSquareOptions: { type: styleType === 'dots' ? 'dot' : (styleType === 'square' ? 'square' : 'extra-rounded'), color: eyeColor },
-        cornersDotOptions: { type: styleType === 'square' ? 'square' : 'dot', color: eyeColor }
-      });
-    }
-  }, [contentType, urlData, phoneData, emailData, wifiData, vcardData, textData, styleType, dotsColor, eyeColor, backgroundColor, codeId, logoBase64]);
-
   const getScannability = () => {
     const getLuminance = (hex) => {
+      if (!hex || typeof hex !== 'string') return 0;
       let color = hex.replace('#', '');
       if (color.length === 3) color = color.split('').map(x => x+x).join('');
+      if (color.length !== 6) return 1;
       const rgb = [
         parseInt(color.substring(0, 2), 16) / 255,
         parseInt(color.substring(2, 4), 16) / 255,
@@ -386,23 +394,91 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
       } catch (e) { return 1; }
     };
     
-    const minContrast = Math.min(getContrast(backgroundColor, dotsColor), getContrast(backgroundColor, eyeColor));
+    // Proste sprawdzanie kontrastu bazujące na podstawowych kolorach
+    const fgColor = editor.foregroundType === 'solid' ? editor.foregroundColor : (editor.foregroundGradient?.colorStops[0]?.color || '#000');
+    const bgColor = editor.backgroundType === 'solid' ? editor.backgroundColor : (editor.backgroundGradient?.colorStops[0]?.color || '#fff');
+    const minContrast = getContrast(bgColor, fgColor);
     
     let text = "Brak skanowalności";
     let color = "text-red-500";
     let percent = 0;
     
     if (minContrast >= 5.5) {
-      text = "Wysoka skanowalność"; color = "text-[#10b981]"; 
       percent = 75 + Math.min(1, (minContrast - 5.5) / (21 - 5.5)) * 25;
     } else if (minContrast >= 3.5) {
-      text = "Średnia skanowalność"; color = "text-yellow-500"; 
       percent = 50 + ((minContrast - 3.5) / (5.5 - 3.5)) * 25;
     } else if (minContrast >= 2.0) {
-      text = "Niska skanowalność"; color = "text-orange-500"; 
       percent = 25 + ((minContrast - 2.0) / (3.5 - 2.0)) * 25;
     } else {
       percent = Math.max(0, ((minContrast - 1.0) / (2.0 - 1.0))) * 25;
+    }
+
+    // --- KARY ZA LOGO I TEKST (obliczane na bieżąco podczas przesuwania i skalowania) ---
+    let areaPenalty = 0;
+    
+    const checkOverlapWithMarkers = (px, py, width, height) => {
+      px = Number(px); py = Number(py); width = Number(width); height = Number(height);
+      const rect = { left: px - width/2, right: px + width/2, top: py - height/2, bottom: py + height/2 };
+      let penalty = 0;
+      
+      const checkIntersect = (r1, r2) => !(r2.left > r1.right || r2.right < r1.left || r2.top > r1.bottom || r2.bottom < r1.top);
+
+      // Znaczniki pozycjonujące w rogach kodu QR (ok. 25% szerokości/wysokości)
+      const markers = [
+        { left: 0, right: 25, top: 0, bottom: 25 }, // Top-Left
+        { left: 75, right: 100, top: 0, bottom: 25 }, // Top-Right
+        { left: 0, right: 25, top: 75, bottom: 100 } // Bottom-Left
+      ];
+
+      markers.forEach(m => {
+        if (checkIntersect(rect, m)) penalty += 30; // 30% kary za każdy zasłonięty znacznik
+      });
+      return penalty;
+    };
+
+    let totalArea = 0;
+
+    if (editor.logoImage) {
+      const realRatio = (editor.logoSize / 100) * 0.4;
+      totalArea += realRatio * realRatio; 
+      areaPenalty += checkOverlapWithMarkers(editor.logoPos.x, editor.logoPos.y, editor.logoSize * 0.4, editor.logoSize * 0.4);
+    }
+    
+    if (editor.textValue && editor.textValue.trim() !== '') {
+      const realRatioHeight = (editor.textSize / 100) * 0.3;
+      // Szerokość to ok. 60% wysokości dla każdego znaku
+      const realRatioWidth = Math.min(1.0, realRatioHeight * 0.6 * editor.textValue.length);
+      totalArea += realRatioHeight * realRatioWidth;
+      
+      // Bardzo szeroki tekst przecina kod QR (przerywa wzorce synchronizacji i ścieżki danych)
+      if (realRatioWidth > 0.35) {
+        areaPenalty += (realRatioWidth - 0.35) * 200;
+      }
+      
+      areaPenalty += checkOverlapWithMarkers(
+        editor.textPos.x, 
+        editor.textPos.y, 
+        realRatioWidth * 100, 
+        editor.textSize * 0.3
+      );
+    }
+    
+    // Jeśli połączony obszar tekstu i loga przekracza 8% kodu, naliczamy karę (narastająco)
+    if (totalArea > 0.08) {
+      areaPenalty += (totalArea - 0.08) * 300;
+    }
+    
+    // Aplikujemy kary do procentu kontrastu
+    percent = Math.max(0, percent - areaPenalty);
+
+    if (percent >= 75) {
+      text = "Wysoka skanowalność"; color = "text-[#10b981]"; 
+    } else if (percent >= 50) {
+      text = "Średnia skanowalność"; color = "text-yellow-500"; 
+    } else if (percent >= 25) {
+      text = "Niska skanowalność"; color = "text-orange-500"; 
+    } else {
+      text = "Brak skanowalności"; color = "text-red-500"; 
     }
 
     return { text, color, percent };
@@ -427,7 +503,7 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
-            className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative" 
+            className="bg-[#0a0a0b] border border-border rounded-2xl w-full max-w-[1400px] h-[85vh] flex flex-col overflow-hidden shadow-2xl relative" 
             onMouseDown={e => e.stopPropagation()}
           >
         {/* Header */}
@@ -449,8 +525,9 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
 
         {/* Content */}
         <div className="flex flex-1 overflow-hidden relative">
-          {/* Left Form */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8 custom-scrollbar pb-[280px] lg:pb-8">
+          {/* Left Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 xl:p-12 custom-scrollbar" style={{ overflowAnchor: 'none' }}>
+            <div className="max-w-3xl mx-auto space-y-6 lg:space-y-8 pb-[30vh]">
             {/* Step 1: Short link */}
             <div>
               <h3 className="flex items-center gap-3 font-semibold mb-4">
@@ -671,173 +748,29 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
               </div>
             </div>
 
-            {/* Step 4 */}
-            <div>
-              <h3 className="flex items-center gap-3 font-semibold mb-4">
-                <span className="w-6 h-6 rounded-full bg-border flex items-center justify-center text-xs">4</span>
-                Wybierz styl kodu QR
-              </h3>
-              <div className="ml-9 grid grid-cols-3 gap-2 sm:flex sm:gap-3">
-                 <StyleCard title="Łagodne" type="rounded" active={styleType === 'rounded'} onClick={() => setStyleType('rounded')} />
-                 <StyleCard title="Kropki" type="dots" active={styleType === 'dots'} onClick={() => setStyleType('dots')} />
-                 <StyleCard title="Kwadraty" type="square" active={styleType === 'square'} onClick={() => setStyleType('square')} />
-              </div>
-            </div>
-
-            {/* Step 5 */}
-            <div>
-              <h3 className="flex items-center gap-3 font-semibold mb-4">
-                <span className="w-6 h-6 rounded-full bg-border flex items-center justify-center text-xs">5</span>
-                Kolorystyka
-              </h3>
-              <div className="ml-9 relative">
-                <div className="flex gap-6">
-                   <div>
-                     <label className="text-xs text-gray-400 block mb-2">Kolor kropek</label>
-                     <div 
-                       className="color-trigger-btn w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
-                       style={{ backgroundColor: dotsColor }} 
-                       onClick={() => setOpenColorPicker(openColorPicker === 'dots' ? null : 'dots')} 
-                     />
-                   </div>
-                   <div>
-                     <label className="text-xs text-gray-400 block mb-2">Kolor oczka</label>
-                     <div 
-                       className="color-trigger-btn w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
-                       style={{ backgroundColor: eyeColor }} 
-                       onClick={() => setOpenColorPicker(openColorPicker === 'eye' ? null : 'eye')} 
-                     />
-                   </div>
-                   <div>
-                     <label className="text-xs text-gray-400 block mb-2">Kolor tła</label>
-                     <div 
-                       className="color-trigger-btn w-10 h-10 rounded cursor-pointer border border-border transition-transform hover:scale-110" 
-                       style={{ backgroundColor: backgroundColor }} 
-                       onClick={() => setOpenColorPicker(openColorPicker === 'bg' ? null : 'bg')} 
-                     />
-                   </div>
-                </div>
-
-                <AnimatePresence>
-                  {openColorPicker && (
-                    <motion.div 
-                      ref={colorPickerRef}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      transition={{ duration: 0.15 }}
-                      className="fixed sm:absolute z-[60] sm:z-50 top-1/2 sm:top-auto -translate-y-1/2 sm:translate-y-0 sm:bottom-full left-12 sm:left-0 sm:pb-3"
-                      onMouseLeave={() => {
-                        if (!isMouseDownRef.current) {
-                          setOpenColorPicker(null);
-                        }
-                      }}
-                    >
-                      <div className="bg-card border border-border rounded-xl p-3 shadow-2xl origin-left sm:origin-bottom-left transform scale-85 sm:scale-100 transition-transform relative">
-                        <button 
-                          onClick={() => setOpenColorPicker(null)}
-                          className="absolute -top-3 -right-3 w-7 h-7 bg-background border border-border rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors z-20 sm:hidden shadow-lg"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                        <div className="relative z-10 space-y-3 w-[200px]">
-                          <HexColorPicker 
-                            color={openColorPicker === 'dots' ? dotsColor : openColorPicker === 'eye' ? eyeColor : backgroundColor} 
-                            onChange={(color) => {
-                              if (openColorPicker === 'dots') setDotsColor(color);
-                              if (openColorPicker === 'eye') setEyeColor(color);
-                              if (openColorPicker === 'bg') setBackgroundColor(color);
-                            }} 
-                          />
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400 font-semibold">HEX</span>
-                            <input 
-                              type="text" 
-                              value={openColorPicker === 'dots' ? dotsColor : openColorPicker === 'eye' ? eyeColor : backgroundColor} 
-                              onChange={(e) => {
-                                const color = e.target.value;
-                                if (openColorPicker === 'dots') setDotsColor(color);
-                                if (openColorPicker === 'eye') setEyeColor(color);
-                                if (openColorPicker === 'bg') setBackgroundColor(color);
-                              }} 
-                              className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm uppercase focus:outline-none focus:border-[#1ea2e4] w-full" 
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* Step 6 */}
-            <div>
-              <h3 className="flex items-center gap-3 font-semibold mb-4">
-                <span className="w-6 h-6 rounded-full bg-border flex items-center justify-center text-xs">6</span>
-                Dodaj logo (Opcjonalnie)
-              </h3>
-              <div className="ml-9 bg-card border border-border rounded-2xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-[#1ea2e4]"></div>
-                
-                <div className="space-y-4">
-                {!logoBase64 ? (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer bg-background hover:bg-white/5 transition-colors group">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <ImageIcon className="w-8 h-8 text-gray-500 mb-2 group-hover:text-[#1ea2e4] transition-colors" />
-                      <p className="text-sm text-gray-400"><span className="font-semibold text-[#1ea2e4]">Kliknij aby wgrać</span> lub upuść plik</p>
-                      <p className="text-xs text-gray-500 mt-1">SVG, PNG, JPG</p>
-                    </div>
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      accept=".svg,.png,.jpg,.jpeg" 
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => setLogoBase64(event.target.result);
-                          reader.readAsDataURL(file);
-                        }
-                      }} 
-                    />
-                  </label>
-                ) : (
-                  <div className="flex items-center justify-between p-3 bg-background border border-border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded bg-white p-1 flex items-center justify-center shrink-0">
-                        <img src={logoBase64} alt="Logo" className="max-w-full max-h-full object-contain" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-200">Wgrane logo</p>
-                        <p className="text-xs text-green-400">Aktywne na podglądzie</p>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => setLogoBase64(null)}
-                      className="p-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
-                      title="Usuń logo"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-            </div>
+            {/* Step 4: Nowy potężny edytor (Zaprojektuj kod QR) */}
+            <DesignAccordion />
           </div>
+        </div>
 
-          {/* Right Preview */}
-          <div className="absolute bottom-4 right-4 z-50 flex flex-col gap-3 items-end pointer-events-none lg:pointer-events-auto lg:static lg:w-[450px] lg:bg-sidebar lg:border-l lg:border-border lg:flex-col lg:items-center lg:justify-center lg:p-8 lg:gap-0 lg:shadow-none">
+        {/* Right Preview */}
+          <div className="absolute bottom-4 right-4 z-50 lg:z-auto flex flex-col gap-3 items-end pointer-events-none lg:pointer-events-auto lg:static lg:w-[450px] xl:w-[500px] lg:bg-sidebar lg:border-l lg:border-border lg:flex-col lg:items-center lg:justify-center lg:p-8 xl:p-12 lg:gap-0 lg:shadow-none">
              
              {/* QR Container */}
-             <div className="w-[140px] sm:w-[160px] p-3 bg-card border border-border rounded-2xl shadow-2xl flex flex-col items-center justify-center pointer-events-auto lg:w-full lg:bg-transparent lg:border-0 lg:rounded-none lg:shadow-none lg:p-0">
-               <div className="w-full aspect-square rounded-xl lg:rounded-3xl flex items-center justify-center relative overflow-hidden shadow-sm lg:shadow-2xl" style={{ backgroundColor }}>
-                 {/* Kontener dla qr-code-styling */}
-                 <div ref={qrRef} className="w-full h-full flex items-center justify-center p-[6.5%] [&>*]:w-full [&>*]:h-full"></div>
+             <div className="w-[140px] sm:w-[160px] p-3 bg-card border border-border rounded-2xl shadow-2xl flex flex-col items-center justify-center pointer-events-auto lg:w-full lg:max-w-[360px] xl:max-w-[400px] lg:bg-transparent lg:border-0 lg:rounded-none lg:shadow-none lg:p-0">
+                <div 
+                 className="w-full aspect-square rounded-xl lg:rounded-[2rem] flex items-center justify-center relative shadow-sm lg:shadow-2xl overflow-hidden"
+               >
+                 {showPreview ? (
+                   <QRLivePreview qrData={getQrDataToEncode()} />
+                 ) : (
+                   <div className="w-full h-full flex items-center justify-center bg-black/5">
+                     <div className="w-10 h-10 border-4 border-[#1ea2e4] border-t-transparent rounded-full animate-spin opacity-50"></div>
+                   </div>
+                 )}
                </div>
                
-               <div className="mt-3 lg:mt-10 w-full max-w-sm">
+               <div className="mt-3 lg:mt-10 w-full">
                  <div className="flex justify-end mb-1.5 lg:mb-3">
                    <span className={`font-bold tracking-wide text-[9px] lg:text-xs ${scannability.color}`}>{scannability.text}</span>
                  </div>
@@ -880,6 +813,14 @@ export default function QRModal({ isOpen, onClose, activeWorkspace, mode = 'crea
       />
     </>
 );
+}
+
+export default function QRModal(props) {
+  return (
+    <QREditorProvider>
+      <QRModalInner {...props} />
+    </QREditorProvider>
+  );
 }
 
 function Tab({ icon, label, active, onClick }) {

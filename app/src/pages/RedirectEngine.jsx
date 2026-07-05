@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc, increment, collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import QRLivePreview from '../components/qr-editor/QRLivePreview';
 import { getAnalyticsData } from '../utils/tracking';
-import QRCodeStyling from 'qr-code-styling';
 import { QrCode as QrCodeIcon } from 'lucide-react';
+
 export default function RedirectEngine() {
   const { shortId } = useParams();
   const [error, setError] = useState('');
@@ -173,39 +174,48 @@ export default function RedirectEngine() {
     processRedirect();
   }, [shortId]);
 
-  useEffect(() => {
-    if (deactivatedData && qrRef.current) {
-      const dotsColor = deactivatedData.dotsColor || "#000000";
-      const eyeColor = deactivatedData.eyeColor || dotsColor;
-      const backgroundColor = deactivatedData.backgroundColor || "#ffffff";
-      
-      let qrData = `${window.location.origin}/${shortId}`;
-      if (deactivatedData.contentType === 'wifi') {
-        const { ssid, password, type } = deactivatedData.wifiData || {};
-        const auth = type === 'nopass' ? '' : `T:${type};`;
-        qrData = `WIFI:S:${ssid};${auth}P:${password};;`;
-      }
-
-      const options = {
-        width: 1000,
-        height: 1000,
-        type: 'svg',
-        data: qrData,
-        image: deactivatedData.logoBase64 || undefined,
-        margin: 0,
-        qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "Q" },
-        imageOptions: { hideBackgroundDots: true, imageSize: 0.4, margin: 5, crossOrigin: "anonymous" },
-        dotsOptions: { color: dotsColor, type: deactivatedData.styleType || "rounded" },
-        backgroundOptions: { color: backgroundColor },
-        cornersSquareOptions: { color: eyeColor, type: deactivatedData.styleType === 'dots' ? 'dot' : (deactivatedData.styleType === 'square' ? 'square' : 'extra-rounded') },
-        cornersDotOptions: { color: eyeColor, type: deactivatedData.styleType === 'square' ? 'square' : 'dot' }
-      };
-
-      const qrCode = new QRCodeStyling(options);
-      qrRef.current.innerHTML = '';
-      qrCode.append(qrRef.current);
+  const getDeactivatedQrData = () => {
+    if (!deactivatedData) return '';
+    let qrData = `${window.location.origin}/${shortId}`;
+    if (deactivatedData.contentType === 'wifi') {
+      const { ssid, password, type } = deactivatedData.wifiData || {};
+      const auth = type === 'nopass' ? '' : `T:${type};`;
+      qrData = `WIFI:S:${ssid};${auth}P:${password};;`;
     }
-  }, [deactivatedData]);
+    return qrData;
+  };
+
+  const getDeactivatedDesignData = () => {
+    if (!deactivatedData) return null;
+    const d = deactivatedData.designData || {};
+    const legacyDotsColor = deactivatedData.dotsColor || "#000000";
+    const legacyEyeColor = deactivatedData.eyeColor || legacyDotsColor;
+    const legacyStyle = deactivatedData.styleType || "rounded";
+    const legacyBgColor = deactivatedData.backgroundColor || "#ffffff";
+
+    return {
+      moduleShape: d.moduleShape || legacyStyle,
+      markerOuterShape: d.markerOuterShape || (legacyStyle === 'dots' ? 'dot' : (legacyStyle === 'square' ? 'square' : 'extra-rounded')),
+      markerInnerShape: d.markerInnerShape || (legacyStyle === 'square' ? 'square' : 'dot'),
+      foregroundType: d.foregroundType || 'solid',
+      foregroundColor: d.foregroundColor || legacyDotsColor,
+      foregroundGradient: d.foregroundGradient,
+      backgroundType: d.backgroundType || 'solid',
+      backgroundColor: d.backgroundColor || legacyBgColor,
+      backgroundGradient: d.backgroundGradient,
+      padding: d.padding ?? 15,
+      logoImage: d.logoImage || deactivatedData.logoBase64 || null,
+      logoSize: d.logoSize ?? 50,
+      logoPos: d.logoPos || {x:50, y:50},
+      logoStrokeWidth: d.logoStrokeWidth ?? 10,
+      textValue: d.textValue || '',
+      textFont: d.textFont || 'Arial',
+      textSize: d.textSize ?? 50,
+      textBold: d.textBold || false,
+      textPos: d.textPos || {x:50, y:50},
+      textStrokeWidth: d.textStrokeWidth ?? 10,
+    };
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0b] flex flex-col items-center justify-center p-4 text-white font-sans">
@@ -226,10 +236,9 @@ export default function RedirectEngine() {
               </div>
             ) : (
               <div 
-                ref={qrRef}
-                className="w-[250px] h-[250px] p-[6.5%] rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative flex items-center justify-center [&>*]:w-full [&>*]:h-full"
-                style={{ backgroundColor: deactivatedData.backgroundColor || '#ffffff' }}
+                className="w-[250px] h-[250px] rounded-3xl shadow-[0_0_40px_rgba(255,255,255,0.1)] relative flex items-center justify-center overflow-hidden [&>canvas]:w-full [&>canvas]:h-full [&>canvas]:object-contain"
               >
+                <QRLivePreview qrData={getDeactivatedQrData()} externalDesignData={getDeactivatedDesignData()} />
               </div>
             )}
             

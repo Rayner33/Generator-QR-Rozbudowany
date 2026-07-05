@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.3] - 2026-07-05
+### Dodane
+- **Premium Editor UI (Kolory & Gradienty):** Zastąpiono klasyczne okna Color Pickera nowym, innowacyjnym układem. Wprowadzono dużą zintegrowaną planszę podglądu wybranego koloru/gradientu sprzężoną z precyzyjną "Pipetą", obok której umiejscowiono dynamiczną, sprytnie ściskającą się siatkę flex (grid), prezentującą z góry przygotowane 28 kolorów bazowych oraz 28 luksusowych gradientów.
+- **Rozbudowa kreatora wizualnego:** Przeprojektowano wszystkie kształty i zachowania paneli wyboru kolorów w podziale na "Tło" oraz "Pierwszy plan", osiągając całkowitą niezależność z-indexów, a na urządzeniach mobilnych perfekcyjne ułożenie z zachowaniem kształtów klasą `aspect-square`.
+
+### Poprawione
+- **Korekta przestrzeni wektorowej (SVG & Canvas):** Rozwiązano problem odwróconych gradientów przy eksporcie. Nałożono na wewnętrzny silnik `qr-code-styling` offset o wartości -90 stopni dla rotacji gradientów (obu płaszczyzn), niwelując rozjazd matematyczny i synchronizując eksport z klasycznym pozycjonowaniem CSS (np. 135 stopni).
+- **Gruntowna odnowa 30 Szablonów (qr-templates):** Zaktualizowano wszystkie dostępne motywy startowe do nowego standardu: rotacja 135 stopni w gradientach, zrezygnowanie z kanciastych modułów na rzecz nowoczesnych okręgów (`classys`, `dot`, `extra-rounded`).
+- **Asynchroniczne czasy animacji (Framer Motion):** Naprawiono wizualne zapadanie się zawartości akordeonu podczas zamykania. Wprowadzono niezależny krótszy czas dla przezroczystości (0.1s) w stosunku do animacji fizycznego zwijania okna (0.2s), w efekcie maskując zgniecenie treści.
+- **Ghost Line Rendering (Emboss):** Wyeliminowano fałszywy wizualny błąd brzegowy przeglądarek (Chrome/Safari) dla przezroczystych ramek nakładanych na gradienty, zamieniając `border-transparent` na renderowane po warstwie wewnętrznej `shadow-[inset]`.
+
 ## [1.4.2] - 2026-07-02
 ### Poprawione
 - **Optymalizacja widoków mobilnych (Analityka i Edytor):** Usunięto błąd ucinanych przycisków w Analityce oraz ulepszono ich estetykę (usunięto mylący efekt `hover`). Całkowicie przebudowano mobilny układ edytora kodów QR – m.in. skompresowano style do widoku kompaktowej siatki, zrównano przycisk zapisu z szerokością podglądu kodu QR, oraz sprytnie przeniesiono ręczne pole wpisywania HEX do wewnątrz zoptymalizowanego okienka wyboru koloru. Poprawiono system zamykania okien kolorów i płynne skalowanie elementów.
