@@ -1066,7 +1066,7 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
               onClick={e => e.stopPropagation()}
             >
               <div className="w-[280px] h-[280px] sm:w-[400px] sm:h-[400px] bg-transparent border border-border rounded-3xl overflow-hidden shadow-2xl flex items-center justify-center relative">
-                <QRPreviewItem code={previewCode} />
+                <QRPreviewItem code={previewCode} isHighQuality={true} />
               </div>
               <button 
                 onClick={() => setPreviewCode(null)}
@@ -1107,7 +1107,7 @@ const enqueueRender = (task) => {
   }
 };
 
-function QRPreviewItem({ code }) {
+function QRPreviewItem({ code, isHighQuality = false }) {
   const [showPreview, setShowPreview] = React.useState(false);
   const containerRef = React.useRef(null);
 
@@ -1172,7 +1172,7 @@ function QRPreviewItem({ code }) {
     <div ref={containerRef} className="w-full h-full relative overflow-hidden rounded-[inherit] flex items-center justify-center">
       {showPreview ? (
         <div className="w-full h-full [&>canvas]:w-full [&>canvas]:h-full [&>canvas]:object-contain">
-          <QRLivePreview qrData={getQrDataToEncode(code)} externalDesignData={designData} renderSize={300} />
+          <QRLivePreview qrData={getQrDataToEncode(code)} externalDesignData={designData} renderSize={isHighQuality ? 1000 : 300} />
         </div>
       ) : (
         <div className="w-6 h-6 border-2 border-[#009de2] border-t-transparent rounded-full animate-spin"></div>
