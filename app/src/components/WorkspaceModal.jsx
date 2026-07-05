@@ -73,18 +73,20 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
-          key="workspace-modal"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[150] flex justify-end"
-        >
+        <div className="fixed inset-0 z-[150] flex justify-end pointer-events-none">
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+          <motion.div 
+            key="workspace-backdrop"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto" 
+            onClick={onClose} 
+          />
           
           {/* Panel */}
           <motion.div 
+            key="workspace-panel"
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="w-[480px] h-full bg-[#0a0a0b] border-l border-border shadow-2xl flex flex-col relative z-10"
+            className="w-[480px] h-full bg-[#0a0a0b] border-l border-border shadow-2xl flex flex-col relative z-10 pointer-events-auto"
           >
           <button 
             onClick={onClose}
@@ -171,7 +173,7 @@ export default function WorkspaceModal({ isOpen, onClose, currentUser, setActive
           </div>
         </form>
           </motion.div>
-        </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
