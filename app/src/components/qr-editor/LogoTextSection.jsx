@@ -166,11 +166,11 @@ export default function LogoTextSection() {
         {activeTab === 'logo' ? (
           <motion.div 
             key="logo-tab"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            animate={{ opacity: 1, height: 'auto', transitionEnd: { overflow: 'visible' } }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col sm:flex-row gap-5 items-start overflow-hidden"
+            className="flex flex-col sm:flex-row gap-5 items-start"
           >
           {/* Lewa strona: Joystick (tylko gdy jest logo) */}
           <AnimatePresence>
@@ -265,11 +265,11 @@ export default function LogoTextSection() {
         ) : (
           <motion.div 
             key="text-tab"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+            animate={{ opacity: 1, height: 'auto', transitionEnd: { overflow: 'visible' } }}
+            exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
             transition={{ duration: 0.2 }}
-            className="flex flex-col sm:flex-row gap-5 items-start overflow-hidden"
+            className="flex flex-col sm:flex-row gap-5 items-start"
           >
           {/* Lewa strona: Joystick (tylko gdy jest tekst) */}
           <AnimatePresence>
