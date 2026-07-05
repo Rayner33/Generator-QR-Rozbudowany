@@ -55,8 +55,10 @@ export default function QRLivePreview({ qrData, externalDesignData = null, rende
 
     const render = async () => {
       // 1. Zaktualizuj instancję (synchronicznie przed czekaniem)
+      const hasOverlay = Boolean(editor.logoImage || (editor.textValue && editor.textValue.trim() !== ''));
       qrCodeInstance.update({
         data: qrData,
+        qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: hasOverlay ? "H" : "M" },
         dotsOptions: { 
           type: editor.moduleShape === 'classys' ? 'square' : (editor.moduleShape === 'classy-pt' ? 'square' : editor.moduleShape), 
           color: editor.foregroundType === 'solid' ? editor.foregroundColor : undefined,
@@ -299,12 +301,13 @@ export default function QRLivePreview({ qrData, externalDesignData = null, rende
 }
 
 export const generateCustomQRDataURL = async (qrData, editor, size = 1024) => {
+  const hasOverlay = Boolean(editor.logoImage || (editor.textValue && editor.textValue.trim() !== ''));
   const qrCodeInstance = new QRCodeStyling({
     width: size,
     height: size,
     type: "svg",
     margin: 0,
-    qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" },
+    qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: hasOverlay ? "H" : "M" },
     data: qrData,
     dotsOptions: { 
       type: editor.moduleShape === 'classys' ? 'square' : (editor.moduleShape === 'classy-pt' ? 'square' : editor.moduleShape), 

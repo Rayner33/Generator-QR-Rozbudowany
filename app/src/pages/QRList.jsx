@@ -185,13 +185,15 @@ export default function QRList({ activeWorkspace, workspaces, onEdit, onDuplicat
     const compensatedLogoW = targetLogoW * svgScaleFactor;
     const calculatedImageSize = compensatedLogoW / 300; // Zawsze względem 300, bo wymuszamy margin: 0 w bibliotece
 
+    const hasOverlay = Boolean(d.logoImage || code.logoBase64 || (d.textValue && d.textValue.trim() !== ''));
+
     const qrCode = new QRCodeStyling({
       width: 300,
       height: 300,
       data: getQrDataToEncode(code),
       image: d.logoImage || code.logoBase64 || undefined,
       margin: 0, // Cały padding aplikujemy ręcznie na poziomie wektorowym w SVG, unikając błędu zbyt grubej ramki!
-      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: "H" },
+      qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: hasOverlay ? "H" : "M" },
       imageOptions: { 
         hideBackgroundDots: false, 
         imageSize: calculatedImageSize, 
