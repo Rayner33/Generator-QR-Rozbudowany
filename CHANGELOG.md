@@ -1,7 +1,14 @@
 # Changelog
 
-## [1.4.3] - 2026-07-05
+## [1.5.0] - 2026-07-19
 ### Dodane
+- **Globalny moduł "Administracja":** Dodano nową, dedykowaną zakładkę w ustawieniach konta (dostępną dla administratorów), pozwalającą na pełne zarządzanie kodami QR wszystkich użytkowników oraz powiązanymi z nimi statystykami, co zapewnia centralną kontrolę nad danymi.
+
+### Poprawione
+- **Odświeżone Logo i Favicon:** Podmieniono główne logo aplikacji (na stronie logowania oraz w menu) oraz faviconę na nowe projekty wektorowe. Wdrożono zaktualizowane pliki z poprawnym obszarem roboczym (`viewBox`), a także wprowadzono mechanizm wymuszający przeładowanie u klientów (cache busting w `index.html`), aby zmiany były natychmiast widoczne u wszystkich użytkowników.
+- **Płynna animacja menu zakładek:** Naprawiono problem z brakiem płynnego przesuwania się dolnej kreski (wskaźnika aktywnej zakładki) w menu "Ustawienia Konta". System animacji został ujednolicony i bazuje na poprawnie działającym, białym motywie znanym z ustawień Zespołu.
+
+## [1.4.3] - 2026-07-05
 - **Premium Editor UI (Kolory & Gradienty):** Zastąpiono klasyczne okna Color Pickera nowym, innowacyjnym układem. Wprowadzono dużą zintegrowaną planszę podglądu wybranego koloru/gradientu sprzężoną z precyzyjną "Pipetą", obok której umiejscowiono dynamiczną, sprytnie ściskającą się siatkę flex (grid), prezentującą z góry przygotowane 28 kolorów bazowych oraz 28 luksusowych gradientów.
 - **Rozbudowa kreatora wizualnego:** Przeprojektowano wszystkie kształty i zachowania paneli wyboru kolorów w podziale na "Tło" oraz "Pierwszy plan", osiągając całkowitą niezależność z-indexów, a na urządzeniach mobilnych perfekcyjne ułożenie z zachowaniem kształtów klasą `aspect-square`.
 
