@@ -3,6 +3,7 @@ import { auth, googleProvider } from '../firebase';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { QrCode } from 'lucide-react';
+import Logo from '../components/Logo';
 
 // Dozwolone domeny firmowe
 const ALLOWED_DOMAINS = ['parys.pl'];
@@ -44,7 +45,7 @@ export default function Login() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4 text-white font-sans">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center justify-center mb-10 gap-3">
-          <QrCode size={96} className="text-[#FF4C00]" />
+          <Logo className="w-24 h-24" />
           <h1 className="text-3xl font-black tracking-widest uppercase">QR PARYS</h1>
         </div>
         

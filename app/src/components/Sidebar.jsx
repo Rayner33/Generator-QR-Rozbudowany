@@ -47,7 +47,7 @@ export default function Sidebar({ activePath, workspaces, activeWorkspace, setAc
     <aside className={`fixed inset-y-0 left-0 w-64 bg-sidebar border-r border-border flex flex-col z-40 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       {/* Top Header Row */}
       <div className="px-4 pt-6 pb-4 flex items-center justify-between">
-        <QrCode size={36} className="text-white" />
+        <Logo className="w-9 h-9" />
         <button 
           onClick={() => { navigate('/account'); onClose?.(); }}
           className="flex items-center justify-center w-8 h-8 rounded-full bg-card border border-border hover:border-gray-500 transition-colors text-gray-300 hover:text-white shadow-sm" 
