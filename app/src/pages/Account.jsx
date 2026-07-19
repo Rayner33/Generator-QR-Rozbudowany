@@ -19,6 +19,7 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [userData, setUserData] = useState(null);
   const [activeTab, setActiveTab] = useState('general');
+  const [hoveredTab, setHoveredTab] = useState(null);
   const colorPickerRef = useRef(null);
 
   useEffect(() => {
@@ -111,21 +112,37 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
       </div>
       
       {/* Tabs */}
-      <div className="flex items-center gap-8 border-b border-border mb-8">
-        <button 
-          onClick={() => setActiveTab('general')}
-          className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'general' ? 'border-white text-white' : 'border-transparent text-gray-400 hover:text-white'}`}
-        >
-          Ogólne
-        </button>
-        {userData?.isAdmin && (
+      <div className="flex items-center gap-2 border-b border-border mb-8 pb-0">
+        {[
+          { id: 'general', label: 'Ogólne' },
+          ...(userData?.isAdmin ? [{ id: 'admin', label: 'Administracja' }] : [])
+        ].map((tab) => (
           <button 
-            onClick={() => setActiveTab('admin')}
-            className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'admin' ? 'border-red-500 text-red-500' : 'border-transparent text-gray-400 hover:text-red-400'}`}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            onMouseEnter={() => setHoveredTab(tab.id)}
+            onMouseLeave={() => setHoveredTab(null)}
+            className={`relative pb-4 pt-2 font-medium px-4 transition-colors ${activeTab === tab.id ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
           >
-            Administracja
+            {hoveredTab === tab.id && (
+              <motion.div 
+                layoutId="account-tab-hover"
+                className="absolute inset-0 bg-white/5 rounded-t-lg -z-10"
+                initial={false}
+                transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+              />
+            )}
+            {activeTab === tab.id && (
+              <motion.div 
+                layoutId="account-tab-active"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-white z-10"
+                initial={false}
+                transition={{ type: "spring", bounce: 0, duration: 0.2 }}
+              />
+            )}
+            <span className="relative z-10">{tab.label}</span>
           </button>
-        )}
+        ))}
       </div>
 
       {activeTab === 'general' ? (
