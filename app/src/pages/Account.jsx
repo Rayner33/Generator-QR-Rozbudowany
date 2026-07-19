@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { updateProfile, signOut } from 'firebase/auth';
-import { doc, updateDoc, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { Check, Menu } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
@@ -8,6 +8,7 @@ import { PREDEFINED_GRADIENTS, darkenHex } from '../utils/colors';
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem } from '../utils/animations';
 import { getInitials } from '../utils/stringUtils';
+import AdminTab from '../components/AdminTab';
 
 export default function Account({ currentUser, workspaces, onMenuClick }) {
   const [username, setUsername] = useState('');
@@ -16,6 +17,8 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
   const [saveMessage, setSaveMessage] = useState('');
   const [personalWorkspace, setPersonalWorkspace] = useState(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [activeTab, setActiveTab] = useState('general');
   const colorPickerRef = useRef(null);
 
   useEffect(() => {
@@ -35,6 +38,18 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
   useEffect(() => {
     if (currentUser) {
       setUsername(currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : ''));
+      
+      const fetchUserData = async () => {
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          if (userDoc.exists()) {
+            setUserData(userDoc.data());
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+      fetchUserData();
     }
     
     if (workspaces && workspaces.length > 0) {
@@ -97,103 +112,119 @@ export default function Account({ currentUser, workspaces, onMenuClick }) {
       
       {/* Tabs */}
       <div className="flex items-center gap-8 border-b border-border mb-8">
-        <button className="pb-4 border-b-2 border-white text-white font-medium px-2">Ogólne</button>
+        <button 
+          onClick={() => setActiveTab('general')}
+          className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'general' ? 'border-white text-white' : 'border-transparent text-gray-400 hover:text-white'}`}
+        >
+          Ogólne
+        </button>
+        {userData?.isAdmin && (
+          <button 
+            onClick={() => setActiveTab('admin')}
+            className={`pb-4 border-b-2 font-medium px-2 transition-colors ${activeTab === 'admin' ? 'border-red-500 text-red-500' : 'border-transparent text-gray-400 hover:text-red-400'}`}
+          >
+            Administracja
+          </button>
+        )}
       </div>
 
-      {/* User Data Section */}
-      <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-8">
-      <motion.div variants={staggerItem} className="bg-card border border-border rounded-xl p-8">
-        <h2 className="text-xl font-semibold mb-2">Dane osobowe</h2>
-        <p className="text-gray-400 text-sm mb-8">Zaktualizuj swoje dane. Możesz zmienić tylko nazwę użytkownika i awatar.</p>
+      {activeTab === 'general' ? (
+        <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-8">
+          <motion.div variants={staggerItem} className="bg-card border border-border rounded-xl p-8">
+            <h2 className="text-xl font-semibold mb-2">Dane osobowe</h2>
+            <p className="text-gray-400 text-sm mb-8">Zaktualizuj swoje dane. Możesz zmienić tylko nazwę użytkownika i awatar.</p>
 
-        <div className="flex flex-col gap-8">
-          {/* Avatar Preview & Selection */}
-          <div className="flex items-start gap-8">
-            {/* Big Avatar */}
-            <div 
-              className="w-24 h-24 flex items-center justify-center text-white font-bold text-4xl shadow-lg border-4 border-border shrink-0"
-              style={{ background: avatarStyle, borderRadius: '30%' }}
-            >
-              {getInitials(username || currentUser?.email, 'U')}
-            </div>
-            
-            {/* Style Selection */}
-            <div>
-              <p className="text-sm font-medium mb-3">Wybierz kolor awatara</p>
-              <div className="flex flex-wrap gap-3 max-w-sm relative">
-                {PREDEFINED_GRADIENTS.map((gradient, index) => (
-                  <button
-                    key={index}
-                    onClick={() => { setAvatarStyle(gradient); setShowColorPicker(false); }}
-                    className={`w-10 h-10 rounded-full transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${avatarStyle === gradient ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
-                    style={{ background: gradient }}
-                  />
-                ))}
-                
-                {/* Custom Color Button */}
-                <button 
-                  onClick={() => setShowColorPicker(!showColorPicker)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center bg-card transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${showColorPicker ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
-                  title="Własny kolor"
+            <div className="flex flex-col gap-8">
+              {/* Avatar Preview & Selection */}
+              <div className="flex items-start gap-8">
+                {/* Big Avatar */}
+                <div 
+                  className="w-24 h-24 flex items-center justify-center text-white font-bold text-4xl shadow-lg border-4 border-border shrink-0"
+                  style={{ background: avatarStyle, borderRadius: '30%' }}
                 >
-                   <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-red-500 via-green-500 to-blue-500" />
-                </button>
+                  {getInitials(username || currentUser?.email, 'U')}
+                </div>
                 
-                {/* Color Picker Dropdown */}
-                {showColorPicker && (
-                  <div ref={colorPickerRef} className="absolute top-12 left-0 z-50 p-3 bg-card border border-border rounded-xl shadow-xl">
-                     <HexColorPicker 
-                       color={avatarStyle?.match(/#[0-9a-fA-F]{6}/)?.[0] || '#ffffff'} 
-                       onChange={(color) => setAvatarStyle(`linear-gradient(to bottom right, ${color}, ${darkenHex(color, 60)})`)} 
-                     />
+                {/* Style Selection */}
+                <div>
+                  <p className="text-sm font-medium mb-3">Wybierz kolor awatara</p>
+                  <div className="flex flex-wrap gap-3 max-w-sm relative">
+                    {PREDEFINED_GRADIENTS.map((gradient, index) => (
+                      <button
+                        key={index}
+                        onClick={() => { setAvatarStyle(gradient); setShowColorPicker(false); }}
+                        className={`w-10 h-10 rounded-full transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${avatarStyle === gradient ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
+                        style={{ background: gradient }}
+                      />
+                    ))}
+                    
+                    {/* Custom Color Button */}
+                    <button 
+                      onClick={() => setShowColorPicker(!showColorPicker)}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center bg-card transition-transform hover:scale-110 backface-hidden transform-gpu bg-clip-padding ${showColorPicker ? 'ring-2 ring-white ring-offset-2 ring-offset-background' : ''}`}
+                      title="Własny kolor"
+                    >
+                       <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-red-500 via-green-500 to-blue-500" />
+                    </button>
+                    
+                    {/* Color Picker Dropdown */}
+                    {showColorPicker && (
+                      <div ref={colorPickerRef} className="absolute top-12 left-0 z-50 p-3 bg-card border border-border rounded-xl shadow-xl">
+                         <HexColorPicker 
+                           color={avatarStyle?.match(/#[0-9a-fA-F]{6}/)?.[0] || '#ffffff'} 
+                           onChange={(color) => setAvatarStyle(`linear-gradient(to bottom right, ${color}, ${darkenHex(color, 60)})`)} 
+                         />
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Username Input */}
+              <div className="max-w-md">
+                <div className="relative">
+                   <input 
+                     type="text" 
+                     value={username}
+                     onChange={(e) => setUsername(e.target.value)}
+                     className="w-full bg-background border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f97316] transition-colors"
+                     placeholder="Twoja nazwa"
+                   />
+                   <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" size={20} />
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                 <button 
+                   onClick={handleUpdate}
+                   disabled={isSaving || !username.trim()}
+                   className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
+                 >
+                   {isSaving ? 'Aktualizowanie...' : 'Aktualizuj'}
+                 </button>
+                 {saveMessage && <span className={`ml-4 text-sm font-medium ${saveMessage.includes('błąd') ? 'text-red-400' : 'text-green-400'}`}>{saveMessage}</span>}
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Username Input */}
-          <div className="max-w-md">
-            <div className="relative">
-               <input 
-                 type="text" 
-                 value={username}
-                 onChange={(e) => setUsername(e.target.value)}
-                 className="w-full bg-background border border-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#f97316] transition-colors"
-                 placeholder="Twoja nazwa"
-               />
-               <Check className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" size={20} />
+          {/* Logout Section */}
+          <motion.div variants={staggerItem} className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
+            <div className="relative z-10">
+              <h2 className="text-xl font-semibold mb-2">Wylogowanie</h2>
+              <p className="text-gray-400 text-sm mb-6 max-w-md">Możesz wylogować się ze swojego konta na tym urządzeniu. Zostaniesz przeniesiony do ekranu logowania.</p>
+              <button 
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-red-500 transition-colors"
+              >
+                Wyloguj się
+              </button>
             </div>
-          </div>
-
-          <div className="flex items-center">
-             <button 
-               onClick={handleUpdate}
-               disabled={isSaving || !username.trim()}
-               className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50"
-             >
-               {isSaving ? 'Aktualizowanie...' : 'Aktualizuj'}
-             </button>
-             {saveMessage && <span className={`ml-4 text-sm font-medium ${saveMessage.includes('błąd') ? 'text-red-400' : 'text-green-400'}`}>{saveMessage}</span>}
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Logout Section */}
-      <motion.div variants={staggerItem} className="bg-card border border-red-500/30 rounded-xl p-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-red-500/5 pointer-events-none"></div>
-        <div className="relative z-10">
-          <h2 className="text-xl font-semibold mb-2">Wylogowanie</h2>
-          <p className="text-gray-400 text-sm mb-6 max-w-md">Możesz wylogować się ze swojego konta na tym urządzeniu. Zostaniesz przeniesiony do ekranu logowania.</p>
-          <button 
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-red-500 transition-colors"
-          >
-            Wyloguj się
-          </button>
-        </div>
-      </motion.div>
-      </motion.div>
+          </motion.div>
+        </motion.div>
+      ) : (
+        <AdminTab />
+      )}
     </div>
   );
 }
