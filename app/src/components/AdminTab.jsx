@@ -96,9 +96,13 @@ export default function AdminTab() {
               <h3 className="text-2xl font-bold text-white mb-2">{searchResult.data.title || 'Brak nazwy'}</h3>
               <p className="text-gray-300 text-sm mb-6 flex items-center gap-2">
                 <span className="font-semibold text-gray-500">Krótki link:</span> 
-                <a href={searchResult.data.shortUrl} target="_blank" rel="noopener noreferrer" className="text-[#009de2] hover:underline">
-                  {searchResult.data.shortUrl}
-                </a>
+                {searchResult.data.shortUrl ? (
+                  <a href={searchResult.data.shortUrl} target="_blank" rel="noopener noreferrer" className="text-[#009de2] hover:underline">
+                    {searchResult.data.shortUrl}
+                  </a>
+                ) : (
+                  <span className="text-gray-500 italic">Brak (kod statyczny)</span>
+                )}
               </p>
 
               <div className="border-t border-border pt-6 mt-2">

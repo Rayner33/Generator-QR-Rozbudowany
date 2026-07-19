@@ -8,8 +8,10 @@ export default function AdminDeleteModal({ itemType, itemId, onClose }) {
   const [confirmText, setConfirmText] = useState('');
   const [progress, setProgress] = useState('');
 
+  const getNormalizedText = (text) => text.trim().toUpperCase().replace(/Ń/g, 'N');
+
   const handleDelete = async () => {
-    if (confirmText !== 'USUN') return;
+    if (getNormalizedText(confirmText) !== 'USUN') return;
     setIsDeleting(true);
     setProgress('Rozpoczynanie usuwania...');
 
@@ -59,7 +61,7 @@ export default function AdminDeleteModal({ itemType, itemId, onClose }) {
     }
   };
 
-  const isButtonEnabled = confirmText === 'USUN' && !isDeleting;
+  const isButtonEnabled = getNormalizedText(confirmText) === 'USUN' && !isDeleting;
 
   return (
     <motion.div 
