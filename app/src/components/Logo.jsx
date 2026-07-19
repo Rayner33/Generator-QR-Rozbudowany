@@ -1,26 +1,25 @@
 import React from 'react';
 
 const Logo = ({ className = "w-10 h-10" }) => (
-  <svg viewBox="0 0 100 100" className={className} fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    {/* Stylized QR-code like Logo for "Parys" */}
-    {/* Top Left Eye */}
-    <rect x="10" y="10" width="25" height="25" rx="4" stroke="currentColor" strokeWidth="6" fill="none" />
-    <rect x="17" y="17" width="11" height="11" rx="2" fill="currentColor" />
-    
-    {/* Bottom Left Eye */}
-    <rect x="10" y="65" width="25" height="25" rx="4" stroke="currentColor" strokeWidth="6" fill="none" />
-    <rect x="17" y="72" width="11" height="11" rx="2" fill="currentColor" />
-    
-    {/* Right side forming a "P" out of QR dots/modules */}
-    <rect x="45" y="10" width="30" height="8" rx="4" fill="currentColor" />
-    <rect x="45" y="27" width="40" height="8" rx="4" fill="currentColor" />
-    <rect x="77" y="44" width="8" height="25" rx="4" fill="currentColor" />
-    <rect x="45" y="61" width="40" height="8" rx="4" fill="currentColor" />
-    
-    <rect x="45" y="44" width="8" height="46" rx="4" fill="currentColor" />
-    <circle cx="64" cy="50" r="4" fill="currentColor" />
-    <circle cx="64" cy="80" r="4" fill="currentColor" />
-    <circle cx="81" cy="80" r="4" fill="currentColor" />
+  <svg viewBox="0 0 409 409" className={className} xmlns="http://www.w3.org/2000/svg" fill="white">
+    <rect x="240.5" y="384.5" width="24" height="24" rx="7" ry="7" />
+    <path d="M271.5,336.5c-3.87,0-7,3.13-7,7v34c0,3.87,3.13,7,7,7h10c3.87,0,7-3.13,7-7v-34c0-3.87-3.13-7-7-7h-10Z" />
+    <path d="M391.5,264.5c-3.87,0-7,3.13-7,7v58c0,3.87,3.13,7,7,7h10c3.87,0,7-3.13,7-7v-58c0-3.87-3.13-7-7-7h-10Z" />
+    <path d="M360.5,336.5h-41c-3.87,0-7,3.13-7,7v10c0,3.87,3.13,7,7,7h58c3.87,0,7-3.13,7-7v-10c0-3.87-3.13-7-7-7h-17Z" />
+    <rect x="192.5" y="48.5" width="24" height="24" rx="7" ry="7" />
+    <path d="M192.5,103.5v82c0,3.87-3.13,7-7,7h-82c-3.87,0-7,3.13-7,7v10c0,3.87,3.13,7,7,7h106c3.87,0,7-3.13,7-7v-106c0-3.87-3.13-7-7-7h-10c-3.87,0-7,3.13-7,7Z" />
+    <rect x=".5" y="192.5" width="72" height="24" rx="7" ry="7" />
+    <path d="M.5,30.5v108c0,16.57,13.43,30,30,30h108c16.57,0,30-13.43,30-30V30.5c0-16.57-13.43-30-30-30H30.5C13.93.5.5,13.93.5,30.5ZM129.5,144.5H39.5c-8.28,0-15-6.72-15-15V39.5c0-8.28,6.72-15,15-15h90c8.28,0,15,6.72,15,15v90c0,8.28-6.72,15-15,15Z" />
+    <rect x="48.5" y="48.5" width="72" height="72" rx="7" ry="7" />
+    <rect x="288.5" y="48.5" width="72" height="72" rx="7" ry="7" />
+    <rect x="48.5" y="288.5" width="72" height="72" rx="7" ry="7" />
+    <path d="M336.5,233.5v-10c0-3.87-3.13-7-7-7h-10c-3.87,0-7,3.13-7,7v10c0,3.87-3.13,7-7,7h-58c-3.87,0-7,3.13-7,7v10c0,3.87,3.13,7,7,7h34c3.87,0,7,3.13,7,7v10c0,3.87-3.13,7-7,7h-58c-3.87,0-7,3.13-7,7v10c0,3.87,3.13,7,7,7h58c3.87,0,7-3.13,7,7v10c0,3.87,3.13,7,7,7h10c3.87,0,7-3.13,7-7v-58c0-3.87,3.13-7-7-7h58c3.87,0,7-3.13,7-7v-10c0-3.87-3.13-7-7-7h-34c-3.87,0-7-3.13-7-7Z" />
+    <rect x="192.5" y="336.5" width="24" height="72" rx="7" ry="7" />
+    <rect x="384.5" y="192.5" width="24" height="24" rx="7" ry="7" />
+    <path d="M240.5,30.5v108c0,16.57,13.43,30,30,30h108c16.57,0,30-13.43,30-30V30.5c0-16.57-13.43-30-30-30h-108c-16.57,0-30,13.43-30,30ZM369.5,144.5h-90c-8.28,0-15-6.72-15-15V39.5c0-8.28,6.72-15,15-15h90c8.28,0,15,6.72,15,15v90c0,8.28-6.72,15-15,15Z" />
+    <path d="M.5,270.5v108c0,16.57,13.43,30,30,30h108c16.57,0,30-13.43,30-30v-108c0-16.57-13.43-30-30-30H30.5c-16.57,0-30,13.43-30,30ZM129.5,384.5H39.5c-8.28,0-15-6.72-15-15v-90c0-8.28,6.72-15,15-15h90c8.28,0,15,6.72,15,15v90c0,8.28-6.72,15-15,15Z" />
+    <rect x="192.5" y=".5" width="24" height="24" rx="7" ry="7" />
+    <rect x="240.5" y="192.5" width="48" height="24" rx="7" ry="7" />
   </svg>
 );
 
