@@ -64,6 +64,26 @@
   fill: #009de2;
 }
 
+/* Przycisk czyszczenia koloru (pusta wartość / reset) */
+.quill-dark .ql-snow .ql-color-picker .ql-picker-item[data-value=""],
+.quill-dark .ql-snow .ql-color-picker .ql-picker-item[data-value="false"] {
+  background-color: transparent !important;
+  border: 1px solid #3f3f46;
+  position: relative;
+  overflow: hidden;
+}
+.quill-dark .ql-snow .ql-color-picker .ql-picker-item[data-value=""]::after,
+.quill-dark .ql-snow .ql-color-picker .ql-picker-item[data-value="false"]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -25%;
+  width: 150%;
+  height: 2px;
+  background-color: #ef4444;
+  transform: rotate(-45deg);
+}
+
 .quill-dark .ql-editor.ql-blank::before {
   color: #52525b; /* text-gray-600 */
   font-style: normal;
